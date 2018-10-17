@@ -1,26 +1,32 @@
 {
   "name": "mist-react",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "the shell app for mist-ui-react",
   "main": "index.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "electron-builder"
+    "prepare-release": "node ./scripts/copyApp.js",
+    "build": "build",
+    "release": "env-cmd .env build"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+    "electron-app-updater": "git+https://github.com/PhilippLgh/electron-app-updater.git"
+  },
   "devDependencies": {
     "electron": "^3.0.2",
-    "electron-builder": "^20.28.4"
+    "electron-builder": "20.28.0",
+    "env-cmd": "^8.0.2"
   },
   "build": {
     "productName": "Mist React",
     "appId": "org.ethereum.mist.react",
     "asar": false,
     "files": [
-
+      "index.js",
+      "*.asar"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -32,8 +38,7 @@
     "win": {
       "target": [
         "zip",
-        "nsis",
-        "msi"
+        "nsis"
       ]
     },
     "linux": {

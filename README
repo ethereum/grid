@@ -1,0 +1,13 @@
+#Steps to release
+- get github access token and insert into .env
+- build app (mist-ui-react), package and release
+  - yarn run deploy
+- npm run prepare
+  - TODO will download latest app release and package it with shell
+  - for now just download the asar manually and put in root dir
+- npm run build
+- double check that release/unpacked is working
+- TODO changelog, and release draft
+- TODO installer signing
+- npm run release -> auto publishes
+- go to github, check everything, edit description and change from draft to release
