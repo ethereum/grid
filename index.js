@@ -44,6 +44,8 @@ const appUpdater = new DialogUpdater({
   logger: logger
 })
 
+global.appUpdater = appUpdater
+
 const is = {
   dev: () => process.env.NODE_ENV && (process.env.NODE_ENV.trim() == 'development'),
   prod:() => !is.dev()
