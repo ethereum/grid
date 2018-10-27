@@ -1,5 +1,5 @@
 const { app, Menu, MenuItem } = require('electron')
-const { DialogUpdater, AppUpdater } = require('electron-app-updater')
+const { DialogUpdater, AppUpdater } = require('@philipplgh/electron-app-updater')
 
 // interface of log, warn, error
 const logger = console
