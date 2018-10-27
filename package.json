@@ -10,10 +10,10 @@
     "build": "build",
     "release": "env-cmd .env build"
   },
-  "author": "",
+  "author": "Mist team <mist@ethereum.org>",
   "license": "ISC",
   "dependencies": {
-    "electron-app-updater": "git+https://github.com/PhilippLgh/electron-app-updater.git"
+    "@philipplgh/electron-app-updater": "^1.0.3"
   },
   "devDependencies": {
     "electron": "^3.0.2",
@@ -21,8 +21,8 @@
     "env-cmd": "^8.0.2"
   },
   "build": {
-    "productName": "Mist React",
-    "appId": "org.ethereum.mist.react",
+    "productName": "Mist",
+    "appId": "org.ethereum.mist.next",
     "asar": false,
     "files": [
       "index.js",

@@ -7,8 +7,8 @@
   resolved "https://registry.yarnpkg.com/7zip-bin/-/7zip-bin-4.0.2.tgz#6abbdc22f33cab742053777a26db2e25ca527179"
 
 "@octokit/rest@^15.13.1":
-  version "15.13.1"
-  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-15.13.1.tgz#68b12ff0e470ad70c90e99bbb69f16bcdf62edb4"
+  version "15.15.1"
+  resolved "https://registry.yarnpkg.com/@octokit/rest/-/rest-15.15.1.tgz#7863f50f7c5753211ea3e29e10b84c93159e9e37"
   dependencies:
     before-after-hook "^1.1.0"
     btoa-lite "^1.0.0"
@@ -19,6 +19,15 @@
     node-fetch "^2.1.1"
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
+
+"@philipplgh/electron-app-updater@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@philipplgh/electron-app-updater/-/electron-app-updater-1.0.3.tgz#d646ccfb467d2c9684c5ad59c3a3385df9e806fc"
+  dependencies:
+    "@octokit/rest" "^15.13.1"
+    axios "^0.18.0"
+    electron-updater "2.23.2"
+    semver "^5.6.0"
 
 "@types/node@^8.0.24":
   version "8.10.36"
@@ -544,15 +553,6 @@ ejs@^2.6.1:
   version "2.6.1"
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.6.1.tgz#498ec0d495655abc6f23cd61868d926464071aa0"
 
-"electron-app-updater@git+https://github.com/PhilippLgh/electron-app-updater.git":
-  version "1.0.3"
-  resolved "git+https://github.com/PhilippLgh/electron-app-updater.git#5a8b7e31f448410dc101683e3544463fe7a20d50"
-  dependencies:
-    "@octokit/rest" "^15.13.1"
-    axios "^0.18.0"
-    electron-updater "2.23.2"
-    semver "^5.6.0"
-
 electron-builder@20.28.0:
   version "20.28.0"
   resolved "https://registry.yarnpkg.com/electron-builder/-/electron-builder-20.28.0.tgz#339f899778f1bc0c10ab89ded2b1d45b231005e1"
@@ -668,7 +668,7 @@ es6-promise@^4.0.3:
 
 es6-promisify@^5.0.0:
   version "5.0.0"
-  resolved "https://registry.yarnpkg.com/es6-promisify/-/es6-promisify-5.0.0.tgz#5109d62f3e56ea967c4b63505aef08291c8a5203"
+  resolved "http://registry.npmjs.org/es6-promisify/-/es6-promisify-5.0.0.tgz#5109d62f3e56ea967c4b63505aef08291c8a5203"
   dependencies:
     es6-promise "^4.0.3"
 
