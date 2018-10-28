@@ -7,13 +7,13 @@
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare-release": "node ./scripts/copyApp.js",
-    "build": "build",
+    "build": "yarn run prepare-release && build",
     "release": "env-cmd .env build"
   },
   "author": "Mist team <mist@ethereum.org>",
   "license": "ISC",
   "dependencies": {
-    "@philipplgh/electron-app-updater": "^1.0.3"
+    "@philipplgh/electron-app-updater": "^1.0.6"
   },
   "devDependencies": {
     "electron": "^3.0.2",

@@ -20,9 +20,9 @@
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
 
-"@philipplgh/electron-app-updater@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@philipplgh/electron-app-updater/-/electron-app-updater-1.0.3.tgz#d646ccfb467d2c9684c5ad59c3a3385df9e806fc"
+"@philipplgh/electron-app-updater@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@philipplgh/electron-app-updater/-/electron-app-updater-1.0.6.tgz#91182948f6990a30a0fd98ce77ca0d9e5fba76ac"
   dependencies:
     "@octokit/rest" "^15.13.1"
     axios "^0.18.0"
