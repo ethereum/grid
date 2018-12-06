@@ -1,12 +1,18 @@
-#Steps to release
-- get github access token and insert into .env
-- build app (mist-ui-react), package and release
-  - yarn run deploy
-- npm run prepare
-  - TODO will download latest app release and package it with shell
-  - for now just download the asar manually and put in root dir
+[![Build Status](https://travis-ci.org/PhilippLgh/mist-react-shell.svg?branch=master)](https://travis-ci.org/PhilippLgh/mist-react-shell)
+
+#Steps to release with CI
+- Bump version number
+- Push / merge to master
+- TODO set trigger for Electron releases (with auto-updater), mist-ui-react releases (without auto-updater)
+
+#Steps to test release (locally)
+- npm run prepare-release
+  - will download latest app release and package it with shell
 - npm run build
-- double check that release/unpacked is working
+- double check that release/unpacked/Mist.exe is working
+
+#Steps to release (locally)
+- get github access token and insert into .env as GH_TOKEN
 - TODO changelog, and release draft
 - TODO installer signing
 - npm run release -> auto publishes
