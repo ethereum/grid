@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare-release": "node ./scripts/copyApp.js",
     "build": "yarn run prepare-release && build",
-    "release": "env-cmd .env build"
+    "_release": "env-cmd .env build"
   },
   "author": "Mist team <mist@ethereum.org>",
   "license": "ISC",
