@@ -1,6 +1,6 @@
 {
   "name": "mist-react",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "the shell app for mist-ui-react",
   "main": "index.js",
   "homepage": "https://github.com/PhilippLgh/mist-react-shell",
