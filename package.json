@@ -3,6 +3,10 @@
   "version": "1.0.1",
   "description": "the shell app for mist-ui-react",
   "main": "index.js",
+  "homepage": "https://github.com/PhilippLgh/mist-react-shell",
+  "author": "Mist team <mist@ethereum.org>",
+  "license": "ISC",
+  "repository": "https://github.com/PhilippLgh/mist-react-shell",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,8 +15,6 @@
     "_release": "env-cmd .env build",
     "release": "env-cmd .env build"
   },
-  "author": "Mist team <mist@ethereum.org>",
-  "license": "ISC",
   "dependencies": {
     "@philipplgh/electron-app-updater": "^1.0.6"
   },
