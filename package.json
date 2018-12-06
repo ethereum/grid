@@ -13,7 +13,7 @@
     "prepare-release": "node ./scripts/copyApp.js",
     "build": "yarn run prepare-release && build",
     "_release": "env-cmd .env build",
-    "release": "env-cmd .env build"
+    "release": "build"
   },
   "dependencies": {
     "@philipplgh/electron-app-updater": "^1.0.6"
