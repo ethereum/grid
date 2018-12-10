@@ -16,6 +16,7 @@ release
 
 # the app.asar that is package with this shell
 *.asar
+*.zip
 
 # contains the GH_TOKEN access token variable for auto-publishing
 .env
