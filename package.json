@@ -12,11 +12,11 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare-release": "node ./scripts/copyApp.js",
     "build": "yarn run prepare-release && build",
-    "_release": "env-cmd .env build",
-    "release": "build"
+    "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-updater": "^1.0.6"
+    "@philipplgh/electron-app-updater": "^1.0.8",
+    "adm-zip": "^0.4.13"
   },
   "devDependencies": {
     "electron": "^3.0.2",
@@ -29,7 +29,13 @@
     "asar": false,
     "files": [
       "index.js",
-      "*.asar"
+      "electron-shell.js",
+      "electron-zip-support.js",
+      "preload.js",
+      "WindowManager.js",
+      "ui/download-splash.html",
+      "*.asar",
+      "*.zip"
     ],
     "mac": {
       "category": "public.app-category.productivity",

@@ -5,15 +5,11 @@
 const path = require('path');
 const {AppUpdater} = require('@philipplgh/electron-app-updater');
 
-
 const updater = new AppUpdater({
   repo: 'https://github.com/PhilippLgh/mist-ui-react'
 });
 
 (async function(){
-
-  const latest = await updater.remote.getLatest();
-
-  await updater.downloadUpdate(latest, path.join(__dirname, '..'));
-
+  const latest = await updater.getLatest()
+  await updater.download(latest, true, path.join(__dirname, '..'));
 })();
