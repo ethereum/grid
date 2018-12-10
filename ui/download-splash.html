@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    body{
+      /*background-color: black;
+      color: white
+      */
+    }
+    progress {
+      width: 100%;
+      height: 30px
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    document.writeln('<h3>Starting App: "'+window.data.name+'"</h3>')
+  </script>
+  <progress id="progress" value="0" max="100"></progress>
+  <textarea  style="display:none" name="log" id="log" cols="30" rows="10"></textarea>
+
+  <script>
+    let log = document.getElementById('log')
+    window.addEventListener('update', function (e) {
+      log.value = log.value + '\n' + e.detail.progress
+      progress.value = e.detail.progress
+    }, false);
+  </script>
+
+
+</body>
+</html>
