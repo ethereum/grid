@@ -8,7 +8,7 @@
   "packageRules": [{
     "packagePatterns": [".+"],
     "excludePackageNames": ["electron"],
-    "enable": false
+    "enabled": false
   }],
   "recreateClosed": true
 }
