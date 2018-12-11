@@ -1,6 +1,6 @@
 {
   "name": "mist-react",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "the shell app for mist-ui-react",
   "main": "index.js",
   "homepage": "https://github.com/PhilippLgh/mist-react-shell",
@@ -15,8 +15,7 @@
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-updater": "^1.0.8",
-    "adm-zip": "^0.4.13"
+    "@philipplgh/electron-app-updater": "^1.0.8"
   },
   "devDependencies": {
     "electron": "^3.0.2",
