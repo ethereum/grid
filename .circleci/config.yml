@@ -20,6 +20,10 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
+      - run: 
+          name: "Install latest yarn"
+          command: curl -o- -L https://yarnpkg.com/install.sh | bash
+
       - run: yarn install
 
       - save_cache:
