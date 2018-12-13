@@ -27,7 +27,7 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      - run: yarn release
+      - run: yarn release --linux --win
 
       - store_artifacts:
           path: release/
