@@ -20,3 +20,6 @@ release
 
 # contains the GH_TOKEN access token variable for auto-publishing
 .env
+
+# Vim swap files
+*.swp
