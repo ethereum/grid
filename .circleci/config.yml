@@ -30,6 +30,6 @@ jobs:
       - run: yarn release
 
       - store_artifacts:
-          path: dist/
+          path: release/
 
 
