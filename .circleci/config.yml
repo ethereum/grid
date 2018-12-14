@@ -33,7 +33,7 @@ jobs:
 
       - run:
           name: "Cleanup before uploading artifacts"
-          command: rm -rf release/*-unpacked
+          command: rm -rf release/mac
 
       - store_artifacts:
           path: release/
