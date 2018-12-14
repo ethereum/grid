@@ -1,44 +1,55 @@
 version: 2
 
-# Custom task removes unnecessary build files before uploading release directory
-before_store_artifacts: &before_store_artifacts
-  name: Preparing for artifact upload
-  command: rm -rf release/*-unpacked release/mac
+aliases:
+  # Caches node_modules directory based on yarn.lock checksum
+  - &save_modules_cache:
+      save_cache:
+        key: node-v1-{{ checksum "yarn.lock" }}
+        paths:
+          - node_modules
+  - &restore_modules_cache:
+      restore_cache:
+        keys:
+          - node-v1-{{ checksum "yarn.lock" }}
+          - node-v1-
 
-include_restore_cache: &include_restore_cache
-  keys:
-    - v1-deps-{{ checksum "yarn.lock" }}
-    - v1-deps-
+  # Caches electron build files by job type, to avoid caching only 
+  # one arch and cache-missing from other jobs
+  - &save_electron_cache:
+      save_cache:
+        key: electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+        paths:
+          - ~/.cache/electron-builder
+          - ~/.cache/electron
+  - &restore_electron_cache:
+      restore_cache:
+        keys:
+          - electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+          - electron-builder-v1-
 
-include_save_cache: &include_save_cache
-  paths:
-    - node_modules
-  key: v1-deps-{{ checksum "yarn.lock" }}
+  # Custom task removes unnecessary build files before uploading release directory
+  - &before_store_artifacts:
+      run: 
+        name: Preparing for artifact upload
+        command: rm -rf release/*-unpacked release/mac
 
+  - &upload_artifacts:
+      store_artifacts:
+        path: release/
 
 jobs:
-  build:
+  build-linux:
     docker:
       - image: electronuserland/builder:10
     working_directory: ~/repo
     steps:
       - checkout
-
-      - restore_cache:
-          <<: *include_restore_cache
-
+      - *restore_modules_cache
       - run: yarn install
-
       - run: yarn release --linux
-
-      - save_cache:
-          <<: *include_save_cache
-
-      - run:
-          <<: *before_store_artifacts
-
-      - store_artifacts:
-          path: release/
+      - *save_modules_cache
+      - *before_store_artifacts
+      - *upload_artifacts
 
   build-win:
     docker:
@@ -46,22 +57,12 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-
-      - restore_cache:
-          <<: *include_restore_cache
-
+      - *restore_modules_cache
       - run: yarn install
-
       - run: yarn release --win
-
-      - save_cache:
-          <<: *include_save_cache
-
-      - run:
-          <<: *before_store_artifacts
-
-      - store_artifacts:
-          path: release/
+      - *save_modules_cache
+      - *before_store_artifacts
+      - *upload_artifacts
 
   build-mac:
     macos:
@@ -69,27 +70,17 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-
-      - restore_cache:
-          <<: *include_restore_cache
-
+      - *restore_modules_cache
       - run: yarn install
-
       - run: yarn release --mac
-
-      - save_cache:
-          <<: *include_save_cache
-
-      - run:
-          <<: *before_store_artifacts
-        
-      - store_artifacts:
-          path: release/
+      - *save_modules_cache
+      - *before_store_artifacts
+      - *upload_artifacts
 
 workflows:
   version: 2
-  build_all:
+  build:
     jobs:
-      - build
+      - build-linux
       - build-mac
       - build-win
