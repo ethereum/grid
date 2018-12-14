@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: electronuserland/electron-builder:wine
+      - image: electronuserland/builder:wine
 
     working_directory: ~/repo
 
@@ -11,8 +11,8 @@ jobs:
 
       - run: yarn install
 
-      - run: yarn run env-cmd .env build --win
-      - run: yarn run env-cmd .env build --linux
+      - run: yarn release --win
+      - run: yarn release --linux
 
       - store_artifacts:
           path: release/
