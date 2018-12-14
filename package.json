@@ -1,5 +1,5 @@
 {
-  "name": "Mist shell",
+  "name": "mist-shell",
   "version": "1.0.3",
   "description": "The Dapp browser",
   "main": "index.js",
