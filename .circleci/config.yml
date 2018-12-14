@@ -11,7 +11,7 @@ jobs:
 
       - run: yarn install
 
-      - run: yarn run env-cmd .env build --windows
+      - run: yarn run env-cmd .env build --win
       - run: yarn run env-cmd .env build --linux
 
       - store_artifacts:
