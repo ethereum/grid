@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/PhilippLgh/mist-react-shell.svg?branch=master)](https://travis-ci.org/PhilippLgh/mist-react-shell)
+[![CircleCI](https://circleci.com/gh/ethereum/mist-shell/tree/master.svg?style=svg)](https://circleci.com/gh/ethereum/mist-shell/tree/master)
 
 ## Steps to release with CI
 - Bump version number
