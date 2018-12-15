@@ -2,40 +2,41 @@ version: 2
 
 aliases:
   # Caches node_modules directory based on yarn.lock checksum
-  - &save_modules_cache:
-      save_cache:
-        key: node-v1-{{ checksum "yarn.lock" }}
-        paths:
-          - node_modules
-  - &restore_modules_cache:
-      restore_cache:
-        keys:
-          - node-v1-{{ checksum "yarn.lock" }}
-          - node-v1-
+  - &save_modules_cache
+    save_cache:
+      key: node-v1-{{ checksum "yarn.lock" }}
+      paths:
+        - node_modules
+
+  - &restore_modules_cache
+    restore_cache:
+      keys:
+        - node-v1-{{ checksum "yarn.lock" }}
+        - node-v1-
 
   # Caches electron build files by job type, to avoid caching only 
   # one arch and cache-missing from other jobs
-  - &save_electron_cache:
-      save_cache:
-        key: electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
-        paths:
-          - ~/.cache/electron-builder
-          - ~/.cache/electron
-  - &restore_electron_cache:
-      restore_cache:
-        keys:
-          - electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
-          - electron-builder-v1-
+  - &save_electron_cache
+    save_cache:
+      key: electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+      paths:
+        - ~/.cache/electron-builder
+        - ~/.cache/electron
+  - &restore_electron_cache
+    restore_cache:
+      keys:
+        - electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+        - electron-builder-v1-
 
   # Custom task removes unnecessary build files before uploading release directory
-  - &before_store_artifacts:
-      run: 
-        name: Preparing for artifact upload
-        command: rm -rf release/*-unpacked release/mac
+  - &before_store_artifacts
+    run: 
+      name: Preparing for artifact upload
+      command: rm -rf release/*-unpacked release/mac
 
-  - &upload_artifacts:
-      store_artifacts:
-        path: release/
+  - &upload_artifacts
+    store_artifacts:
+      path: release/
 
 jobs:
   build-linux:
