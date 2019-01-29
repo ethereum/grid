@@ -89,6 +89,23 @@ class Geth extends EventEmitter{
     super()
     this.isRunning = false
     this.flags = []
+    this.logs = []
+  }
+  async extractPackageBinaries(binaryPackage){
+    // on mac the tar contains as root entry a dir with the same name as the .tar.gz
+    const basePackageName = binaryPackage.fileName.slice(0, -EXT_LENGTH)
+    const binaryPathPackage = path.join(basePackageName, BINARY_NAME)
+    const gethBinary = await gethUpdater.getEntry(binaryPackage, binaryPathPackage)
+    const binaryPathDisk = path.join(GETH_CACHE, basePackageName)
+    // the unlinking might fail if the binary is e.g. being used by another instance
+    if(fs.existsSync(binaryPathDisk)){
+      fs.unlinkSync(binaryPathDisk)
+    }
+    // IMPORTANT: if the binary already exists the mode cannot be set
+    fs.writeFileSync(binaryPathDisk, await gethBinary.getData(), {
+      mode: parseInt('754', 8) // strict mode prohibits octal numbers in some cases
+    })
+    return binaryPathDisk
   }
   async getLocalBinary() {
     const latestCached = await gethUpdater.getLatestCached()
@@ -99,22 +116,7 @@ class Geth extends EventEmitter{
       } 
       // binary is packaged as .zip or.tar.gz
       else {
-        // on mac the tar contains as root entry a dir with the same name as the .tar.gz
-        const basePackageName = latestCached.fileName.slice(0, -EXT_LENGTH)
-        const binaryPathPackage = path.join(basePackageName, BINARY_NAME)
-        const gethBinary = await gethUpdater.getEntry(latestCached, binaryPathPackage)
-        const binaryPathDisk = path.join(GETH_CACHE, basePackageName)
-
-        // the unlinking might fail if the binary is e.g. being used by another instance
-        if(fs.existsSync(binaryPathDisk)){
-          fs.unlinkSync(binaryPathDisk)
-        }
-        // IMPORTANT: if the binary already exists the mode cannot be set
-        fs.writeFileSync(binaryPathDisk, await gethBinary.getData(), {
-          mode: parseInt('754', 8) // strict mode prohibits octal numbers in some cases
-        })
-        
-        return binaryPathDisk
+        return this.extractPackageBinaries(latestCached)
       }
     }
     return null
@@ -137,7 +139,9 @@ class Geth extends EventEmitter{
   configure() {
 
   }
-  async start(binPath) {
+  async start(binPackagePath) {
+    console.log('start package', binPackagePath)
+    let binPath = await this.extractPackageBinaries(binPackagePath)
     console.log('start geth', binPath)
     let flags = [
       // '--datadir', 'F:/Ethereum',
@@ -149,12 +153,13 @@ class Geth extends EventEmitter{
     proc.once('error', error => {
       console.log('error in geth process', error)
     })
-    stdout.on("data", (data) => {
-      console.log('received data', data.toString())
-    });
-    stderr.on("data", (data) => {
-      console.log('received error', data.toString())
-    })
+
+    const onData = data => {
+      // console.log('received data', data.toString())
+      this.logs.push(data.toString())
+    }
+    stdout.on("data", onData)
+    stderr.on("data", onData)
     this.proc = proc
     this.isRunning = true
 
@@ -174,6 +179,9 @@ class Geth extends EventEmitter{
   }
   async getReleases(){
     return await gethUpdater.getReleases()
+  }
+  async getLogs() {
+    return this.logs
   }
   setConfig(newConfig) {
 
