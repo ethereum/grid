@@ -3,13 +3,31 @@ const path = require('path')
 const fs = require('fs')
 
 class WindowManager {
-  createWindow(options, data = {}) {
+    createInsecureWindow(options, data = {}) {
+      const preloadPath = path.join(__dirname, 'preload.js')
+
+      let baseOptions = {
+        width: 800, 
+        height: 600,
+        webPreferences: {
+          preload: preloadPath,
+          nodeIntegration: true,
+          webSecurity: false
+        }
+      }
+
+      let win = new BrowserWindow(baseOptions)
+
+      return win
+    }
+    
+    createWindow(options, data = {}) {
 
     const preloadPath = path.join(__dirname, 'preload.js')
 
     let baseOptions = {
       width: 800, 
-      height: 600 
+      height: 600
     }
 
     let popupOptions = {
@@ -58,6 +76,15 @@ class WindowManager {
     const windowConfig = Object.assign(config, enforcedOptions)
 
     let win = new BrowserWindow(windowConfig)
+
+    let webContents = win.webContents
+
+    // TODO https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-remote-require
+    // TODO https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-remote-get-global
+    webContents.on('crashed', () => {
+      // TODO notify updater about bad app
+      console.log('webpage crashed')
+    })
 
     // pass initial data to window
     win.data = JSON.stringify(data) 

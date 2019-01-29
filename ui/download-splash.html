@@ -7,7 +7,8 @@
   <title>Document</title>
   <style>
     body{
-      /*background-color: black;
+      background-color: yellow;
+      /*
       color: white
       */
     }
@@ -19,18 +20,26 @@
 </head>
 <body>
 
-  <script>
-    document.writeln('<h3>Starting App: "'+window.data.name+'"</h3>')
-  </script>
-  <progress id="progress" value="0" max="100"></progress>
-  <textarea  style="display:none" name="log" id="log" cols="30" rows="10"></textarea>
+  <h3 id="title"></h3>
+  <progress id="progress" style="display:none" value="0" max="100"></progress>
+  <textarea id="log" style="display:none" name="log" cols="30" rows="10"></textarea>
 
   <script>
+    let title = document.getElementById('title')
     let log = document.getElementById('log')
+
+    title.innerHTML = `Fetching info from: \n ${window.data.name}`
+
     window.addEventListener('update', function (e) {
-      log.value = log.value + '\n' + e.detail.progress
-      progress.value = e.detail.progress
+      let data = e.detail
+      log.value = log.value + '\n' + JSON.stringify(data)
+      if(data.app){
+        title.innerHTML = `Loading App: ${data.app.name}`
+        progress.style = "display:block"
+        progress.value = e.detail.progress
+      }
     }, false);
+
   </script>
 
 

@@ -4,50 +4,19 @@ const Module = require('module')
 const fs = require('original-fs')
 const { app } = require('electron')
 const WindowManager = require('./WindowManager')
-const addZip = require('./electron-zip-support')
-
-function showSplash(appUpdater, name){
-  let splash = WindowManager.createWindow({
-    width: 400,
-    height: 100,
-    frame: false
-  }, {
-    name: name,
-    progress: 0
-  })
-  splash.loadFile(path.join(__dirname, 'ui', 'download-splash.html'))
-
-  appUpdater.on('update-progress', (app, progress) => {
-    splash.update({
-      progress
-    })
-  })
-  return splash
-}
 
 let win
 
 // downloads the app.zip from github to memory and starts it in a renderer
 const hotLoading = async (appUpdater) => {
-  const app = await appUpdater.getLatest()
 
-  // console.log('app found', app)
-  let splash = showSplash(appUpdater, app.name)
-
-  // allow renderer to access files within zip in memory
-  const result = await appUpdater.download(app)
-  addZip(result.data)
-
+  let result = await appUpdater.hotLoad(path.join(__dirname, 'ui', 'download-splash.html'))
   // create window for app
   win = WindowManager.createWindow()
-  let ui = url.format({
-    slashes: true,
-    protocol: 'file:', // even though not 100% correct we are using file and not a custom protocol for the moment
-    pathname: '.zip/index.html', // path does only exist in memory
-  })
-  win.loadURL(ui)
+  win.loadURL(result.electronUrl)
 
-  splash.close()
+  win.webContents.openDevTools()
+
 }
 
 /*
@@ -78,8 +47,6 @@ function loadPackagedApp() {
   // FIXME Module._load(mainScript, Module, true)
   */
 
-
-
   // ... INSTEAD the shell provides a browser window for the app and loads the index.html
 
   // Create a browser window for the app
@@ -105,8 +72,9 @@ function loadPackagedApp() {
   })
 }
 
-
-function startElectronShell(appUpdater){
+function secureApplication(){
+  // FIXME replace with correct origin
+  let validOrigin = 'https://yourapp.com/'
 
   app.on('web-contents-created', (event, contents) => {
   
@@ -120,7 +88,7 @@ function startElectronShell(appUpdater){
       webPreferences.nodeIntegration = false
   
       // Verify URL being loaded
-      if (!params.src.startsWith('https://yourapp.com/')) {
+      if (!params.src.startsWith(validOrigin)) {
         event.preventDefault()
       }
     })
@@ -128,7 +96,7 @@ function startElectronShell(appUpdater){
     // https://electronjs.org/docs/tutorial/security#12-disable-or-limit-navigation
     contents.on('will-navigate', (event, navigationUrl) => {
       const parsedUrl = new URL(navigationUrl)
-      if (parsedUrl.origin !== 'https://my-own-server.com') {
+      if (parsedUrl.origin !== validOrigin) {
         event.preventDefault()
       }
     })
@@ -152,11 +120,27 @@ function startElectronShell(appUpdater){
       app.quit()
     }
   })
+}
 
-  // TODO for now, always hot-load to avoid inconsistencies
-  hotLoading(appUpdater)
+function createRenderer(clientUrl){
 
+  // secureApplication()
+
+  const loadRenderer = () => {
+    win = WindowManager.createInsecureWindow()
+    //win = WindowManager.createWindow()
+    win.loadURL(clientUrl)
+    win.webContents.openDevTools()
+  }
+
+  if(app.isReady()) {
+    loadRenderer()
+  }else{
+    app.once('ready', loadRenderer)
+  }
+
+  return win
 }
 
 
-module.exports = startElectronShell
+module.exports = createRenderer
