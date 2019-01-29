@@ -15,6 +15,8 @@ const hotLoading = async (appUpdater) => {
   win = WindowManager.createWindow()
   win.loadURL(result.electronUrl)
 
+  win.webContents.openDevTools()
+
 }
 
 /*
@@ -70,8 +72,9 @@ function loadPackagedApp() {
   })
 }
 
-
-function startElectronShell(appUpdater){
+function secureApplication(){
+  // FIXME replace with correct origin
+  let validOrigin = 'https://yourapp.com/'
 
   app.on('web-contents-created', (event, contents) => {
   
@@ -85,7 +88,7 @@ function startElectronShell(appUpdater){
       webPreferences.nodeIntegration = false
   
       // Verify URL being loaded
-      if (!params.src.startsWith('https://yourapp.com/')) {
+      if (!params.src.startsWith(validOrigin)) {
         event.preventDefault()
       }
     })
@@ -93,7 +96,7 @@ function startElectronShell(appUpdater){
     // https://electronjs.org/docs/tutorial/security#12-disable-or-limit-navigation
     contents.on('will-navigate', (event, navigationUrl) => {
       const parsedUrl = new URL(navigationUrl)
-      if (parsedUrl.origin !== 'https://my-own-server.com') {
+      if (parsedUrl.origin !== validOrigin) {
         event.preventDefault()
       }
     })
@@ -117,11 +120,27 @@ function startElectronShell(appUpdater){
       app.quit()
     }
   })
+}
 
-  // TODO for now, always hot-load to avoid inconsistencies
-  hotLoading(appUpdater)
+function createRenderer(clientUrl){
 
+  // secureApplication()
+
+  const loadRenderer = () => {
+    win = WindowManager.createInsecureWindow()
+    //win = WindowManager.createWindow()
+    win.loadURL(clientUrl)
+    win.webContents.openDevTools()
+  }
+
+  if(app.isReady()) {
+    loadRenderer()
+  }else{
+    app.once('ready', loadRenderer)
+  }
+
+  return win
 }
 
 
-module.exports = startElectronShell
+module.exports = createRenderer
