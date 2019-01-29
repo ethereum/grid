@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "electron": "^5.0.0-beta.1",
-    "electron-builder": "20.28.0",
+    "electron-builder": "20.31.3",
     "env-cmd": "^8.0.2"
   },
   "build": {
