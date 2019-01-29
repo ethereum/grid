@@ -1,6 +1,7 @@
 const { ipcRenderer } = require('electron')
 
 // https://www.jsonrpc.org/specification
+// use on renderer
 class Rpc {
   constructor() {
     this.id = 1
@@ -31,9 +32,24 @@ class Rpc {
       timeoutHandler = setTimeout(()=>{
         ipcRenderer.removeListener('rpc', responseHandler)
         reject(new Error('rpc timed out'))
-      }, 2000)
+      }, 10*1000)
     })
   }
 }
 
-module.exports = new Rpc()
+// use on main
+const setupRpc = (namespace, obj) => {
+  ipcMain.on('rpc', async (ev, data) => {
+    let parts = data.method.split('.')
+    if(parts[0] !== namespace) return
+    const method = parts[1]
+    if(typeof obj[method] === 'function') {
+      let result = await obj[method](data.params)
+      let response = {"jsonrpc": "2.0", "result": result, "id": data.id}
+      ev.sender.send('rpc', response)
+    }
+  })
+}
+
+module.exports.Rpc = Rpc
+module.exports.setupRpc = setupRpc
