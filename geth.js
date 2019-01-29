@@ -119,11 +119,17 @@ class Geth extends EventEmitter{
     }
     return null
   }
-  async download(release) {
+  async getLocalBinaries() {
+    return await gethUpdater.cache.getReleases()
+  }
+  async download(release, onProgress) {
     if(!release){
       release = await gethUpdater.getLatestRemote()
     }
+    const _onProgress = (r, p) => onProgress(p)
+    gethUpdater.on('update-progress', _onProgress)
     await gethUpdater.download(release)
+    gethUpdater.removeListener(_onProgress)
   }
   getUpdaterMenu(){
     return createMenu(updater)
