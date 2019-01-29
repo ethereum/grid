@@ -1,12 +1,12 @@
 {
-  "name": "mist-react",
+  "name": "mist-shell",
   "version": "1.0.3",
-  "description": "the shell app for mist-ui-react",
+  "description": "The Dapp Browser",
   "main": "index.js",
-  "homepage": "https://github.com/PhilippLgh/mist-react-shell",
+  "homepage": "https://github.com/ethereum/mist-shell",
   "author": "Mist team <mist@ethereum.org>",
   "license": "ISC",
-  "repository": "https://github.com/PhilippLgh/mist-react-shell",
+  "repository": "https://github.com/ethereum/mist-shell",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",

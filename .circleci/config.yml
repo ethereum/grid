@@ -1,0 +1,90 @@
+version: 2
+
+aliases:
+  # Caches node_modules directory based on yarn.lock checksum
+  - &save_modules_cache
+    save_cache:
+      key: node-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+      paths:
+        - node_modules
+
+  - &restore_modules_cache
+    restore_cache:
+      keys:
+        - node-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+        - node-v1--
+
+  # Caches electron build files by job type, to avoid caching only 
+  # one arch and cache-missing from other jobs
+  - &save_electron_cache
+    save_cache:
+      key: electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+      paths:
+        - ~/.cache/electron-builder
+        - ~/.cache/electron
+  - &restore_electron_cache
+    restore_cache:
+      keys:
+        - electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
+        - electron-builder-v1--
+
+  # Custom task removes unnecessary build files before uploading release directory
+  - &before_store_artifacts
+    run: 
+      name: Preparing for artifact upload
+      command: rm -rf release/*-unpacked release/mac
+
+  - &upload_artifacts
+    store_artifacts:
+      path: release/
+
+  - &install
+    run: yarn install
+
+  - &run_script
+    run: yarn release --$MIST_ENV
+  
+  - &run_steps
+    steps:
+      - checkout
+      - *restore_modules_cache
+      - *install
+      - *run_script
+      - *save_modules_cache
+      - *before_store_artifacts
+      - *upload_artifacts
+    
+jobs:
+  build:
+    docker:
+      - image: electronuserland/builder:10
+    environment: 
+      MIST_ENV: linux
+    working_directory: ~/repo
+    <<: *run_steps
+
+
+  build-win:
+    docker:
+      - image: electronuserland/builder:wine
+    environment: 
+      MIST_ENV: win
+    working_directory: ~/repo
+    <<: *run_steps
+
+  build-mac:
+    macos:
+      xcode: '9.0'
+    environment: 
+      MIST_ENV: mac
+    working_directory: ~/repo
+    <<: *run_steps
+
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - build-mac
+      - build-win
