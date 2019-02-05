@@ -23,3 +23,5 @@ release
 
 # Vim swap files
 *.swp
+
+geth_bin/

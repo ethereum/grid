@@ -12,6 +12,15 @@ const post = axios.post
 let EXT_LENGTH = 0
 let BINARY_NAME = ''
 
+const STATES = {
+  STARTING: 0 /* Node about to be started */,
+  STARTED: 1 /* Node started */,
+  CONNECTED: 2 /* IPC connected - all ready */,
+  STOPPING: 3 /* Node about to be stopped */,
+  STOPPED: 4 /* Node stopped */,
+  ERROR: -1 /* Unexpected error */
+};
+
 const GETH_CACHE = path.join(__dirname, 'geth_bin')
 if(!fs.existsSync(GETH_CACHE)){
   fs.mkdirSync(GETH_CACHE)
@@ -27,7 +36,7 @@ switch(process.platform){
     urlFilter = 'win'
     EXT_LENGTH = '.zip'.length
     BINARY_NAME = 'geth.exe'
-    dataDir = '%APPDATA%\\Ethereum'
+    dataDir = '%APPDATA%/Ethereum'
     break;
   }
   case 'linux': {
@@ -87,9 +96,19 @@ const rpcCall = async call => {
 class Geth extends EventEmitter{
   constructor() {
     super()
-    this.isRunning = false
+    this.state = STATES.STOPPED
     this.flags = []
     this.logs = []
+    this._init()
+  }
+  get isRunning(){
+    return this.state === STATES.STARTED
+  }
+  set isRunning(isRunning){
+    this.state = isRunning ? STATES.STARTED : STATES.STOPPING
+  }
+  _init() {
+    
   }
   async extractPackageBinaries(binaryPackage){
     // on mac the tar contains as root entry a dir with the same name as the .tar.gz
@@ -124,6 +143,11 @@ class Geth extends EventEmitter{
   async getLocalBinaries() {
     return await gethUpdater.cache.getReleases()
   }
+
+  async getReleases(){
+    return await gethUpdater.getReleases()
+  }
+
   async download(release, onProgress) {
     if(!release){
       release = await gethUpdater.getLatestRemote()
@@ -165,21 +189,22 @@ class Geth extends EventEmitter{
 
     return this.getStatus()
   }
-  async restart() {
 
-  }
   async stop() {
     this.proc.kill('SIGINT')
     this.isRunning = false
     return this.getStatus()
   }
+
+  async restart() {
+
+  }
+
   async checkForUpdates() {
     let result = await updater.checkForUpdates()
     return result
   }
-  async getReleases(){
-    return await gethUpdater.getReleases()
-  }
+
   async getLogs() {
     return this.logs
   }
