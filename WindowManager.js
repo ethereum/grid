@@ -3,30 +3,30 @@ const path = require('path')
 const fs = require('fs')
 
 class WindowManager {
-    createInsecureWindow(options, data = {}) {
-      const preloadPath = path.join(__dirname, 'preload.js')
+  createInsecureWindow(options, data = {}) {
+    const preloadPath = path.join(__dirname, 'preload.js')
 
-      let baseOptions = {
-        width: 800, 
-        height: 600,
-        webPreferences: {
-          preload: preloadPath,
-          nodeIntegration: true,
-          webSecurity: false
-        }
+    let baseOptions = {
+      width: 800,
+      height: 600,
+      webPreferences: {
+        preload: preloadPath,
+        nodeIntegration: true,
+        webSecurity: false
       }
-
-      let win = new BrowserWindow(baseOptions)
-
-      return win
     }
-    
-    createWindow(options, data = {}) {
+
+    let win = new BrowserWindow(baseOptions)
+
+    return win
+  }
+
+  createWindow(options, data = {}) {
 
     const preloadPath = path.join(__dirname, 'preload.js')
 
     let baseOptions = {
-      width: 800, 
+      width: 800,
       height: 600
     }
 
@@ -35,7 +35,7 @@ class WindowManager {
       modal: true
     }
 
-    if(!fs.existsSync(preloadPath)){
+    if (!fs.existsSync(preloadPath)) {
       throw new Error('for security reasons application cannot be started without preload script: does not exist')
     }
 
@@ -60,7 +60,7 @@ class WindowManager {
     }
 
     // avoid potentially immutable or non-overwritable values on the passed options
-    if(options && options.webPreferences){
+    if (options && options.webPreferences) {
       delete options.webPreferences
       // TODO alert 
     }
@@ -68,7 +68,7 @@ class WindowManager {
     let config = Object.assign(baseOptions, options)
 
     let isPopup = false
-    if(isPopup){
+    if (isPopup) {
       config = Object.assign(config, popupOptions)
     }
 
@@ -87,14 +87,14 @@ class WindowManager {
     })
 
     // pass initial data to window
-    win.data = JSON.stringify(data) 
+    win.data = JSON.stringify(data)
 
     win.update = changes => {
       win.webContents.send('__update', {
         ...changes
       })
     }
-    
+
     return win
 
   }

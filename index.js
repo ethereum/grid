@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 
 const createRenderer = require('./electron-shell')
-const Geth = require('./geth')
+const Geth = require('./ethereum_clients/geth')
 const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
@@ -42,7 +42,7 @@ const is = {
 
 const hotLoadLatest = async () => {
   const appWindow = await appManager.hotLoadLatest(WindowManager.createWindow())
-  appWindow.webContents.openDevTools()
+  // appWindow.webContents.openDevTools()
 }
 
 // Step 0
@@ -124,14 +124,14 @@ const initialize = async () => {
 const startUI = async () => {
   if (is.dev()) {
     console.log('started in dev mode')
+    const PORT = '3080'
+    const startUrl = `http://localhost:${PORT}/index.html`
+    createRenderer(startUrl)
   } 
   else if (is.prod()) {
     console.log('started in prod mode')
+    await hotLoadLatest()
   }
-  const PORT = '3080'
-  const startUrl = `http://localhost:${PORT}/index.html`
-  createRenderer(startUrl)
-
 }
 
 // ########## MAIN APP ENTRY POINT #########
@@ -150,7 +150,7 @@ const onReady = async () => {
   global.Geth = geth
   const gethBinary = await geth.getLocalBinary()
   if(gethBinary){
-    geth.start(gethBinary)
+    //geth.start(gethBinary)
   }
   // else do nothing: let user decide how to setup
 
