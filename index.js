@@ -6,9 +6,9 @@ const Geth = require('./ethereum_clients/geth')
 const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
-const { app, Menu, MenuItem, protocol, ipcMain, shell } = require('electron')
+const { app, Menu, MenuItem, protocol, ipcMain, shell, dialog, nativeImage } = require('electron')
 // const { DialogUpdater, AppUpdater, createMenu } = require('@philipplgh/electron-app-updater')
-const {AppManager}= require('@philipplgh/electron-app-manager')
+const { AppManager, ElectronMenu } = require('@philipplgh/electron-app-manager')
 
 // interface of log, warn, error
 const logger = console
@@ -29,6 +29,8 @@ const shellUpdater = new DialogUpdater({
 */
 
 const WindowManager = require('./WindowManager')
+// TODO move into WindowManager
+let mainWindow = null
 
 const appManager = new AppManager({
   repository: 'https://github.com/ethereum/mist-ui',
@@ -41,67 +43,39 @@ const is = {
 }
 
 const hotLoadLatest = async () => {
-  const appWindow = await appManager.hotLoadLatest(WindowManager.createWindow())
+  const appUrl = await appManager.hotLoadLatest()
+  const appWindow = WindowManager.createInsecureWindow()
+  appWindow.loadURL(appUrl)
+  // appWindow.setTitle(latest.name)
   // appWindow.webContents.openDevTools()
+  mainWindow = appWindow
 }
 
-// Step 0
-const initialize = async () => {
+const initializeMenu = async geth => {
 
-  const mistVersionMenu = [
-    { 
-      label: 'Version 1',
-      click: async () => { console.log('load version 1') }
-    },
-    { 
-      label: 'Version 2',
-      click: async () => { console.log('load version 2') }
-    }
-  ]
+  let gethUpdater = geth.getUpdater()
+  const gethVersionMenu = await ElectronMenu.createSwitchVersionMenu(gethUpdater)
 
-  const updateMist = {
-    label: 'Mist UI',
-    submenu: [
-      { 
-        label: 'Check Update',
-        click: async () => { console.log('check for updates') }
-      },
-      { type: 'separator' },
-      { 
-        label: 'Switch Version',
-        submenu: mistVersionMenu
-      },
-      { 
-        label: 'Hot-Load Latest',
-        click: hotLoadLatest
-      },
-      { type: 'separator' },
-      { 
-        label: 'Open Cache',
-        click: async () => { shell.showItemInFolder(appManager.cacheDir) }
-      },
-      { type: 'separator' },
-      { 
-        label: 'Version x.y.z',
-        enabled: false
-      }, 
-    ]
+  const onReload = appUrl => {
+    mainWindow.loadURL(appUrl)
   }
+  const updateMenuMist = await ElectronMenu.createMenuTemplate(appManager, onReload)
+  updateMenuMist.label = 'Mist UI'
 
   const updateGeth = {
     label: 'Geth',
     submenu: [
-      { 
+      {
         label: 'Check Update',
         click: async () => { console.log('check for updates') }
       },
-      { 
-        label: 'Choose Version',
-        click: async () => { console.log('choose version') }
+      {
+        label: 'Switch Version',
+        submenu: gethVersionMenu
       },
-      { 
+      {
         label: 'Open Cache',
-        click: async () => { shell.showItemInFolder(updater.downloadDir) }
+        click: async () => { shell.showItemInFolder(gethUpdater.cacheDir) }
       }
     ]
   }
@@ -110,14 +84,22 @@ const initialize = async () => {
   const template = getMenuTemplate()
   const UpdateMenu = template.find(mItem => mItem.label === 'Updater')
   UpdateMenu.submenu.push(
-    updateMist,
+    updateMenuMist,
     updateGeth,
-    {label: 'Shell'},
-    {label: 'Settings'}
+    { label: 'Shell' },
+    { label: 'Settings' }
   )
-  
+
   const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
+}
+
+// Step 0
+const initialize = async geth => {
+
+  // IMPORTANT don't await here: menu construction will defer startup
+  initializeMenu(geth)
+
 }
 
 // Step 1
@@ -126,8 +108,8 @@ const startUI = async () => {
     console.log('started in dev mode')
     const PORT = '3080'
     const startUrl = `http://localhost:${PORT}/index.html`
-    createRenderer(startUrl)
-  } 
+    mainWindow = createRenderer(startUrl)
+  }
   else if (is.prod()) {
     console.log('started in prod mode')
     await hotLoadLatest()
@@ -138,18 +120,18 @@ const startUI = async () => {
 const onReady = async () => {
 
   // 0 prepare windows, menus etc
-  await initialize()
+  const geth = new Geth()
+  await initialize(geth)
 
   // 1. start UI for quick user-feedback without long init procedures
   await startUI()
 
   // 2. 
-  const geth = new Geth()
   // make geth methods available in renderer
   // setupRpc('geth', geth)
   global.Geth = geth
   const gethBinary = await geth.getLocalBinary()
-  if(gethBinary){
+  if (gethBinary) {
     //geth.start(gethBinary)
   }
   // else do nothing: let user decide how to setup

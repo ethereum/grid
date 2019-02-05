@@ -16,7 +16,7 @@
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.8.2",
+    "@philipplgh/electron-app-manager": "^0.8.4",
     "axios": "^0.18.0"
   },
   "peerDependencies": {

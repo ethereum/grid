@@ -21,13 +21,17 @@ class WindowManager {
     return win
   }
 
-  createWindow(options, data = {}) {
+  createWindow(options = {}, data = {}) {
 
     const preloadPath = path.join(__dirname, 'preload.js')
 
     let baseOptions = {
       width: 800,
       height: 600
+    }
+
+    if(options.title){
+      baseOptions.title = options.title
     }
 
     let popupOptions = {
@@ -85,6 +89,14 @@ class WindowManager {
       // TODO notify updater about bad app
       console.log('webpage crashed')
     })
+
+    // https://github.com/electron/electron/issues/1594#issuecomment-105366717
+    // if title is explicitly set don't let renderer overwrite it
+    if(options.title){
+      win.on('page-title-updated', (evt) => { 
+        evt.preventDefault(); 
+      });
+    }
 
     // pass initial data to window
     win.data = JSON.stringify(data)

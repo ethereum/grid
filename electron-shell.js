@@ -15,7 +15,7 @@ const hotLoading = async (appUpdater) => {
   win = WindowManager.createWindow()
   win.loadURL(result.electronUrl)
 
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
 }
 
@@ -61,7 +61,7 @@ function loadPackagedApp() {
   win.loadURL(ui)
 
   // Open the DevTools.
-  win.webContents.openDevTools()
+  // win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -130,7 +130,7 @@ function createRenderer(clientUrl){
     win = WindowManager.createInsecureWindow()
     //win = WindowManager.createWindow()
     win.loadURL(clientUrl)
-    win.webContents.openDevTools()
+    // win.webContents.openDevTools()
   }
 
   if(app.isReady()) {
