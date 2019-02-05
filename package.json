@@ -8,8 +8,9 @@
   "license": "ISC",
   "repository": "https://github.com/ethereum/mist-shell",
   "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:prod": "electron .",
+    "start:dev": "cross-env NODE_ENV=development electron .",
+    "test": "mocha ./test",
     "prepare-release": "node ./scripts/copyApp.js",
     "build": "yarn run prepare-release && build",
     "release": "env-cmd .env build"
@@ -22,9 +23,12 @@
     "adm-zip": "^0.4.13"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "cross-env": "^5.2.0",
     "electron": "^5.0.0-beta.1",
     "electron-builder": "20.31.3",
-    "env-cmd": "^8.0.2"
+    "env-cmd": "^8.0.2",
+    "mocha": "^5.2.0"
   },
   "build": {
     "productName": "Mist",
