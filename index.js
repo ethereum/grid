@@ -6,9 +6,9 @@ const Geth = require('./ethereum_clients/geth')
 const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
-const { app, Menu, MenuItem, protocol, ipcMain, shell, dialog, nativeImage } = require('electron')
+const { app, Menu, MenuItem, protocol, ipcMain, shell, dialog, nativeImage, BrowserWindow } = require('electron')
 // const { DialogUpdater, AppUpdater, createMenu } = require('@philipplgh/electron-app-updater')
-const { AppManager, ElectronMenu } = require('@philipplgh/electron-app-manager')
+const { AppManager } = require('@philipplgh/electron-app-manager')
 
 // interface of log, warn, error
 const logger = console
@@ -42,8 +42,35 @@ const is = {
   prod: () => !is.dev()
 }
 
+const updateMenuVersion = async (release) => {
+
+  const updateMenuMist = await ElectronMenu.updateMenuVersion(release.version)
+  updateMenuMist.label = 'Mist UI'
+
+  const template = getMenuTemplate()
+  const UpdateMenu = template.find(mItem => mItem.label === 'Updater')
+  UpdateMenu.submenu.push(
+    updateMenuMist,
+    { label: 'Geth' },
+    { label: 'Shell' },
+    { label: 'Settings' }
+  )
+
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+
+}
+
 const hotLoadLatest = async () => {
   const appUrl = await appManager.hotLoadLatest()
+  if(appUrl === null){
+    // TODO display error
+    return
+  }
+  const latest = appManager.hotLoadedApp
+
+  updateMenuVersion(latest)
+
   const appWindow = WindowManager.createInsecureWindow()
   appWindow.loadURL(appUrl)
   // appWindow.setTitle(latest.name)
@@ -53,39 +80,24 @@ const hotLoadLatest = async () => {
 
 const initializeMenu = async geth => {
 
-  let gethUpdater = geth.getUpdater()
-  const gethVersionMenu = await ElectronMenu.createSwitchVersionMenu(gethUpdater)
 
   const onReload = appUrl => {
     mainWindow.loadURL(appUrl)
   }
-  const updateMenuMist = await ElectronMenu.createMenuTemplate(appManager, onReload)
+  const updateMenuMist = await appManager.createMenuTemplate(onReload)
+  // console.log('mist menu', updateMenuMist)
   updateMenuMist.label = 'Mist UI'
 
-  const updateGeth = {
-    label: 'Geth',
-    submenu: [
-      {
-        label: 'Check Update',
-        click: async () => { console.log('check for updates') }
-      },
-      {
-        label: 'Switch Version',
-        submenu: gethVersionMenu
-      },
-      {
-        label: 'Open Cache',
-        click: async () => { shell.showItemInFolder(gethUpdater.cacheDir) }
-      }
-    ]
-  }
+  const gethUpdater = geth.getUpdater()
+  const updateMenuGeth = await gethUpdater.createMenuTemplate(onReload)
+  updateMenuGeth.label = 'Geth'
 
   // Create application menus
   const template = getMenuTemplate()
   const UpdateMenu = template.find(mItem => mItem.label === 'Updater')
   UpdateMenu.submenu.push(
     updateMenuMist,
-    updateGeth,
+    updateMenuGeth,
     { label: 'Shell' },
     { label: 'Settings' }
   )

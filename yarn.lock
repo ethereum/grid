@@ -29,10 +29,10 @@
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
 
-"@philipplgh/electron-app-manager@^0.8.4":
-  version "0.8.4"
-  resolved "https://registry.yarnpkg.com/@philipplgh/electron-app-manager/-/electron-app-manager-0.8.4.tgz#8ac5f033a2b66dd265e7113b1466dc954611c8e7"
-  integrity sha512-rEjrJ2O7MEys5R3/DktJc0HnMLraT2mjNqc3QbDuux2ReXyUMdiWIfQeja3h/w0icztU1Mbfsbo89WIyFAIrRw==
+"@philipplgh/electron-app-manager@^0.8.5":
+  version "0.8.5"
+  resolved "https://registry.yarnpkg.com/@philipplgh/electron-app-manager/-/electron-app-manager-0.8.5.tgz#5c4d4782e409490d390161d28a69f0ad8b8531be"
+  integrity sha512-0slTeCHU6Wn2p0Ib8U8ZSsXkNd0vUB9AvGRXM00gM4KOYUDPBHMxYwPsQ3dc6MI/adUPxmOzh+AuLdL98xAkew==
   dependencies:
     "@octokit/rest" "^15.13.1"
     adm-zip "^0.4.13"

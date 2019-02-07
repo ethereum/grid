@@ -107,10 +107,13 @@ class Geth extends EventEmitter{
   set isRunning(isRunning){
     this.state = isRunning ? STATES.STARTED : STATES.STOPPING
   }
+  getUpdater() {
+    return gethUpdater
+  }
   _init() {
     
   }
-  async extractPackageBinaries(binaryPackage){
+  async extractPackageBinaries(binaryPackage) {
     // on mac the tar contains as root entry a dir with the same name as the .tar.gz
     const basePackageName = binaryPackage.fileName.slice(0, -EXT_LENGTH)
     const binaryPathPackage = path.join(basePackageName, BINARY_NAME)
