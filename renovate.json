@@ -10,5 +10,5 @@
     "excludePackageNames": ["electron"],
     "enabled": false
   }],
-  "recreateClosed": true
+  "recreateClosed": false
 }
