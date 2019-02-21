@@ -30,7 +30,7 @@ let urlFilter = ''
 let dataDir = ''
 let binaryPaths = []
 
-// platform specific initialization 
+// platform specific initialization
 switch(process.platform){
   case 'win32': {
     urlFilter = 'win'
@@ -111,14 +111,19 @@ class Geth extends EventEmitter{
     return gethUpdater
   }
   _init() {
-    
+
   }
   async extractPackageBinaries(binaryPackage) {
     // on mac the tar contains as root entry a dir with the same name as the .tar.gz
     const basePackageName = binaryPackage.fileName.slice(0, -EXT_LENGTH)
     const binaryPathPackage = path.join(basePackageName, BINARY_NAME)
+    console.log('LOG: packageName', basePackageName);
+    console.log('LOG: binaryPathPackage', binaryPathPackage);
+    // throw `${JSON.stringify(binaryPackage)} - ${binaryPathPackage}`
     const gethBinary = await gethUpdater.getEntry(binaryPackage, binaryPathPackage)
-    const binaryPathDisk = path.join(GETH_CACHE, basePackageName)
+    // throw new Error(`${JSON.stringify(binaryPackage)}, ${binaryPathPackage}`)
+    const binaryPathDisk = path.join(GETH_CACHE, binaryPathPackage)
+    console.log('LOG: binaryPathDisk', binaryPathDisk);
     // the unlinking might fail if the binary is e.g. being used by another instance
     if(fs.existsSync(binaryPathDisk)){
       fs.unlinkSync(binaryPathDisk)
@@ -135,7 +140,7 @@ class Geth extends EventEmitter{
       // binary in extracted form was found in e.g. standard location on the system
       if(latestCached.isBinary){
         return latestCached.location
-      } 
+      }
       // binary is packaged as .zip or.tar.gz
       else {
         return this.extractPackageBinaries(latestCached)
