@@ -169,7 +169,7 @@ class Geth extends EventEmitter {
     } catch (error) {
       return error
     } finally {
-      gethUpdater.removeListener(_onProgress)
+      gethUpdater.removeListener('update-progress', _onProgress)
     }
   }
 
