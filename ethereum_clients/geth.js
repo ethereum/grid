@@ -4,8 +4,9 @@ const { AppManager } = require('@philipplgh/electron-app-manager')
 const { spawn } = require('child_process')
 const { EventEmitter } = require('events')
 const net = require('net')
+const debug = require('debug')('geth-js')
 
-// Init CONSTANTS
+// Init constants
 let EXT_LENGTH = 0
 let BINARY_NAME = ''
 const STATES = {
@@ -18,7 +19,13 @@ const STATES = {
 }
 
 // Set up cache
-const GETH_CACHE = path.join(__dirname, 'geth_bin')
+let GETH_CACHE
+if (process.env.NODE_ENV === 'test') {
+  GETH_CACHE = path.join(__dirname, '/../test', 'fixtures', 'geth_bin')
+} else {
+  GETH_CACHE = path.join(__dirname, 'geth_bin')
+}
+
 if (!fs.existsSync(GETH_CACHE)) {
   fs.mkdirSync(GETH_CACHE)
 }
@@ -32,7 +39,7 @@ let rpcId = 1
 // Platform specific initialization
 switch (process.platform) {
   case 'win32': {
-    urlFilter = 'win'
+    urlFilter = 'windows'
     EXT_LENGTH = '.zip'.length
     BINARY_NAME = 'geth.exe'
     dataDir = '%APPDATA%/Ethereum'
@@ -77,16 +84,12 @@ const defaultConfig = {
   name: 'default',
   dataDir,
   host: 'localhost',
-  port: 8545,
+  port: 8546,
   network: 'main',
   syncMode: 'light',
-  ipc: 'rpc'
+  ipc: 'IPC'
 }
 
-// https://github.com/ethereum/ethereum-client-binaries
-// https://github.com/ethereumjs/geth.js/blob/master/index.js
-// https://github.com/ethereum/ethereum-client-binaries/blob/master/src/index.js
-// https://github.com/ethereum/mist/blob/develop/modules/ethereumNode.js
 class Geth extends EventEmitter {
   constructor() {
     super()
@@ -95,14 +98,11 @@ class Geth extends EventEmitter {
     this.logs = []
     this.ipc = null
     this.responsePromises = {}
+    this.config = defaultConfig
   }
 
   get isRunning() {
-    return this.state === STATES.STARTED
-  }
-
-  set isRunning(isRunning) {
-    this.state = isRunning ? STATES.STARTED : STATES.STOPPING
+    return this.state === STATES.STARTED || this.state === STATES.CONNECTED
   }
 
   getUpdater() {
@@ -158,111 +158,210 @@ class Geth extends EventEmitter {
     return await gethUpdater.getReleases()
   }
 
-  async download(release, onProgress) {
+  async download(release, onProgress = () => {}) {
     if (!release) {
       release = await gethUpdater.getLatestRemote()
     }
-    const _onProgress = (r, p) => onProgress(p)
+    const _onProgress = (release, progress) => onProgress(progress)
     gethUpdater.on('update-progress', _onProgress)
-    await gethUpdater.download(release)
-    gethUpdater.removeListener(_onProgress)
+    try {
+      return await gethUpdater.download(release)
+    } catch (error) {
+      return error
+    } finally {
+      gethUpdater.removeListener(_onProgress)
+    }
   }
 
   getUpdaterMenu() {
     return createMenu(updater)
   }
 
-  configure() {}
+  getGethFlags() {
+    const { dataDir, network, host, port, syncMode, ipc } = this.config
+    let flags = []
 
-  async start(binPackagePath) {
-    console.log('start package', binPackagePath)
-    const binPath = await this.extractPackageBinaries(binPackagePath)
-    console.log('start geth', binPath)
-    const flags = [
-      // '--datadir', 'F:/Ethereum',
-      '--rpc'
-    ]
-    // const { stdout, stderr } = await spawn(this.bin, {})
-    const proc = spawn(binPath, flags)
-    const { stdout, stderr } = proc
-    proc.once('error', error => {
-      console.log('error in geth process', error)
-    })
-
-    const onData = data => {
-      this.logs.push(data.toString())
+    if (dataDir) {
+      flags.push('--datadir', dataDir)
     }
-    stdout.on('data', onData)
-    stderr.on('data', onData)
-    this.proc = proc
-    this.isRunning = true
 
-    // Check for IPC in 3s
-    setTimeout(() => {
-      this.getIpcPath()
-    }, 3000)
+    if (syncMode) {
+      const supportedSyncModes = ['fast', 'light', 'full']
+      if (!supportedSyncModes.includes(syncMode)) {
+        throw new Error('Geth: Unsupported Sync Mode')
+      }
+      flags.push('--syncmode', syncMode)
+    }
 
-    return this.getStatus()
-  }
-
-  getIpcPath() {
-    console.log('Checking for IPC path...')
-    let ipcPath
-    const logs = this.getLogs()
-    for (const log of logs) {
-      const found = log.includes('IPC endpoint opened')
-      if (found) {
-        ipcPath = log.split('=')[1].trim()
-        console.log('Found IPC path: ', ipcPath)
+    if (network) {
+      switch (network) {
+        case 'main':
+          flags.push('--networkid', 1)
+          break
+        case 'ropsten':
+          flags.push('--testnet')
+          break
+        case 'rinkeby':
+          flags.push('--rinkeby')
+          break
+        default:
+          throw new Error('Geth: Unsupported Network')
       }
     }
-    if (ipcPath) {
-      this.connectIpc(ipcPath)
-    } else {
-      // Recheck in 3s
-      setTimeout(() => {
-        console.log('IPC endpoint not found, rechecking in 3s...')
-        this.getIpcPath()
-      }, 3000)
+
+    if (ipc) {
+      switch (ipc.toLowerCase()) {
+        case 'websockets':
+          flags.push('--ws', '--wsaddr', host, '--wsport', port)
+          // ToDo: set --wsorigins for security
+          break
+        case 'http':
+          throw new Error('Geth: HTTP is deprecated')
+          break
+        default:
+          break
+      }
     }
+
+    return flags
   }
 
-  connectIpc(path) {
-    this.ipc = net.connect({ path })
+  start(binPackagePath) {
+    return new Promise(async (resolve, reject) => {
+      if (binPackagePath) {
+        this.binPath = await this.extractPackageBinaries(binPackagePath)
+      } else {
+        this.binPath = await this.getLocalBinary()
+      }
+      if (!this.binPath) {
+        throw new Error('No geth bin path')
+      }
+
+      // Set flags
+      let flags
+      try {
+        flags = this.getGethFlags()
+      } catch (error) {
+        reject(error)
+        return
+      }
+
+      this.state = STATES.STARTING
+      debug('Start Geth: ', this.binPath)
+
+      // Spawn process
+      const proc = spawn(this.binPath, flags)
+      const { stdout, stderr } = proc
+
+      proc.on('error', error => {
+        this.states = STATES.ERROR
+        debug('Geth Error in Process: ', error)
+        reject(error)
+      })
+
+      proc.on('close', code => {
+        this.states = STATES.STOPPED
+        const message = `Geth child process exited with code: ${code}`
+        reject(message)
+        if (code !== 0) {
+          // closing with any code other than 0 means there was an error
+          debug('Error: ', message)
+          debug('DEBUG Last 10 log lines: ', this.getLogs().slice(-10))
+        }
+      })
+
+      const onConnect = () => {
+        this.state = STATES.CONNECTED
+        resolve(this.getStatus())
+      }
+
+      const onStart = () => {
+        this.state = STATES.STARTED
+        // Check for and connect IPC in 1s
+        setTimeout(() => {
+          this.connectIpc(onConnect)
+        }, 1000)
+      }
+
+      const onData = data => {
+        const log = data.toString()
+        this.logs.push(log)
+      }
+
+      stderr.once('data', onStart)
+      stdout.on('data', onData)
+      stderr.on('data', onData)
+      this.proc = proc
+    })
+  }
+
+  connectIpc(onConnect) {
+    if (!this.isRunning) {
+      return null
+    }
+
+    if (!this.ipcPath) {
+      this.ipcPath = this.findIpcPathInLogs()
+      if (!this.ipcPath) {
+        // Recheck in 3s
+        setTimeout(() => {
+          debug('IPC endpoint not found, rechecking in 3s...')
+          this.connectIpc(onConnect)
+        }, 3000)
+        return
+      }
+    }
+
+    this.ipc = net.connect({ path: this.ipcPath })
 
     this.ipc.on('connect', error => {
       this.state = STATES.CONNECTED
-      console.log('IPC Connected')
+      onConnect()
+      debug('IPC Connected')
     })
 
     this.ipc.on('end', function() {
       this.state = STATES.STOPPED
       this.ipc = null
-      console.log('IPC Connection Ended')
+      debug('IPC Connection Ended')
     })
 
     this.ipc.on('error', error => {
       this.state = STATES.ERROR
       this.ipc = null
-      console.error('IPC Connection Error: ', error)
+      debug('IPC Connection Error: ', error)
     })
 
     this.ipc.on('timeout', function() {
       this.state = STATES.ERROR
       this.ipc = null
-      console.error('IPC Connection Timeout')
+      debug('IPC Connection Timeout')
     })
 
     this.ipc.on('data', this.onIpcData.bind(this))
   }
 
+  findIpcPathInLogs() {
+    let ipcPath
+    const logs = this.getLogs()
+    for (const thisLog of logs) {
+      const found = thisLog.includes('IPC endpoint opened')
+      if (found) {
+        ipcPath = thisLog.split('=')[1].trim()
+        debug('Found IPC path: ', ipcPath)
+        return ipcPath
+      }
+    }
+    return null
+  }
+
   onIpcData(data) {
-    console.log('IPC data: ', data.toString())
+    debug('IPC data: ', data.toString())
     let result
     try {
       result = JSON.parse(data)
     } catch (error) {
-      console.error('Error parsing JSON: ', error)
+      debug('Error parsing JSON: ', error)
     }
     if (result) {
       if (this.responsePromises[result.id]) {
@@ -289,26 +388,44 @@ class Geth extends EventEmitter {
     })
   }
 
-  async stop() {
-    this.proc.kill('SIGINT')
-    this.isRunning = false
-    return this.getStatus()
+  stop() {
+    return new Promise((resolve, reject) => {
+      if (!this.proc || !this.isRunning) {
+        resolve(true)
+      }
+      this.state = STATES.STOPPING
+      this.proc.on('exit', () => {
+        this.state = STATES.STOPPED
+        resolve(true)
+      })
+      this.proc.on('error', error => {
+        this.state = STATES.ERROR
+        reject(new Error('Geth Error Stopping: ', error))
+      })
+      this.proc.kill('SIGINT')
+      this.ipcPath = null
+    })
   }
 
-  async restart() {}
+  async restart() {
+    await this.stop()
+    return this.start()
+  }
 
   async checkForUpdates() {
     let result = await updater.checkForUpdates()
     return result
   }
 
-  setConfig(newConfig) {}
-
-  async getConfig() {
-    return defaultConfig
+  setConfig(newConfig) {
+    this.config = newConfig
   }
 
-  async getStatus() {
+  getConfig() {
+    return this.config
+  }
+
+  getStatus() {
     return {
       client: 'geth',
       binPath: this.binPath,
@@ -335,20 +452,10 @@ class Geth extends EventEmitter {
     }
   }
 
-  reportBug() {}
-
-  license() {}
-
   async network() {
     let response = await this.rpc('net_version')
     return response
   }
-
-  async version() {}
-
-  import() {}
-
-  export() {}
 }
 
 module.exports = Geth

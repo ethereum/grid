@@ -6,7 +6,17 @@ const Geth = require('./ethereum_clients/geth')
 const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
-const { app, Menu, MenuItem, protocol, ipcMain, shell, dialog, nativeImage, BrowserWindow } = require('electron')
+const {
+  app,
+  Menu,
+  MenuItem,
+  protocol,
+  ipcMain,
+  shell,
+  dialog,
+  nativeImage,
+  BrowserWindow
+} = require('electron')
 // const { DialogUpdater, AppUpdater, createMenu } = require('@philipplgh/electron-app-updater')
 const { AppManager } = require('@philipplgh/electron-app-manager')
 
@@ -38,12 +48,12 @@ const appManager = new AppManager({
 })
 
 const is = {
-  dev: () => process.env.NODE_ENV && (process.env.NODE_ENV.trim() == 'development'),
+  dev: () =>
+    process.env.NODE_ENV && process.env.NODE_ENV.trim() == 'development',
   prod: () => !is.dev()
 }
 
-const updateMenuVersion = async (release) => {
-
+const updateMenuVersion = async release => {
   const updateMenuMist = await ElectronMenu.updateMenuVersion(release.version)
   updateMenuMist.label = 'Mist UI'
 
@@ -58,12 +68,11 @@ const updateMenuVersion = async (release) => {
 
   const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
-
 }
 
 const hotLoadLatest = async () => {
   const appUrl = await appManager.hotLoadLatest()
-  if(appUrl === null){
+  if (appUrl === null) {
     // TODO display error
     return
   }
@@ -79,8 +88,6 @@ const hotLoadLatest = async () => {
 }
 
 const initializeMenu = async geth => {
-
-
   const onReload = appUrl => {
     mainWindow.loadURL(appUrl)
   }
@@ -108,10 +115,8 @@ const initializeMenu = async geth => {
 
 // Step 0
 const initialize = async geth => {
-
   // IMPORTANT don't await here: menu construction will defer startup
   initializeMenu(geth)
-
 }
 
 // Step 1
@@ -121,8 +126,7 @@ const startUI = async () => {
     const PORT = '3080'
     const startUrl = `http://localhost:${PORT}/index.html`
     mainWindow = createRenderer(startUrl)
-  }
-  else if (is.prod()) {
+  } else if (is.prod()) {
     console.log('started in prod mode')
     await hotLoadLatest()
   }
@@ -130,7 +134,6 @@ const startUI = async () => {
 
 // ########## MAIN APP ENTRY POINT #########
 const onReady = async () => {
-
   // 0 prepare windows, menus etc
   const geth = new Geth()
   await initialize(geth)
@@ -138,8 +141,7 @@ const onReady = async () => {
   // 1. start UI for quick user-feedback without long init procedures
   await startUI()
 
-  // 2. 
-  // make geth methods available in renderer
+  // 2. make geth methods available in renderer
   // setupRpc('geth', geth)
   global.Geth = geth
   const gethBinary = await geth.getLocalBinary()
@@ -147,7 +149,5 @@ const onReady = async () => {
     //geth.start(gethBinary)
   }
   // else do nothing: let user decide how to setup
-
 }
 app.once('ready', onReady)
-

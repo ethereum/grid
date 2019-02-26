@@ -1,0 +1,12 @@
+{
+  "name": "geth-linux-amd64-1.8.21-9dc5d1a9",
+  "fileName": "geth-linux-amd64-1.8.21-9dc5d1a9.tar.gz",
+  "version": "1.8.21",
+  "tag": "1.8.21-9dc5d1a9",
+  "size": "14671229",
+  "location": "https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.8.21-9dc5d1a9.tar.gz",
+  "checksums": {
+    "md5": "516fc2665d18e7b117333d2ea4959f9c"
+  },
+  "signature": "https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.8.21-9dc5d1a9.tar.gz.asc"
+}
