@@ -1,11 +1,12 @@
-[![CircleCI](https://circleci.com/gh/ethereum/grid/tree/master.svg?style=svg)](https://circleci.com/gh/ethereum/grid/tree/master)
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/47108/53521734-dee45980-3aa6-11e9-911b-ebd778f42a8c.png" width="343" />
+<img src="https://user-images.githubusercontent.com/47108/53522426-5797e580-3aa8-11e9-92d1-7eaa063ee214.png" width="524" />
 </p>
 
 
-# Info
+[![CircleCI](https://circleci.com/gh/ethereum/grid/tree/master.svg?style=svg)](https://circleci.com/gh/ethereum/grid/tree/master)
+
+# Enter the Grid
 
 This is the hosting application for [Grid UI](https://github.com/ethereum/grid-ui) and can be considered a [Mist](https://github.com/ethereum/Mist) alternative in the long run.
 This project ensures that the user can update, configure and run the Grid UI web app and client binaries such as geth.
