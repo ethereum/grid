@@ -87,7 +87,7 @@ const defaultConfig = {
   port: 8546,
   network: 'main',
   syncMode: 'light',
-  ipc: 'IPC'
+  ipc: 'ipc'
 }
 
 class Geth extends EventEmitter {

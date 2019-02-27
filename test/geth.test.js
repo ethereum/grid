@@ -186,7 +186,7 @@ describe('Clients', function() {
       it('starts geth with websockets', async function() {
         this.timeout(10 * 1000)
         const config = geth.getConfig()
-        geth.setConfig({ ...config, ipc: 'WebSockets' })
+        geth.setConfig({ ...config, ipc: 'websockets' })
         await geth.start()
         assert.include(geth.getLogs().join(' '), 'WebSocket endpoint opened')
       })
