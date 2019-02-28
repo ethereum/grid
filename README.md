@@ -1,39 +1,43 @@
-[![CircleCI](https://circleci.com/gh/ethereum/mist-shell/tree/master.svg?style=svg)](https://circleci.com/gh/ethereum/mist-shell/tree/master)
+<p align="center">
+<img src="https://user-images.githubusercontent.com/47108/53522426-5797e580-3aa8-11e9-92d1-7eaa063ee214.png" width="524" />
+</p>
 
-# Info
+[![CircleCI](https://circleci.com/gh/ethereum/grid/tree/master.svg?style=svg)](https://circleci.com/gh/ethereum/grid/tree/master)
 
-This is the hosting application for [Mist UI](https://github.com/ethereum/mist-ui) and can be considered a [Mist](https://github.com/ethereum/Mist) alternative.
-This project ensures that the user can update, configure and run the Mist UI web app and client binaries such as geth.
-Moreover this project can be bundled with Mist UI and create distributable installers that can be found under 'releases'.
+# Enter the Grid
+
+This is the hosting application for [Grid UI](https://github.com/ethereum/grid-ui) and can be considered a [Mist](https://github.com/ethereum/Mist) alternative in the long run.
+This project ensures that the user can update, configure and run the Grid UI web app and client binaries such as geth.
+Moreover this project can be bundled with Grid UI and create distributable installers that can be found under 'releases'.
 
 ### Quick Start
 
-First we need to install less and Mist UI:
+First we need to install less and Grid UI:
 
 ```
 npm install -g less
-git clone https://github.com/ethereum/mist-ui.git
-cd mist-ui
+git clone https://github.com/ethereum/grid-ui.git
+cd grid-ui
 yarn && yarn run watch-css
 ```
 
-In another terminal, go to the mist-ui folder, type:
+In another terminal, go to the grid-ui folder, type:
 
 ```
 yarn run start
 ```
 
-Then in a third terminal, outside the mist-ui folder and install and run mist-shell:
+Then in a third terminal, outside the grid-ui folder and install and run grid:
 
 ```
-git clone https://github.com/ethereum/mist-shell.git
-cd mist-shell
+git clone https://github.com/ethereum/grid.git
+cd grid
 yarn && yarn start:dev
 ```
 
 ## Dev Mode
 
-The developer mode will try to load Mist UI from a locally running web server on port `3080`. To run in dev mode you will have to follow the setup instructions on the Mist UI repo.
+The developer mode will try to load grid UI from a locally running web server on port `3080`. To run in dev mode you will have to follow the setup instructions on the Grid UI repo.
 
 ### Debugging
 
@@ -43,7 +47,7 @@ More namespaces will be added over time and listed here. We would appreciate con
 
 ## Production Mode
 
-In the the production mode a bundled app can be loaded from either `fs` or a remote location such as Mist UI's GitHub releases.
+In the the production mode a bundled app can be loaded from either `fs` or a remote location such as Grid UI's GitHub releases.
 
 # Release Process
 
@@ -51,14 +55,14 @@ In the the production mode a bundled app can be loaded from either `fs` or a rem
 
 - Bump version number
 - Push / merge to master
-- TODO set trigger for Electron releases (with auto-updater), mist-ui-react releases (without auto-updater)
+- TODO set trigger for Electron releases (with auto-updater), grid-ui releases (without auto-updater)
 
 ## Steps to test release (locally)
 
 - npm run prepare-release
   - will download latest app release and package it with shell
 - npm run build
-- double check that release/unpacked/Mist.exe is working
+- double check that release/unpacked/Grid.exe is working
 
 ## Steps to release (locally)
 
