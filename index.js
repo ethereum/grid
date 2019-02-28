@@ -1,42 +1,28 @@
 const fs = require('fs')
 const path = require('path')
+const url = require('url')
+const net = require('net')
 
 const createRenderer = require('./electron-shell')
 const Geth = require('./ethereum_clients/geth')
 const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
-const {
-  app,
-  Menu,
-  MenuItem,
-  protocol,
-  ipcMain,
-  shell,
-  dialog,
-  nativeImage,
-  BrowserWindow
-} = require('electron')
-// const { DialogUpdater, AppUpdater, createMenu } = require('@philipplgh/electron-app-updater')
+const log = {
+  dev: require('debug')('dev'),
+  appManager: {
+    log: require('debug')('AppManager')
+  }
+}
+
+const { app, dialog, Menu } = require('electron')
+
 const { AppManager } = require('@philipplgh/electron-app-manager')
 
-// interface of log, warn, error
-const logger = console
+const CONFIG_NAME = '.shell.config.js'
 
 // hw acceleration can cause problem in VMs and in certain APIs
 app.disableHardwareAcceleration()
-
-/*
-
-// setup updater for shell
-const shellUpdater = new DialogUpdater({
-  repo: 'https://github.com/PhilippLgh/mist-react',
-  shell: true,
-  auto: false,
-  interval: 60,
-  logger: logger
-})
-*/
 
 const WindowManager = require('./WindowManager')
 // TODO move into WindowManager
@@ -44,7 +30,11 @@ let mainWindow = null
 
 const appManager = new AppManager({
   repository: 'https://github.com/ethereum/mist-ui',
-  auto: false
+  auto: false,
+  logger: log.appManager,
+  policy: {
+    onlySigned: false
+  }
 })
 
 const is = {
@@ -54,7 +44,7 @@ const is = {
 }
 
 const updateMenuVersion = async release => {
-  const updateMenuMist = await ElectronMenu.updateMenuVersion(release.version)
+  const updateMenuMist = await appManager.updateMenuVersion(release.version)
   updateMenuMist.label = 'Mist UI'
 
   const template = getMenuTemplate()
@@ -70,25 +60,9 @@ const updateMenuVersion = async release => {
   Menu.setApplicationMenu(menu)
 }
 
-const hotLoadLatest = async () => {
-  const appUrl = await appManager.hotLoadLatest()
-  if (appUrl === null) {
-    // TODO display error
-    return
-  }
-  const latest = appManager.hotLoadedApp
-
-  updateMenuVersion(latest)
-
-  const appWindow = WindowManager.createInsecureWindow()
-  appWindow.loadURL(appUrl)
-  // appWindow.setTitle(latest.name)
-  // appWindow.webContents.openDevTools()
-  mainWindow = appWindow
-}
-
 const initializeMenu = async geth => {
   const onReload = appUrl => {
+    // console.log('reload requested for url', appUrl)
     mainWindow.loadURL(appUrl)
   }
   const updateMenuMist = await appManager.createMenuTemplate(onReload)
@@ -113,23 +87,112 @@ const initializeMenu = async geth => {
   Menu.setApplicationMenu(menu)
 }
 
+// TODO util
+const checkConnection = async (host, port, timeout = 2000) => {
+  return new Promise((resolve, reject) => {
+    let timer = setTimeout(() => {
+      reject('timeout')
+      socket.end()
+    }, timeout)
+    let socket = net.createConnection(port, host, () => {
+      clearTimeout(timer)
+      resolve(true)
+      socket.end()
+    })
+    socket.on('error', err => {
+      clearTimeout(timer)
+      resolve(false)
+    })
+  })
+}
+
 // Step 0
 const initialize = async geth => {
   // IMPORTANT don't await here: menu construction will defer startup
   initializeMenu(geth)
 }
 
-// Step 1
-const startUI = async () => {
-  if (is.dev()) {
-    console.log('started in dev mode')
-    const PORT = '3080'
-    const startUrl = `http://localhost:${PORT}/index.html`
-    mainWindow = createRenderer(startUrl)
-  } else if (is.prod()) {
-    console.log('started in prod mode')
-    await hotLoadLatest()
+// Step 1 - configure and start user interface
+const startWithDevConfig = async appUrl => {
+  const {
+    packagePath,
+    packageServer,
+    packageUrl,
+    packageVersion
+  } = require(`./${CONFIG_NAME}`)
+  // test if local path configured
+  if (packagePath && fs.existsSync(packagePath)) {
+    log.dev('load user provided package from fs:', packagePath)
+    appUrl = await appManager.load(packagePath)
   }
+  // test if user provided server is defined and reachable
+  else if (packageServer) {
+    const { hostname, port } = url.parse(packageServer)
+    const isServerRunning = await checkConnection(hostname, port)
+    if (isServerRunning) {
+      log.dev('load user provided package url:', packageServer)
+      appUrl = packageServer
+    } else {
+      log.dev('user provided server unreachable:', packageServer)
+    }
+  }
+  // fallback to user defined package url
+  else if (packageUrl) {
+    throw Error('not implemented')
+  } else if (packageVersion) {
+    log.dev('load user provided version:', packageVersion)
+    const releases = await appManager.getReleases()
+    // console.log(releases.map(r => r.version).join(', '))
+    const release = releases.find(r => r.version === packageVersion)
+    if (release) {
+      appUrl = await appManager.hotLoad(release)
+    } else {
+      log.dev('user provided version not found')
+    }
+  }
+  // else: display error: module not found
+  mainWindow = createRenderer(appUrl)
+}
+const startUI = async () => {
+  let errorUrl = url.format({
+    slashes: true,
+    protocol: 'file:',
+    pathname: path.join(__dirname, 'public', 'error.html')
+  })
+
+  if (is.dev()) {
+    // load user-provided package if possible
+    if (fs.existsSync(path.join(__dirname, CONFIG_NAME))) {
+      const { useDevSettings } = require(`./${CONFIG_NAME}`)
+      if (useDevSettings) {
+        return startWithDevConfig(errorUrl)
+      }
+    }
+    // else:  no dev config found or deactivated -> use default = dev server
+    const PORT = '3080'
+    const appUrl = `http://localhost:${PORT}/index.html`
+    const isServerRunning = await checkConnection('localhost', PORT)
+    if (!isServerRunning) {
+      log.dev('dev server unreachable at:', appUrl)
+      dialog.showMessageBox({
+        title: 'Error',
+        message: 'Dev Server not running or unreachable at: ' + appUrl
+      })
+      return
+    }
+    // else: server running -> display app
+    mainWindow = createRenderer(appUrl)
+    return
+  }
+
+  // else is production:
+  const appUrl = await appManager.hotLoadLatest()
+  if (appUrl) {
+    mainWindow = createRenderer(appUrl)
+    return
+  }
+  // else: no valid app url -> display error
+  mainWindow = createRenderer(errorUrl)
 }
 
 // ########## MAIN APP ENTRY POINT #########
