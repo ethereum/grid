@@ -41,8 +41,10 @@ aliases:
   - &install
     run: yarn install
 
-  - &run_script
+  - &test_script
     run: yarn test
+
+  - &build_script
     run: yarn release --$MIST_ENV
   
   - &run_steps
@@ -50,7 +52,8 @@ aliases:
       - checkout
       - *restore_modules_cache
       - *install
-      - *run_script
+      - *test_script
+      - *build_script
       - *save_modules_cache
       - *before_store_artifacts
       - *upload_artifacts
