@@ -42,6 +42,7 @@ aliases:
     run: yarn install
 
   - &run_script
+    run: yarn test
     run: yarn release --$MIST_ENV
   
   - &run_steps
