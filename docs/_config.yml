@@ -1,6 +1,7 @@
 theme: jekyll-theme-cayman
 
-title: Ethereum Mist
-description: 
+title: ethereum grid
+description:
+title_image: assets/img/title-image.png
 
 show_star_button: true
