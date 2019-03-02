@@ -8,13 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#157878">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision }}">
   </head>
   <body>
     <header class="page-header" role="banner">
       <h1 class="project-name">
         {% if site.title_image %}
-          <img src="{{site.title_image}}" alt="{{ site.title | default: site.github.repository_name }}">          
+          <img src="{{site.title_image}}" alt="{{ site.title | default: site.github.repository_name }}">
         {% else %}
           {{ site.title | default: site.github.repository_name }}
         {% endif %}
