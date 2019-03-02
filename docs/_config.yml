@@ -2,6 +2,8 @@ theme: jekyll-theme-cayman
 
 title: ethereum grid
 description:
-title_image: assets/img/title-image.png
+title_image: /assets/img/title-image.png
+
+baseurl: /
 
 show_star_button: true
