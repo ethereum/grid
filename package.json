@@ -1,6 +1,6 @@
 {
   "name": "grid",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Ethereum Grid",
   "main": "index.js",
   "homepage": "https://github.com/ethereum/grid",
@@ -17,7 +17,7 @@
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.8.9",
+    "@philipplgh/electron-app-manager": "^0.9.0",
     "debug": "^4.1.1"
   },
   "peerDependencies": {
@@ -47,7 +47,7 @@
     ]
   },
   "build": {
-    "productName": "Mist",
+    "productName": "Grid",
     "appId": "org.ethereum.grid",
     "asar": false,
     "files": [

@@ -29,12 +29,18 @@ const WindowManager = require('./WindowManager')
 let mainWindow = null
 
 const appManager = new AppManager({
-  repository: 'https://github.com/ethereum/mist-ui',
+  repository: 'https://github.com/ethereum/grid-ui',
   auto: false,
   logger: log.appManager,
   policy: {
     onlySigned: false
   }
+})
+
+const shellManager = new AppManager({
+  repository: 'https://github.com/ethereum/grid',
+  auto: true,
+  electron: true
 })
 
 const is = {
@@ -45,7 +51,7 @@ const is = {
 
 const updateMenuVersion = async release => {
   const updateMenuMist = await appManager.updateMenuVersion(release.version)
-  updateMenuMist.label = 'Mist UI'
+  updateMenuMist.label = 'Grid UI'
 
   const template = getMenuTemplate()
   const UpdateMenu = template.find(mItem => mItem.label === 'Updater')
@@ -67,7 +73,7 @@ const initializeMenu = async geth => {
   }
   const updateMenuMist = await appManager.createMenuTemplate(onReload)
   // console.log('mist menu', updateMenuMist)
-  updateMenuMist.label = 'Mist UI'
+  updateMenuMist.label = 'Grid UI'
 
   const gethUpdater = geth.getUpdater()
   const updateMenuGeth = await gethUpdater.createMenuTemplate(onReload)
@@ -182,13 +188,20 @@ const startUI = async () => {
     }
     // else: server running -> display app
     mainWindow = createRenderer(appUrl)
+
+    updateMenuVersion(latest)
+
     return
   }
 
   // else is production:
   const appUrl = await appManager.hotLoadLatest()
   if (appUrl) {
-    mainWindow = createRenderer(appUrl)
+    let current = appManager.hotLoadedApp
+    if (current) {
+      updateMenuVersion(current)
+      mainWindow = createRenderer(appUrl)
+    }
     return
   }
   // else: no valid app url -> display error
