@@ -9,3 +9,8 @@ $header-bg-color-secondary: #7EC4E9 !default;
 $section-headings-color: #155799 !default;
 
 @import "{{ site.theme }}";
+
+.hero-image {
+  width: 540px;
+  max-width: 100%;
+}
