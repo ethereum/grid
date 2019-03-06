@@ -57,6 +57,10 @@
       "preload.js",
       "WindowManager.js",
       "ui/download-splash.html",
+      "public/error.html",
+      "Menu.js",
+      "Rpc.js",
+      "ethereum_clients/geth.js",
       "*.asar",
       "*.zip"
     ],
