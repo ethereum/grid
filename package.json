@@ -87,7 +87,6 @@
       "category": "WebBrowser"
     },
     "directories": {
-      "buildResources": "resources",
       "output": "release"
     }
   }

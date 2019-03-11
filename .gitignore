@@ -27,3 +27,4 @@ release
 /ethereum_clients/geth_bin/
 
 .shell.config.js
+.python-version
