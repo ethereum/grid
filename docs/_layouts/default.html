@@ -14,7 +14,7 @@
     <header class="page-header" role="banner">
       <h1 class="project-name">
         {% if site.title_image %}
-          <img src="{{site.title_image}}" alt="{{ site.title | default: site.github.repository_name }}" style="max-width:100%;">
+          <img src="{{site.title_image}}" alt="{{ site.title | default: site.github.repository_name }}" style="width: 540px; max-width: 100%;">
         {% else %}
           {{ site.title | default: site.github.repository_name }}
         {% endif %}
