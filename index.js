@@ -189,7 +189,7 @@ const startUI = async () => {
     // else: server running -> display app
     mainWindow = createRenderer(appUrl)
 
-    updateMenuVersion(latest)
+    // updateMenuVersion(latest)
 
     return
   }
