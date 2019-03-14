@@ -7,7 +7,7 @@ It aims to greatly improve developer and user experience, enabling them to manag
 
 # Downloads
 
-## {{ site.github.latest_release.tag_name }}
+## Latest release {{ site.github.latest_release.tag_name }}
 
 {{ site.github.latest_release.body }}
 
@@ -31,6 +31,4 @@ It aims to greatly improve developer and user experience, enabling them to manag
 {% endif -%}
 {% endfor %}
 
-<div style="display: none">
-{{ site.github.latest_release }}
-</div>
+For other releases, please head to [GitHub](https://github.com/ethereum/grid/releases).

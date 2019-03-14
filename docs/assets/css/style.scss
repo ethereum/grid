@@ -50,15 +50,14 @@ header {
   left: 16.33%;
   z-index: 2;
   width: 19.3%;
+  transition: 200ms all ease-in-out;
   animation: octahedron-animation 3.0s linear 0s infinite normal forwards;
   -moz-animation: octahedron-animation 3.0s linear 0s infinite normal forwards;
   -webkit-animation: octahedron-animation 3.0s linear 0s infinite normal forwards;
 }
 
 .logo-container:hover #logo-shape {
-  animation-duration: 1.0s;
-  -moz-animation-duration: 1.0s;
-  -webkit-animation-duration: 1.0s;
+  transform: scale(1.05);
 }
 
 @keyframes octahedron-animation {
