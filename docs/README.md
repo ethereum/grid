@@ -1,6 +1,6 @@
 # Grid landing page
 
-Our landing page is hosted by GitHub Pages, from `master` branch, `/docs` directory and can be accessed on grid.ethereum.org.
+Our landing page is hosted by GitHub Pages, from `master` branch, `/docs` directory and can be accessed on https://grid.ethereum.org.
 
 GitHub Pages uses Jekyll plugin (Ruby) to build html pages.
 
@@ -52,4 +52,5 @@ bundle exec jekyll build
 ## Additional resources
 
 - [Liquid](https://shopify.github.io/liquid/) (template engine used by Jekyll)
-- Jekyll documentation
+- [Jekyll documentation](https://jekyllrb.com/docs/)
+- [GitHub Pages help](https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages?query=jekyll)
