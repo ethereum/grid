@@ -2,7 +2,115 @@
 ---
 
 // Custom variables
-$header-bg-color: #274991 !default;
-$header-bg-color-secondary: #7EC4E9 !default;
+$header-bg-color: #656565 !default;
+$header-bg-color-secondary: #000 !default;
+
+// Text
+$section-headings-color: #155799 !default;
 
 @import "{{ site.theme }}";
+
+@import url("https://fonts.googleapis.com/css?family=Overpass:200,400,700");
+body {
+  font-family: "Overpass", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.page-header {
+  position: relative;
+  overflow: hidden;
+  background:
+    center/100px url(/assets/img/noise.png),
+    radial-gradient(farthest-side ellipse at center, #545454, #000004),
+    #000004;
+  /*117% wide 150% height #646468 center #000004 outer */
+}
+
+header {
+  border-bottom: 40px solid #202029;
+}
+
+.logo-container {
+  max-width: 704px;
+  height: 53.8%;
+  margin: 0 auto;
+  position: relative;
+}
+
+#logo-big {
+  width: 100%;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+
+#logo-shape {
+  position: absolute;
+  top: 0;
+  padding-top: 9.95%;
+  left: 16.33%;
+  z-index: 2;
+  width: 19.3%;
+  transition: 200ms all ease-in-out;
+  animation: octahedron-animation 3.0s linear 0s infinite normal forwards;
+  -moz-animation: octahedron-animation 3.0s linear 0s infinite normal forwards;
+  -webkit-animation: octahedron-animation 3.0s linear 0s infinite normal forwards;
+}
+
+.logo-container:hover #logo-shape {
+  transform: scale(1.05);
+}
+
+@keyframes octahedron-animation {
+  0% {
+    margin-top: 0px;
+    animation-timing-function: ease-in-out;
+  }
+  25% {
+    margin-top: -4px;
+    animation-timing-function: ease-in-out;
+  }
+  75% {
+    margin-top: 4px;
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    margin-top: 0px;
+    animation-timing-function: ease-in-out;
+  }
+}
+
+.header-links {
+  a {
+    display: inline-block;
+    margin: 0 1em;
+  }
+}
+
+body {
+  background: center/100px url(/assets/img/noise.png), #16161C;
+  color: #C9C9C9;
+  min-width: 320px;
+}
+
+.main-content {
+  h1, h2, h3, h4, h5, h6 {
+    color: #fff;
+  }
+}
+
+a {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.site-footer-owner {
+  font-weight: normal;
+}
+
+p.intro-text {
+  font-size: 120%;
+  font-weight: 200;
+  margin: 3em auto;
+  width: 70%;
+  text-align: center;
+}

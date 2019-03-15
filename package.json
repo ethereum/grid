@@ -1,23 +1,24 @@
 {
-  "name": "mist-shell",
-  "version": "1.0.3",
-  "description": "The Dapp Browser",
+  "name": "grid",
+  "version": "1.0.5",
+  "description": "Ethereum Grid",
   "main": "index.js",
-  "homepage": "https://github.com/ethereum/mist-shell",
+  "homepage": "https://github.com/ethereum/grid",
   "author": "Mist team <mist@ethereum.org>",
   "license": "ISC",
-  "repository": "https://github.com/ethereum/mist-shell",
+  "repository": "https://github.com/ethereum/grid",
   "scripts": {
-    "start:prod": "electron .",
+    "start:prod": "cross-env NODE_ENV=production electron .",
     "start:dev": "cross-env NODE_ENV=development electron .",
-    "test": "mocha ./test",
+    "test": "cross-env NODE_ENV=test mocha ./test",
+    "test:watch": "cross-env NODE_ENV=test mocha ./test --watch",
     "prepare-release": "node ./scripts/copyApp.js",
     "build": "yarn run prepare-release && build",
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.8.5",
-    "axios": "^0.18.0"
+    "@philipplgh/electron-app-manager": "^0.9.0",
+    "debug": "^4.1.1"
   },
   "peerDependencies": {
     "adm-zip": "^0.4.13"
@@ -25,14 +26,29 @@
   "devDependencies": {
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
-    "electron": "^5.0.0-beta.1",
+    "electron": "5.0.0-beta.1",
     "electron-builder": "20.31.3",
     "env-cmd": "^8.0.2",
-    "mocha": "^5.2.0"
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.3",
+    "mocha": "^5.2.0",
+    "prettier": "^1.16.4",
+    "rimraf": "^2.6.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,json,css,md}": [
+      "prettier --no-semi --single-quote --write",
+      "git add"
+    ]
   },
   "build": {
-    "productName": "Mist",
-    "appId": "org.ethereum.mist.next",
+    "productName": "Grid",
+    "appId": "org.ethereum.grid",
     "asar": false,
     "files": [
       "index.js",
@@ -41,6 +57,10 @@
       "preload.js",
       "WindowManager.js",
       "ui/download-splash.html",
+      "public/error.html",
+      "Menu.js",
+      "Rpc.js",
+      "ethereum_clients/geth.js",
       "*.asar",
       "*.zip"
     ],
@@ -67,7 +87,6 @@
       "category": "WebBrowser"
     },
     "directories": {
-      "buildResources": "resources",
       "output": "release"
     }
   }

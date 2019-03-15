@@ -1,6 +1,11 @@
 theme: jekyll-theme-cayman
 
-title: Ethereum Mist
-description: 
+title: ethereum grid
+description:
+
+title_image: true
+baseurl: /
 
 show_star_button: true
+
+production_url: https://grid.ethereum.org

@@ -7,8 +7,8 @@ class WindowManager {
     const preloadPath = path.join(__dirname, 'preload.js')
 
     let baseOptions = {
-      width: 800,
-      height: 600,
+      width: 966,
+      height: 658,
       webPreferences: {
         preload: preloadPath,
         nodeIntegration: true,
@@ -22,7 +22,6 @@ class WindowManager {
   }
 
   createWindow(options = {}, data = {}) {
-
     const preloadPath = path.join(__dirname, 'preload.js')
 
     let baseOptions = {
@@ -30,7 +29,7 @@ class WindowManager {
       height: 600
     }
 
-    if(options.title){
+    if (options.title) {
       baseOptions.title = options.title
     }
 
@@ -40,7 +39,9 @@ class WindowManager {
     }
 
     if (!fs.existsSync(preloadPath)) {
-      throw new Error('for security reasons application cannot be started without preload script: does not exist')
+      throw new Error(
+        'for security reasons application cannot be started without preload script: does not exist'
+      )
     }
 
     // don't make any changes here
@@ -59,14 +60,14 @@ class WindowManager {
         experimentalFeatures: false,
         webviewTag: true, // needs to be set: defaults to nodeIntegration otherwise
         // https://electronjs.org/docs/tutorial/security#9-do-not-use-enableblinkfeatures
-        enableBlinkFeatures: undefined, // DO NOT USE
+        enableBlinkFeatures: undefined // DO NOT USE
       }
     }
 
     // avoid potentially immutable or non-overwritable values on the passed options
     if (options && options.webPreferences) {
       delete options.webPreferences
-      // TODO alert 
+      // TODO alert
     }
 
     let config = Object.assign(baseOptions, options)
@@ -92,10 +93,10 @@ class WindowManager {
 
     // https://github.com/electron/electron/issues/1594#issuecomment-105366717
     // if title is explicitly set don't let renderer overwrite it
-    if(options.title){
-      win.on('page-title-updated', (evt) => { 
-        evt.preventDefault(); 
-      });
+    if (options.title) {
+      win.on('page-title-updated', evt => {
+        evt.preventDefault()
+      })
     }
 
     // pass initial data to window
@@ -108,7 +109,6 @@ class WindowManager {
     }
 
     return win
-
   }
 }
 

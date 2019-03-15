@@ -24,4 +24,7 @@ release
 # Vim swap files
 *.swp
 
-geth_bin/
+/ethereum_clients/geth_bin/
+
+.shell.config.js
+.python-version
