@@ -53,6 +53,7 @@ bundle exec jekyll build
 
 ## Additional resources
 
+- [Setting up your GitHub Pages site locally with Jekyll](https://help.github.com/en/articles/setting-up-your-github-pages-site-locally-with-jekyll#step-3-optional-generate-jekyll-site-files)
 - [Liquid](https://shopify.github.io/liquid/) (template engine used by Jekyll)
 - [Jekyll documentation](https://jekyllrb.com/docs/)
 - [GitHub Pages help](https://help.github.com/en/articles/configuring-a-publishing-source-for-github-pages?query=jekyll)
