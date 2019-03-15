@@ -42,6 +42,8 @@ gem install bundler jekyll
 bundle exec jekyll serve
 ```
 
+Default URL is http://127.0.0.1:4000/
+
 You may also want to force-rebuild the site in case you get some stubborn cache.
 
 ```shell
