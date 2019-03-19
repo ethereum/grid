@@ -25,6 +25,7 @@ release
 *.swp
 
 /ethereum_clients/geth_bin/
+/ethereum_clients/clef_bin/
 
 .shell.config.js
 .python-version
