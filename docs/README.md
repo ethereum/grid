@@ -6,7 +6,7 @@ GitHub Pages uses Jekyll plugin (Ruby) to build html pages.
 
 ## 1. Add a GitHub access token to your environment
 
-Depending on your shell, you need to add to `~/.bash_profile`, `~/.bashrc`, `~/.zshrc`.
+Depending on your shell, you'll need to add it to `~/.bash_profile`, `~/.bashrc`, `~/.zshrc`, etc.
 
 [See detailed instructions](https://github.com/jekyll/github-metadata/blob/master/docs/authentication.md#1-jekyll_github_token).
 
@@ -34,6 +34,7 @@ Ruby `>2.2.5` is good, although it is recommended to use a version `>= 2.3`. If 
 ```shell
 cd docs/
 gem install bundler jekyll
+bundle install
 ```
 
 ## 4. Run local server
@@ -44,7 +45,7 @@ bundle exec jekyll serve
 
 Default URL is http://127.0.0.1:4000/
 
-You may also want to force-rebuild the site in case you get some stubborn cache.
+If you need to force-rebuild the site in case you get some stubborn cache, please run:
 
 ```shell
 bundle exec jekyll clean

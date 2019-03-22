@@ -42,7 +42,7 @@ switch (process.platform) {
     urlFilter = 'windows'
     EXT_LENGTH = '.zip'.length
     BINARY_NAME = 'geth.exe'
-    dataDir = '%APPDATA%/Ethereum'
+    dataDir = `${process.env.APPDATA}/Ethereum`
     break
   }
   case 'linux': {
@@ -118,7 +118,9 @@ class Geth extends EventEmitter {
   async extractPackageBinaries(binaryPackage) {
     // On mac the tar contains as root entry a dir with the same name as the .tar.gz
     const basePackageName = binaryPackage.fileName.slice(0, -EXT_LENGTH)
-    const binaryPathPackage = path.join(basePackageName, BINARY_NAME)
+    // TODO might be that the path MUST include / instead of \
+    //const binaryPathPackage = path.join(basePackageName, BINARY_NAME)
+    const binaryPathPackage = `${basePackageName}/${BINARY_NAME}`
     const gethBinary = await gethUpdater.getEntry(
       binaryPackage,
       binaryPathPackage
@@ -131,7 +133,7 @@ class Geth extends EventEmitter {
     }
 
     // IMPORTANT: if the binary already exists the mode cannot be set
-    fs.writeFileSync(binaryPathDisk, await gethBinary.getData(), {
+    fs.writeFileSync(binaryPathDisk, await gethBinary.file.readContent(), {
       mode: parseInt('754', 8) // strict mode prohibits octal numbers in some cases
     })
 
@@ -162,7 +164,7 @@ class Geth extends EventEmitter {
 
   async download(release, onProgress = () => {}) {
     if (!release) {
-      release = await gethUpdater.getLatestRemote()
+      release = await gethUpdater.getLatestRemote('<1.9.0')
     }
     const _onProgress = (release, progress) => onProgress(progress)
     gethUpdater.on('update-progress', _onProgress)
@@ -367,6 +369,10 @@ class Geth extends EventEmitter {
       const found = thisLog.includes('IPC endpoint opened')
       if (found) {
         ipcPath = thisLog.split('=')[1].trim()
+        // fix double escaping
+        if (ipcPath.includes('\\\\')) {
+          ipcPath = ipcPath.replace(/\\\\/g, '\\')
+        }
         debug('Found IPC path: ', ipcPath)
         return ipcPath
       }

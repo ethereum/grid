@@ -10,6 +10,8 @@
   "scripts": {
     "start:prod": "cross-env NODE_ENV=production electron .",
     "start:dev": "cross-env NODE_ENV=development electron .",
+    "start:dev:verbose": "cross-env NODE_ENV=development DEBUG=geth-js electron .",
+    "start:clef": "node ./ethereum_clients/clef.js",
     "test": "cross-env NODE_ENV=test mocha ./test",
     "test:watch": "cross-env NODE_ENV=test mocha ./test --watch",
     "prepare-release": "node ./scripts/copyApp.js",
@@ -17,7 +19,7 @@
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.9.0",
+    "@philipplgh/electron-app-manager": "^0.11.0",
     "debug": "^4.1.1"
   },
   "peerDependencies": {
