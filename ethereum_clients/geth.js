@@ -42,7 +42,7 @@ switch (process.platform) {
     urlFilter = 'windows'
     EXT_LENGTH = '.zip'.length
     BINARY_NAME = 'geth.exe'
-    dataDir = '%APPDATA%/Ethereum'
+    dataDir = `${process.env.APPDATA}/Ethereum`
     break
   }
   case 'linux': {
@@ -369,6 +369,10 @@ class Geth extends EventEmitter {
       const found = thisLog.includes('IPC endpoint opened')
       if (found) {
         ipcPath = thisLog.split('=')[1].trim()
+        // fix double escaping
+        if (ipcPath.includes('\\\\')) {
+          ipcPath = ipcPath.replace(/\\\\/g, '\\')
+        }
         debug('Found IPC path: ', ipcPath)
         return ipcPath
       }
