@@ -3,11 +3,20 @@ const path = require('path')
 const { spawn } = require('child_process')
 const { AppManager } = require('@philipplgh/electron-app-manager')
 
+// TODO consider moving this into a helper / utils module to retrieve global settings
+const USER_DATA_PATH =
+  'electron' in process.versions
+    ? require('electron').app.getPath('userData')
+    : path.join(process.env.APPDATA, 'grid')
+if (!fs.existsSync(USER_DATA_PATH)) {
+  fs.mkdirSync(USER_DATA_PATH)
+}
+
 let CLEF_CACHE
 if (process.env.NODE_ENV === 'test') {
   CLEF_CACHE = path.join(__dirname, '/../test', 'fixtures', 'clef_bin')
 } else {
-  CLEF_CACHE = path.join(__dirname, 'clef_bin')
+  CLEF_CACHE = path.join(USER_DATA_PATH, 'clef_bin')
 }
 
 let URL_FILTER = ''

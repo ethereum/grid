@@ -18,12 +18,21 @@ const STATES = {
   ERROR: 'ERROR' /* Unexpected error */
 }
 
+// TODO consider moving this into a helper / utils module to retrieve global settings
+const USER_DATA_PATH =
+  'electron' in process.versions
+    ? require('electron').app.getPath('userData')
+    : path.join(process.env.APPDATA, 'grid')
+if (!fs.existsSync(USER_DATA_PATH)) {
+  fs.mkdirSync(USER_DATA_PATH)
+}
+
 // Set up cache
 let GETH_CACHE
 if (process.env.NODE_ENV === 'test') {
   GETH_CACHE = path.join(__dirname, '/../test', 'fixtures', 'geth_bin')
 } else {
-  GETH_CACHE = path.join(__dirname, 'geth_bin')
+  GETH_CACHE = path.join(USER_DATA_PATH, 'geth_bin')
 }
 
 if (!fs.existsSync(GETH_CACHE)) {
