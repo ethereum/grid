@@ -19,7 +19,7 @@
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.11.0",
+    "@philipplgh/electron-app-manager": "^0.12.0",
     "debug": "^4.1.1"
   },
   "peerDependencies": {
