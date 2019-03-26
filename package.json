@@ -46,7 +46,8 @@
     "*.{js,jsx,json,css,md}": [
       "prettier --no-semi --single-quote --write",
       "git add"
-    ]
+    ],
+    "ignore": ["docs/**/*.md"]
   },
   "build": {
     "productName": "Grid",
