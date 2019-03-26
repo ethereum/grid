@@ -9,8 +9,6 @@ It aims to greatly improve developer and user experience, enabling them to manag
 
 ## Latest release {{ site.github.latest_release.tag_name }}
 
-{{ site.github.latest_release.body }}
-
 | OS  | File |
 | --- | ---- |
 
