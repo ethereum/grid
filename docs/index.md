@@ -9,12 +9,8 @@ It aims to greatly improve developer and user experience, enabling them to manag
 
 ## Latest release {{ site.github.latest_release.tag_name }}
 
-{{ site.github.latest_release.body }}
-
 | OS  | File |
 | --- | ---- |
-
-
 {% for asset in site.github.latest_release.assets -%}
 {%- if asset.name contains ".yml" or asset.name contains ".blockmap" %}{% else -%}
 {%- if asset.name contains ".exe" -%} Windows installer
