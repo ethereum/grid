@@ -32,7 +32,7 @@ let GETH_CACHE
 if (process.env.NODE_ENV === 'test') {
   GETH_CACHE = path.join(__dirname, '/../test', 'fixtures', 'geth_bin')
 } else if (process.env.NODE_ENV === 'development') {
-  GETH_CACHE = path.join(__dirname, 'ethereum_clients', 'geth_bin')
+  GETH_CACHE = path.join(__dirname, 'geth_bin')
 } else {
   GETH_CACHE = path.join(USER_DATA_PATH, 'geth_bin')
 }
