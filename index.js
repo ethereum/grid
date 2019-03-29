@@ -1,3 +1,9 @@
+const {
+  AppManager,
+  registerPackageProtocol
+} = require('@philipplgh/electron-app-manager')
+registerPackageProtocol()
+
 const fs = require('fs')
 const path = require('path')
 const url = require('url')
@@ -16,8 +22,6 @@ const log = {
 }
 
 const { app, dialog, Menu } = require('electron')
-
-const { AppManager } = require('@philipplgh/electron-app-manager')
 
 const CONFIG_NAME = '.shell.config.js'
 

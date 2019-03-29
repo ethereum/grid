@@ -19,7 +19,7 @@
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.13.0",
+    "@philipplgh/electron-app-manager": "^0.21.0",
     "debug": "^4.1.1"
   },
   "peerDependencies": {
@@ -47,7 +47,9 @@
       "prettier --no-semi --single-quote --write",
       "git add"
     ],
-    "ignore": ["docs/**/*.md"]
+    "ignore": [
+      "docs/**/*.md"
+    ]
   },
   "build": {
     "productName": "Grid",

@@ -12,7 +12,8 @@ class WindowManager {
       webPreferences: {
         preload: preloadPath,
         nodeIntegration: true,
-        webSecurity: false
+        webSecurity: false,
+        webviewTag: true
       }
     }
 
