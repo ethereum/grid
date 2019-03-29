@@ -41,6 +41,10 @@ aliases:
   - &install
     run: yarn install
 
+  - &configure_codesigning
+    run: if [[ $CIRCLE_JOB == "build-win" ]]; then export CSC_LINK=$CSC_WIN_LINK && CSC_KEY_PASSWORD=$CSC_WIN_KEY_PASSWORD; fi
+
+
   - &run_script
     run: yarn release --$MIST_ENV
   
@@ -48,6 +52,7 @@ aliases:
     steps:
       - checkout
       - *restore_modules_cache
+      - *configure_codesigning
       - *install
       - *run_script
       - *save_modules_cache
