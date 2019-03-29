@@ -311,6 +311,7 @@ class Geth extends EventEmitter {
       const onData = data => {
         const log = data.toString()
         this.logs.push(log)
+        this.emit('log', log)
       }
 
       stderr.once('data', onStart.bind(this))
