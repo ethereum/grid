@@ -17,7 +17,8 @@ const log = {
 
 const { app, dialog, Menu } = require('electron')
 
-const { AppManager } = require('@philipplgh/electron-app-manager')
+const { AppManager, registerPackageProtocol } = require('@philipplgh/electron-app-manager')
+registerPackageProtocol()
 
 const CONFIG_NAME = '.shell.config.js'
 
@@ -27,15 +28,6 @@ app.disableHardwareAcceleration()
 const WindowManager = require('./WindowManager')
 // TODO move into WindowManager
 let mainWindow = null
-
-const appManager = new AppManager({
-  repository: 'https://github.com/ethereum/grid-ui',
-  auto: false,
-  logger: log.appManager,
-  policy: {
-    onlySigned: false
-  }
-})
 
 const shellManager = new AppManager({
   repository: 'https://github.com/ethereum/grid',
@@ -50,6 +42,7 @@ const is = {
 }
 
 const updateMenuVersion = async release => {
+  /*
   const updateMenuMist = await appManager.updateMenuVersion(release.version)
   updateMenuMist.label = 'Grid UI'
 
@@ -64,6 +57,7 @@ const updateMenuVersion = async release => {
 
   const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
+  */
 }
 
 const initializeMenu = async geth => {
@@ -71,9 +65,9 @@ const initializeMenu = async geth => {
     // console.log('reload requested for url', appUrl)
     mainWindow.loadURL(appUrl)
   }
-  const updateMenuMist = await appManager.createMenuTemplate(onReload)
+  // FIXME const updateMenuMist = await appManager.createMenuTemplate(onReload)
   // console.log('mist menu', updateMenuMist)
-  updateMenuMist.label = 'Grid UI'
+  // updateMenuMist.label = 'Grid UI'
 
   const gethUpdater = geth.getUpdater()
   const updateMenuGeth = await gethUpdater.createMenuTemplate(onReload)
@@ -83,7 +77,7 @@ const initializeMenu = async geth => {
   const template = getMenuTemplate()
   const UpdateMenu = template.find(mItem => mItem.label === 'Updater')
   UpdateMenu.submenu.push(
-    updateMenuMist,
+    // updateMenuMist,
     updateMenuGeth,
     { label: 'Shell' },
     { label: 'Settings' }
@@ -167,6 +161,12 @@ const startUI = async () => {
   })
 
   if (is.dev()) {
+
+    let startRemix = true
+    if (startRemix) {
+      let remixWindow = createRenderer('package://github.com/ethereum/remix-ide')
+    }
+
     // load user-provided package if possible
     if (fs.existsSync(path.join(__dirname, CONFIG_NAME))) {
       const { useDevSettings } = require(`./${CONFIG_NAME}`)
@@ -195,7 +195,10 @@ const startUI = async () => {
   }
 
   // else is production:
-  const appUrl = await appManager.hotLoadLatest()
+  const appUrl = 'package://github.com/ethereum/grid-ui'
+  mainWindow = createRenderer(appUrl)
+  return
+  /*
   if (appUrl) {
     let current = appManager.hotLoadedApp
     if (current) {
@@ -206,6 +209,7 @@ const startUI = async () => {
   }
   // else: no valid app url -> display error
   mainWindow = createRenderer(errorUrl)
+  */
 }
 
 // ########## MAIN APP ENTRY POINT #########
