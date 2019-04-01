@@ -20,6 +20,16 @@ const { app, dialog, Menu } = require('electron')
 const { AppManager, registerPackageProtocol } = require('@philipplgh/electron-app-manager')
 registerPackageProtocol()
 
+AppManager.on('menu-available', updaterTemplate => {
+  const template = getMenuTemplate()
+  
+  // replace old updater menu with new one
+  const idx = template.findIndex(mItem => mItem.label === 'Updater')
+  template[idx] = updaterTemplate
+  
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+})
+
 const CONFIG_NAME = '.shell.config.js'
 
 // hw acceleration can cause problem in VMs and in certain APIs
@@ -39,52 +49,6 @@ const is = {
   dev: () =>
     process.env.NODE_ENV && process.env.NODE_ENV.trim() == 'development',
   prod: () => !is.dev()
-}
-
-const updateMenuVersion = async release => {
-  /*
-  const updateMenuMist = await appManager.updateMenuVersion(release.version)
-  updateMenuMist.label = 'Grid UI'
-
-  const template = getMenuTemplate()
-  const UpdateMenu = template.find(mItem => mItem.label === 'Updater')
-  UpdateMenu.submenu.push(
-    updateMenuMist,
-    { label: 'Geth' },
-    { label: 'Shell' },
-    { label: 'Settings' }
-  )
-
-  const menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu)
-  */
-}
-
-const initializeMenu = async geth => {
-  const onReload = appUrl => {
-    // console.log('reload requested for url', appUrl)
-    mainWindow.loadURL(appUrl)
-  }
-  // FIXME const updateMenuMist = await appManager.createMenuTemplate(onReload)
-  // console.log('mist menu', updateMenuMist)
-  // updateMenuMist.label = 'Grid UI'
-
-  const gethUpdater = geth.getUpdater()
-  const updateMenuGeth = await gethUpdater.createMenuTemplate(onReload)
-  updateMenuGeth.label = 'Geth'
-
-  // Create application menus
-  const template = getMenuTemplate()
-  const UpdateMenu = template.find(mItem => mItem.label === 'Updater')
-  UpdateMenu.submenu.push(
-    // updateMenuMist,
-    updateMenuGeth,
-    { label: 'Shell' },
-    { label: 'Settings' }
-  )
-
-  const menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu)
 }
 
 // TODO util
@@ -162,11 +126,6 @@ const startUI = async () => {
 
   if (is.dev()) {
 
-    let startRemix = true
-    if (startRemix) {
-      let remixWindow = createRenderer('package://github.com/ethereum/remix-ide')
-    }
-
     // load user-provided package if possible
     if (fs.existsSync(path.join(__dirname, CONFIG_NAME))) {
       const { useDevSettings } = require(`./${CONFIG_NAME}`)
@@ -189,8 +148,6 @@ const startUI = async () => {
     // else: server running -> display app
     mainWindow = createRenderer(appUrl)
 
-    // updateMenuVersion(latest)
-
     return
   }
 
@@ -199,14 +156,6 @@ const startUI = async () => {
   mainWindow = createRenderer(appUrl)
   return
   /*
-  if (appUrl) {
-    let current = appManager.hotLoadedApp
-    if (current) {
-      updateMenuVersion(current)
-      mainWindow = createRenderer(appUrl)
-    }
-    return
-  }
   // else: no valid app url -> display error
   mainWindow = createRenderer(errorUrl)
   */
@@ -216,7 +165,7 @@ const startUI = async () => {
 const onReady = async () => {
   // 0 prepare windows, menus etc
   const geth = new Geth()
-  await initialize(geth)
+  // await initialize(geth)
 
   // 1. start UI for quick user-feedback without long init procedures
   await startUI()
