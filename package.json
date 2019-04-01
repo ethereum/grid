@@ -23,7 +23,6 @@
     "debug": "^4.1.1"
   },
   "peerDependencies": {
-    "adm-zip": "^0.4.13"
   },
   "devDependencies": {
     "chai": "^4.2.0",
