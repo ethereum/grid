@@ -1,0 +1,12 @@
+{
+  "name": "geth-windows-amd64-1.8.21-9dc5d1a9",
+  "fileName": "geth-windows-amd64-1.8.21-9dc5d1a9.tar.gz",
+  "version": "1.8.21",
+  "tag": "1.8.21-9dc5d1a9",
+  "size": "45131093",
+  "location": "https://gethstore.blob.core.windows.net/builds/geth-windows-amd64-1.8.21-9dc5d1a9.tar.gz",
+  "checksums": {
+    "md5": "a5cd4ba8f119168bbdc9cd087d3c89f2"
+  },
+  "signature": "https://gethstore.blob.core.windows.net/builds/geth-windows-amd64-1.8.21-9dc5d1a9.tar.gz.asc"
+}

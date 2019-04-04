@@ -1,0 +1,12 @@
+{
+  "name": "geth-darwin-amd64-1.8.21-9dc5d1a9",
+  "fileName": "geth-darwin-amd64-1.8.21-9dc5d1a9.tar.gz",
+  "version": "1.8.21",
+  "tag": "1.8.21-9dc5d1a9",
+  "size": "9976551",
+  "location": "https://gethstore.blob.core.windows.net/builds/geth-darwin-amd64-1.8.21-9dc5d1a9.tar.gz",
+  "checksums": {
+    "md5": "59d86ed71b042c088eaae00359e3c63c"
+  },
+  "signature": "https://gethstore.blob.core.windows.net/builds/geth-darwin-amd64-1.8.21-9dc5d1a9.tar.gz.asc"
+}

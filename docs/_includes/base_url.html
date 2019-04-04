@@ -1,0 +1,7 @@
+<script>
+  var productionURL = '{{ site.production_url }}';
+  console.log(productionURL);
+  if (window.location.href !== productionURL) {
+    // document.write('<base href="/grid/">');
+  }
+</script>
