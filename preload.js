@@ -1,4 +1,6 @@
 const { ipcRenderer, remote, webFrame } = require('electron')
+const { dialog } = require('electron').remote
+
 // const rpc = require('./Rpc')
 
 // const thisWin = remote.getCurrentWindow()
@@ -41,11 +43,29 @@ window.addEventListener('message', function(event) {
 }, false);
 */
 console.log('preload loaded')
+
+const openFolderDialog = defaultPath => {
+  return new Promise((resolve, reject) => {
+    const options = {
+      defaultPath,
+      properties: ['openDirectory', 'showHiddenFiles']
+    }
+    dialog.showOpenDialog(options, filePaths => {
+      if (!filePaths || filePaths.length === 0) {
+        reject('No selection')
+        return
+      }
+      resolve(filePaths[0])
+    })
+  })
+}
+
 const Mist = {
   geth: remote.getGlobal('Geth'),
   window: {
     getArgs: () => {}
-  }
+  },
+  openFolderDialog
 }
 
 /*
@@ -67,7 +87,7 @@ const Geth = {
   },
   start: async () => {
     return rpc.send("geth.start")
-  },    
+  },
   stop: async () => {
     return rpc.send("geth.stop")
   },
