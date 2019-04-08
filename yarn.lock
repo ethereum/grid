@@ -48,10 +48,10 @@
     universal-user-agent "^2.0.0"
     url-template "^2.0.8"
 
-"@philipplgh/electron-app-manager@^0.23.0":
-  version "0.23.0"
-  resolved "https://registry.yarnpkg.com/@philipplgh/electron-app-manager/-/electron-app-manager-0.23.0.tgz#2082c11319d6a5788104f32539c359d2261f64e0"
-  integrity sha512-mEy7/RxZAM6yQ2RSskb6E7KM0hxXsiggQle2u1EcJ7MVsAJXXjR/nPhLdMrpEffnMpr7wHimdp+OJKLf7RBSjQ==
+"@philipplgh/electron-app-manager@^0.24.0":
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/@philipplgh/electron-app-manager/-/electron-app-manager-0.24.0.tgz#ee6c42029a062b09abd7f05e209f345cda92aa84"
+  integrity sha512-7ncnNe1Hl/xMFEtQRsJwFFuGYevqUSdToxaWv3wHGHegmqkVLwevWM6CLU6c4AGu+9GYURJUAyFR9YujRiKHOA==
   dependencies:
     "@octokit/rest" "^15.13.1"
     "@philipplgh/ethpkg" "^0.2.2"
