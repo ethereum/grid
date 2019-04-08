@@ -15,7 +15,11 @@ if (!fs.existsSync(USER_DATA_PATH)) {
 let CLEF_CACHE
 if (process.env.NODE_ENV === 'test') {
   CLEF_CACHE = path.join(__dirname, '/../test', 'fixtures', 'clef_bin')
-} else {
+}
+else if (process.env.NODE_ENV === 'development') {
+  CLEF_CACHE = path.join(__dirname, 'clef_bin')
+} 
+else {
   CLEF_CACHE = path.join(USER_DATA_PATH, 'clef_bin')
 }
 
@@ -70,6 +74,10 @@ const start = async () => {
     latest = cached
   } else {
     const release = await clefUpdater.getLatest('>=1.9.0')
+    console.log('before download')
+    clefUpdater.on('update-progress', (app, progress) => {
+      console.log('on download progress', progress)
+    })
     latest = await clefUpdater.download(release)
   }
 
@@ -80,15 +88,15 @@ const start = async () => {
   const pkg = await clefUpdater.getLocalPackage(latest)
 
   // for debugging
-  // let entries = await pkg.getEntries()
-  // console.log('pkg entries', entries)
+  let entries = await pkg.getEntries()
+  console.log('pkg entries', entries)
 
   // build relative path in pkg e.g. : 'geth-alltools-windows-amd64-1.9.0-unstable-f82185a4/clef.exe'
   const binaryPathInPackage = basePackageName + '/' + BINARY_NAME
 
   // load binary from package
-  const gethBinaryEntry = await pkg.getEntry(binaryPathInPackage)
-  const { file } = gethBinaryEntry
+  const clefBinaryEntry = await pkg.getEntry(binaryPathInPackage)
+  const { file } = clefBinaryEntry
 
   // extract binary from package and write to cache
   const binaryPathDisk = path.join(CLEF_CACHE, basePackageName)
