@@ -53,7 +53,7 @@ aliases:
       - *restore_modules_cache
       - *install
       - *test_script
-      - *build_script
+      - *run_script
       - *save_modules_cache
       - *before_store_artifacts
       - *upload_artifacts
