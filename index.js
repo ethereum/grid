@@ -163,20 +163,17 @@ const startUI = async () => {
 
 // ########## MAIN APP ENTRY POINT #########
 const onReady = async () => {
-  // 0 prepare windows, menus etc
-  const geth = new Geth()
-  // await initialize(geth)
+
+  if (process.env.GRID_MODE && process.env.GRID_MODE.trim() == 'plugin') {
+    require('./ethereum_clients/PluginHost')
+  } else {
+    // 0 prepare windows, menus etc
+    const geth = new Geth()
+    global.Geth = geth
+  }
 
   // 1. start UI for quick user-feedback without long init procedures
   await startUI()
 
-  // 2. make geth methods available in renderer
-  // setupRpc('geth', geth)
-  global.Geth = geth
-  const gethBinary = await geth.getLocalBinary()
-  if (gethBinary) {
-    //geth.start(gethBinary)
-  }
-  // else do nothing: let user decide how to setup
 }
 app.once('ready', onReady)
