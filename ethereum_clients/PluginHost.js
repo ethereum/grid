@@ -1,13 +1,18 @@
 const fs = require('fs')
 const path = require('path')
+const { spawn } = require('child_process')
 const { EventEmitter } = require('events')
 const { getBinaryUpdater } = require('./util')
+const ControlledProcess = require('./ControlledProcess')
 
 class Plugin {
   constructor(config) {
     const { name, repository } = config
     this.updater = getBinaryUpdater(repository, name)
     this.config = config
+  }
+  get cacheDir(){
+    return this.updater.cacheDir
   }
   get name(){
     return this.config.name
@@ -22,20 +27,51 @@ class Plugin {
   download(release, onProgress){
     return this.updater.download(release, { onProgress })
   }
+  async getLocalBinary(release) {
+
+    const extractBinary = async (pkg, binaryName) => {
+      const entries = await this.updater.getEntries(pkg)
+      const binaryEntry = entries.find(e => e.relativePath.endsWith(binaryName))
+      const destAbs = path.join(this.cacheDir, binaryName)
+      // The unlinking might fail if the binary is e.g. being used by another instance
+      if (fs.existsSync(destAbs)) {
+        fs.unlinkSync(destAbs)
+      }
+      // IMPORTANT: if the binary already exists the mode cannot be set
+      fs.writeFileSync(destAbs, await binaryEntry.file.readContent(), {
+        mode: parseInt('754', 8) // strict mode prohibits octal numbers in some cases
+      })
+      return destAbs
+    }
+
+    release = release || await this.updater.getLatestCached()
+    if (release) {
+      // Binary in extracted form was found in e.g. standard location on the system
+      if (release.isBinary) {
+        return release.location
+      } else {
+        // Binary is packaged as .zip or.tar.gz -> extract first
+        try {
+          const binaryPath = await extractBinary(release, this.config.binaryName)
+          return {
+            binaryPath,
+            packagePath: release.location
+          } 
+        } catch (error) {
+          console.log('error during binary extraction', error)
+        }
+      }
+    }
+    console.warn('no binary found for', release)
+    return {}
+  }
 }
+
 
 class PluginProxy extends EventEmitter {
   constructor(plugin){
     super()
     this.plugin = plugin
-    this.logs = []
-    console.log('start logs for', this.plugin.name)
-    setInterval(() => {
-      let log = `${this.plugin.name} bla foo baz bar`
-      this.logs.push(log)
-      this.emit('log', log)
-    }, 500)
-    this._isRunning = false
   }
   get name(){
     return this.plugin.name
@@ -44,13 +80,17 @@ class PluginProxy extends EventEmitter {
     return this.plugin.displayName
   }
   get state(){
-    return this._isRunning ? 'running' : 'stopped'
+    // FIXME ugly
+    return this.process ? this.process.state : 'STOPPED'
+  }
+  get isRunning() {
+    return this.process && this.process.isRunning
   }
   get error(){
     return ''
   }
   getLogs() {
-    return this.logs
+    return this.process ? this.process.logs : []
   }
   getReleases() {
     return this.plugin.getReleases()
@@ -59,33 +99,28 @@ class PluginProxy extends EventEmitter {
     return this.plugin.download(release, progress => {
       onProgress(progress)
     })
-    /*
-    return new Promise((resolve, reject) => {
-      console.log('download download', release)
-      let p = 0
-      let handler = setInterval(() => {
-        onProgress(p+=5)
-        if(p >= 100) {
-          clearInterval(handler)
-          resolve()
-        }
-      }, 100)
-    });
-    */
   }
-  isRunning(){
-    return this._isRunning
+  async start(release){
+    const { binaryPath, packagePath } = await this.plugin.getLocalBinary()
+    console.log(`client ${this.name} / ${packagePath} about to start - binary: ${binaryPath}`) 
+    try {
+      const proc = new ControlledProcess(binaryPath)
+      this.process = proc
+      // FIXME memory leaks start here:
+      this.process.on('started', () => console.log('started!!!!') && this.emit('started'))
+      this.process.on('log', arg => this.emit('log', arg))
+      await proc.start()
+    } catch (error) {
+      console.log('error start', error)      
+    }
+    return this.process
   }
-  start(){
-    this._isRunning = true
-    console.log(`client ${this.plugin.name} started`)  
-  }
-  stop(){
-    this._isRunning = false
-    console.log(`client ${this.plugin.name} stopped`)
+  async stop(){
+    console.log(`client ${this.name} stopped`)
   }
 }
 
+// TODO add file to electron packaged files
 class PluginHost {
   constructor(){
     this.plugins = []
@@ -101,7 +136,7 @@ class PluginHost {
     pluginFiles.forEach(f => {
       try {
         const fullPath = path.join(PLUGIN_DIR, f)
-        if (fullPath.includes('geth') || fullPath.includes('aleth') || fullPath.includes('parity')) {
+        if (fullPath.includes('geth') /*|| fullPath.includes('aleth') || fullPath.includes('parity')*/) {
           const pluginConfig = require(fullPath)
           // 2. TODO validate / verify
           const plugin = new Plugin(pluginConfig)
