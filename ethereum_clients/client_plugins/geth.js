@@ -30,8 +30,8 @@ module.exports = {
   },
   filter: {
     name: {
-      exclude: ['unstable', 'alltools', 'swarm'],
-      include: [platform]
+      excludes: ['unstable', 'alltools', 'swarm'],
+      includes: [platform]
     }
   },
   binaryName: process.platform === 'win32' ? 'geth.exe' : 'geth',

@@ -31,16 +31,20 @@ const getCachePath = (name) => {
 
 }
 
-const getBinaryUpdater = (repo, name, cachePath) => {
+const getBinaryUpdater = (repo, name, filter, cachePath) => {
+
+  let includes = []
+  let excludes = []
+  
+  if (filter && filter.name) {
+    const { name } = filter
+    excludes = name.excludes
+    includes = name.includes
+  }
 
   if (!cachePath) {
     cachePath = getCachePath(name)
   }
-
-  let excludes = ['alltools', 'swarm', 'unstable']
-  let includes = ['windows']
-
-  let count = 0
 
   return new AppManager({
     repository: repo,
@@ -49,7 +53,7 @@ const getBinaryUpdater = (repo, name, cachePath) => {
     cacheDir: cachePath,
     filter: ({ fileName }) => {
       fileName = fileName.toLowerCase()
-      return includes.every(val => fileName.indexOf(val) >= 0) && excludes.every(val => fileName.indexOf(val) === -1)
+      return (!includes || includes.every(val => fileName.indexOf(val) >= 0)) && (!excludes || excludes.every(val => fileName.indexOf(val) === -1))
     }
   })
 }

@@ -7,8 +7,8 @@ const ControlledProcess = require('./ControlledProcess')
 
 class Plugin {
   constructor(config) {
-    const { name, repository } = config
-    this.updater = getBinaryUpdater(repository, name)
+    const { name, repository, filter } = config
+    this.updater = getBinaryUpdater(repository, name, filter)
     this.config = config
   }
   get cacheDir(){
