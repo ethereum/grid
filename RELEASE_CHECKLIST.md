@@ -11,12 +11,12 @@
   - [ ] win
 
 ## Release pipeline
-- [ ] Check if the artifacts were uploaded to a github release draft
+- [ ] Check if the correct artifacts were uploaded to a github release draft
 - [ ] Double-check artifacts version against latest grid app
 - [ ] Smoke test on three architectures (can use amazon workspaces for that)
-- [ ] Describe release notes when relevant
+- [ ] Write release notes when relevant
 - [ ] Publish release
-- [ ] Rebuild github pages to get latest releases (`git commit -m "docs: pages rebuild" --allow-empty && git push origin master`)
+- [ ] Rebuild github pages to display the latest release (`git commit -m "docs: pages rebuild" --allow-empty && git push origin master`)
 
 
 # TODO
