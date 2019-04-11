@@ -62,6 +62,7 @@ const openFolderDialog = defaultPath => {
 
 const Mist = {
   geth: remote.getGlobal('Geth'),
+  PluginHost: remote.getGlobal('PluginHost'),
   window: {
     getArgs: () => {}
   },
