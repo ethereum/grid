@@ -104,12 +104,11 @@ class PluginProxy extends EventEmitter {
     const { binaryPath, packagePath } = await this.plugin.getLocalBinary()
     console.log(`client ${this.name} / ${packagePath} about to start - binary: ${binaryPath}`) 
     try {
-      const proc = new ControlledProcess(binaryPath)
-      this.process = proc
+      this.process = new ControlledProcess(binaryPath)
       // FIXME memory leaks start here:
       this.process.on('started', () => console.log('started!!!!') && this.emit('started'))
       this.process.on('log', arg => this.emit('log', arg))
-      await proc.start()
+      await this.process.start()
     } catch (error) {
       console.log('error start', error)      
     }

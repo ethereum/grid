@@ -32,7 +32,7 @@ class ControlledProcess extends EventEmitter {
       this.state
     )
   }
-  async start(flags){
+  start(flags){
     return new Promise((resolve, reject) => {
       this.state = STATES.STARTING
       this.emit('starting')
@@ -108,6 +108,10 @@ class ControlledProcess extends EventEmitter {
       this.proc.kill('SIGINT')
       // this.ipcPath = null
     })
+  }
+  async restart() {
+    await this.stop()
+    return this.start()
   }
 }
 
