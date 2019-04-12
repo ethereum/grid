@@ -31,7 +31,7 @@ const getCachePath = (name) => {
 
 }
 
-const getBinaryUpdater = (repo, name, filter, cachePath) => {
+const getBinaryUpdater = (repo, name, filter, prefix, cachePath) => {
 
   let includes = []
   let excludes = []
@@ -54,7 +54,8 @@ const getBinaryUpdater = (repo, name, filter, cachePath) => {
     filter: ({ fileName }) => {
       fileName = fileName.toLowerCase()
       return (!includes || includes.every(val => fileName.indexOf(val) >= 0)) && (!excludes || excludes.every(val => fileName.indexOf(val) === -1))
-    }
+    },
+    prefix
   })
 }
 

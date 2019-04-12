@@ -61,7 +61,7 @@ class ControlledProcess extends EventEmitter {
         }
         // Closing with any code other than 0 means there was an error
         const errorMessage = `${this.name} child process exited with code: ${code}`
-        this.emit('error', errorMessage)
+        // this.emit('error', errorMessage)
         this.debug('Error: ', errorMessage)
         this.debug('DEBUG Last 10 log lines: ', this.getLogs().slice(-10))
         reject(errorMessage)

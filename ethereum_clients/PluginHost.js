@@ -7,8 +7,8 @@ const ControlledProcess = require('./ControlledProcess')
 
 class Plugin {
   constructor(config) {
-    const { name, repository, filter } = config
-    this.updater = getBinaryUpdater(repository, name, filter)
+    const { name, repository, filter, prefix } = config
+    this.updater = getBinaryUpdater(repository, name, filter, prefix)
     this.config = config
   }
   get cacheDir(){
@@ -101,7 +101,7 @@ class PluginProxy extends EventEmitter {
     })
   }
   async start(release){
-    const { binaryPath, packagePath } = await this.plugin.getLocalBinary()
+    const { binaryPath, packagePath } = await this.plugin.getLocalBinary(release)
     console.log(`client ${this.name} / ${packagePath} about to start - binary: ${binaryPath}`) 
     try {
       this.process = new ControlledProcess(binaryPath)
@@ -116,6 +116,7 @@ class PluginProxy extends EventEmitter {
   }
   async stop(){
     console.log(`client ${this.name} stopped`)
+    return this.process && this.process.stop()
   }
 }
 

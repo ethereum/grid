@@ -34,6 +34,7 @@ module.exports = {
       includes: [platform]
     }
   },
+  prefix: `&prefix=geth-${platform}`,
   binaryName: process.platform === 'win32' ? 'geth.exe' : 'geth',
   config: {
     default: {
