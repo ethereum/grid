@@ -14,17 +14,17 @@ const STATES = {
 
 // TODO add file to electron packaged files
 class ControlledProcess extends EventEmitter {
-  constructor(binaryPath, name){
+  constructor(binaryPath, name) {
     super()
     this.binaryPath = binaryPath
     this.debug = console.log // debug(name)
     this.logs = []
-    this._state = STATES.STOPPED 
+    this._state = STATES.STOPPED
   }
-  get state(){
+  get state() {
     return this._state
   }
-  set state(newState){
+  set state(newState) {
     this._state = newState
   }
   get isRunning() {
@@ -32,7 +32,7 @@ class ControlledProcess extends EventEmitter {
       this.state
     )
   }
-  start(flags){
+  start(flags) {
     return new Promise((resolve, reject) => {
       this.state = STATES.STARTING
       this.emit('starting')
@@ -60,10 +60,12 @@ class ControlledProcess extends EventEmitter {
           return
         }
         // Closing with any code other than 0 means there was an error
-        const errorMessage = `${this.name} child process exited with code: ${code}`
+        const errorMessage = `${
+          this.name
+        } child process exited with code: ${code}`
         // this.emit('error', errorMessage)
         this.debug('Error: ', errorMessage)
-        this.debug('DEBUG Last 10 log lines: ', this.getLogs().slice(-10))
+        this.debug('DEBUG Last 10 log lines: ', this.logs.slice(-10))
         reject(errorMessage)
       })
 
@@ -108,6 +110,9 @@ class ControlledProcess extends EventEmitter {
       this.proc.kill('SIGINT')
       // this.ipcPath = null
     })
+  }
+  getLogs() {
+    return this.logs
   }
   async restart() {
     await this.stop()
