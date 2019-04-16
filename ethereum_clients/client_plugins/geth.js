@@ -22,6 +22,24 @@ switch (process.platform) {
   }
 }
 
+const findIpcPathInLogs = logs => {
+  let ipcPath
+  for (const l of logs) {
+    const found = l.includes('IPC endpoint opened')
+    if (found) {
+      ipcPath = l.split('=')[1].trim()
+      // fix double escaping
+      if (ipcPath.includes('\\\\')) {
+        ipcPath = ipcPath.replace(/\\\\/g, '\\')
+      }
+      console.log('Found IPC path: ', ipcPath)
+      return ipcPath
+    }
+  }
+  console.log('IPC path not found in logs', logs)
+  return null
+}
+
 module.exports = {
   displayName: 'Geth',
   name: 'geth',
@@ -39,8 +57,9 @@ module.exports = {
       includes: [platform]
     }
   },
-  prefix: `&prefix=geth-${platform}`, //`geth-${platform}`,
+  prefix: `geth-${platform}`,
   binaryName: process.platform === 'win32' ? 'geth.exe' : 'geth',
+  resolveIpc: logs => findIpcPathInLogs(logs),
   config: {
     default: {
       name: 'default',
