@@ -11,24 +11,23 @@ class Plugin {
     this.updater = getBinaryUpdater(repository, name, filter, prefix)
     this.config = config
   }
-  get cacheDir(){
+  get cacheDir() {
     return this.updater.cacheDir
   }
-  get name(){
+  get name() {
     return this.config.name
   }
-  get displayName(){
+  get displayName() {
     return this.config.displayName
   }
-  async getReleases(){
+  async getReleases() {
     const releases = await this.updater.getReleases()
     return releases
   }
-  download(release, onProgress){
+  download(release, onProgress) {
     return this.updater.download(release, { onProgress })
   }
   async getLocalBinary(release) {
-
     const extractBinary = async (pkg, binaryName) => {
       const entries = await this.updater.getEntries(pkg)
       const binaryEntry = entries.find(e => e.relativePath.endsWith(binaryName))
@@ -44,7 +43,7 @@ class Plugin {
       return destAbs
     }
 
-    release = release || await this.updater.getLatestCached()
+    release = release || (await this.updater.getLatestCached())
     if (release) {
       // Binary in extracted form was found in e.g. standard location on the system
       if (release.isBinary) {
@@ -52,11 +51,14 @@ class Plugin {
       } else {
         // Binary is packaged as .zip or.tar.gz -> extract first
         try {
-          const binaryPath = await extractBinary(release, this.config.binaryName)
+          const binaryPath = await extractBinary(
+            release,
+            this.config.binaryName
+          )
           return {
             binaryPath,
             packagePath: release.location
-          } 
+          }
         } catch (error) {
           console.log('error during binary extraction', error)
         }
@@ -67,26 +69,25 @@ class Plugin {
   }
 }
 
-
 class PluginProxy extends EventEmitter {
-  constructor(plugin){
+  constructor(plugin) {
     super()
     this.plugin = plugin
   }
-  get name(){
+  get name() {
     return this.plugin.name
   }
-  get displayName(){
+  get displayName() {
     return this.plugin.displayName
   }
-  get state(){
+  get state() {
     // FIXME ugly
     return this.process ? this.process.state : 'STOPPED'
   }
   get isRunning() {
     return this.process && this.process.isRunning
   }
-  get error(){
+  get error() {
     return ''
   }
   getLogs() {
@@ -100,21 +101,45 @@ class PluginProxy extends EventEmitter {
       onProgress(progress)
     })
   }
-  async start(release){
-    const { binaryPath, packagePath } = await this.plugin.getLocalBinary(release)
-    console.log(`client ${this.name} / ${packagePath} about to start - binary: ${binaryPath}`) 
+  async start(release, config) {
+    // TODO do flag validation here based on proxy metadata
+    const flags = []
+    try {
+      for (var flag in config) {
+        let val = config[flag]
+        // TODO plugin needs to tell plugin host flag format? e.g. network=1 vs --network 1
+        flags.push(`${flag}`)
+        flags.push(`${val}`)
+      }
+      console.log('start with flags: ', flags)
+    } catch (error) {
+      console.log('error in flag conversion', error)
+    }
+
+    const { binaryPath, packagePath } = await this.plugin.getLocalBinary(
+      release
+    )
+    console.log(
+      `client ${
+        this.name
+      } / ${packagePath} about to start - binary: ${binaryPath}`
+    )
     try {
       this.process = new ControlledProcess(binaryPath)
       // FIXME memory leaks start here:
-      this.process.on('started', () => console.log('started!!!!') && this.emit('started'))
+      this.process.on(
+        'started',
+        () => console.log('client started') && this.emit('started')
+      )
       this.process.on('log', arg => this.emit('log', arg))
-      await this.process.start()
+
+      await this.process.start(flags)
     } catch (error) {
-      console.log('error start', error)      
+      console.log('error start', error)
     }
     return this.process
   }
-  async stop(){
+  async stop() {
     console.log(`client ${this.name} stopped`)
     return this.process && this.process.stop()
   }
@@ -122,7 +147,7 @@ class PluginProxy extends EventEmitter {
 
 // TODO add file to electron packaged files
 class PluginHost {
-  constructor(){
+  constructor() {
     this.plugins = []
     this.discover()
   }
@@ -132,11 +157,15 @@ class PluginHost {
     const pluginFiles = fs.readdirSync(PLUGIN_DIR)
 
     console.time('plugin init')
-    const plugins = [ ]
+    const plugins = []
     pluginFiles.forEach(f => {
       try {
         const fullPath = path.join(PLUGIN_DIR, f)
-        if (fullPath.includes('geth') /*|| fullPath.includes('aleth') || fullPath.includes('parity')*/) {
+        if (
+          fullPath.includes(
+            'geth'
+          ) /*|| fullPath.includes('aleth') || fullPath.includes('parity')*/
+        ) {
           const pluginConfig = require(fullPath)
           // 2. TODO validate / verify
           const plugin = new Plugin(pluginConfig)
@@ -165,4 +194,4 @@ class PluginHost {
   }
 }
 
-global.PluginHost = new PluginHost
+global.PluginHost = new PluginHost()

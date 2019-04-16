@@ -39,7 +39,7 @@ class ControlledProcess extends EventEmitter {
       this.debug('Emit: starting')
       this.debug('Start: ', this.binaryPath)
 
-      flags = []
+      flags = flags || []
 
       // Spawn process
       const proc = spawn(this.binaryPath, flags)

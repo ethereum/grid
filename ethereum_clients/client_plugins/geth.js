@@ -18,7 +18,8 @@ switch (process.platform) {
     dataDir = '~/Library/Ethereum'
     break
   }
-  default: {}
+  default: {
+  }
 }
 
 module.exports = {
@@ -26,7 +27,11 @@ module.exports = {
   name: 'geth',
   repository: 'https://gethstore.blob.core.windows.net',
   modifiers: {
-    version: ({ version }) => version.split('-').slice(0, -1).join('-')
+    version: ({ version }) =>
+      version
+        .split('-')
+        .slice(0, -1)
+        .join('-')
   },
   filter: {
     name: {
@@ -34,7 +39,7 @@ module.exports = {
       includes: [platform]
     }
   },
-  prefix: `&prefix=geth-${platform}`,
+  prefix: `&prefix=geth-${platform}`, //`geth-${platform}`,
   binaryName: process.platform === 'win32' ? 'geth.exe' : 'geth',
   config: {
     default: {
@@ -45,6 +50,15 @@ module.exports = {
       network: 'main',
       syncMode: 'light',
       ipc: 'ipc'
+    },
+    flags: {
+      '--datadir': 'path',
+      '--syncmode': ['fast', 'light', 'full'],
+      '--networkid': 'number',
+      '--testnet': '',
+      '--rinkeby': '',
+      '--ws --wsaddr': 'string',
+      '--wsport': 'number'
     }
   }
 }
