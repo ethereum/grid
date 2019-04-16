@@ -4,7 +4,6 @@ const url = require('url')
 const net = require('net')
 
 const createRenderer = require('./electron-shell')
-const Geth = require('./ethereum_clients/geth')
 const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
