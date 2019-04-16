@@ -242,6 +242,9 @@ class ControlledProcess extends EventEmitter {
   getLogs() {
     return this.logs
   }
+  appendLogs(lines) {
+    this.logs = this.logs.concat(lines)
+  }
   async restart() {
     await this.stop()
     return this.start()
