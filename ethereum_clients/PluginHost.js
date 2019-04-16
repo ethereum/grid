@@ -19,9 +19,8 @@ class PluginHost {
       try {
         const fullPath = path.join(PLUGIN_DIR, f)
         if (
-          fullPath.includes(
-            'geth'
-          ) /*|| fullPath.includes('aleth') || fullPath.includes('parity')*/
+          fullPath.includes('geth') /*|| fullPath.includes('aleth') */ ||
+          fullPath.includes('parity')
         ) {
           const pluginConfig = require(fullPath)
           // 2. TODO validate / verify
