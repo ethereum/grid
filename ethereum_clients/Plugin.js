@@ -71,6 +71,10 @@ class Plugin {
     console.warn('no binary found for', release)
     return {}
   }
+  async checkForUpdates() {
+    let result = await this.updater.checkForUpdates()
+    return result
+  }
 }
 
 class PluginProxy extends EventEmitter {
@@ -164,6 +168,9 @@ class PluginProxy extends EventEmitter {
     } catch (error) {
       return error
     }
+  }
+  checkForUpdates() {
+    return this.plugin.checkForUpdates()
   }
 }
 
