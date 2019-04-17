@@ -1,4 +1,6 @@
 module.exports = {
+  type: 'client',
+  order: 2,
   displayName: 'Parity',
   name: 'parity',
   // repository: 'https://github.com/paritytech/parity-ethereum'

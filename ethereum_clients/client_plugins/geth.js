@@ -41,6 +41,8 @@ const findIpcPathInLogs = logs => {
 }
 
 module.exports = {
+  type: 'client',
+  order: 1,
   displayName: 'Geth',
   name: 'geth',
   repository: 'https://gethstore.blob.core.windows.net',
