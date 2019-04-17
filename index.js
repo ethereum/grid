@@ -47,6 +47,24 @@ const shellManager = new AppManager({
   electron: true
 })
 
+// TODO util
+app.on('web-contents-created', (event, contents) => {
+  // https://electronjs.org/docs/tutorial/security#11-verify-webview-options-before-creation
+  contents.on('will-attach-webview', (event, webPreferences, params) => {
+    // Strip away preload scripts if unused or verify their location is legitimate
+    delete webPreferences.preload
+    delete webPreferences.preloadURL
+
+    console.log('will attach webview')
+
+    webPreferences.preload = path.join(__dirname, 'preload-webview')
+
+    // Disable Node.js integration
+    webPreferences.nodeIntegration = false
+  })
+})
+
+// TODO util
 const is = {
   dev: () =>
     process.env.NODE_ENV && process.env.NODE_ENV.trim() == 'development',
