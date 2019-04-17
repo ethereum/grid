@@ -11,6 +11,7 @@ class Plugin {
     const { name, repository, filter, prefix } = config
     this.updater = getBinaryUpdater(repository, name, filter, prefix)
     this.config = config
+    this.process = undefined
   }
   get cacheDir() {
     return this.updater.cacheDir
@@ -18,8 +19,24 @@ class Plugin {
   get name() {
     return this.config.name
   }
+  get type() {
+    return this.config.type
+  }
+  get order() {
+    return this.config.order
+  }
   get displayName() {
     return this.config.displayName
+  }
+  get state() {
+    // FIXME ugly
+    return this.process ? this.process.state : 'STOPPED'
+  }
+  get isRunning() {
+    return this.process && this.process.isRunning
+  }
+  getLogs() {
+    return this.process ? this.process.logs : []
   }
   get resolveIpc() {
     return this.config.resolveIpc
@@ -71,45 +88,7 @@ class Plugin {
     console.warn('no binary found for', release)
     return {}
   }
-  async checkForUpdates() {
-    let result = await this.updater.checkForUpdates()
-    return result
-  }
-}
-
-class PluginProxy extends EventEmitter {
-  constructor(plugin) {
-    super()
-    this.plugin = plugin
-  }
-  get name() {
-    return this.plugin.name
-  }
-  get displayName() {
-    return this.plugin.displayName
-  }
-  get state() {
-    // FIXME ugly
-    return this.process ? this.process.state : 'STOPPED'
-  }
-  get isRunning() {
-    return this.process && this.process.isRunning
-  }
-  get error() {
-    return ''
-  }
-  getLogs() {
-    return this.process ? this.process.logs : []
-  }
-  getReleases() {
-    return this.plugin.getReleases()
-  }
-  download(release, onProgress) {
-    return this.plugin.download(release, progress => {
-      onProgress(progress)
-    })
-  }
-  async start(release, config) {
+  async start(release, config, emitter) {
     // TODO do flag validation here based on proxy metadata
     const flags = []
     try {
@@ -124,22 +103,32 @@ class PluginProxy extends EventEmitter {
       console.log('error in flag conversion', error)
     }
 
-    const { binaryPath, packagePath } = await this.plugin.getLocalBinary(
-      release
-    )
+    const { binaryPath, packagePath } = await this.getLocalBinary(release)
     console.log(
       `client ${
         this.name
       } / ${packagePath} about to start - binary: ${binaryPath}`
     )
     try {
-      this.process = new ControlledProcess(binaryPath, this.plugin.resolveIpc)
+      this.process = new ControlledProcess(binaryPath, this.resolveIpc)
       // FIXME memory leaks start here:
-      this.process.on(
+      // forward all events from the spawned process
+      let eventTypes = [
+        'starting',
         'started',
-        () => console.log('client started') && this.emit('started')
-      )
-      this.process.on('log', arg => this.emit('log', arg))
+        'connect',
+        'error',
+        'stopped',
+        'log'
+      ]
+      eventTypes.forEach(eventName => {
+        this.process.on(eventName, arg => {
+          if (eventName !== 'log') {
+            console.log(`forward external process event >> ${eventName}`)
+          }
+          emitter.emit(eventName, arg)
+        })
+      })
 
       await this.process.start(flags)
     } catch (error) {
@@ -148,12 +137,12 @@ class PluginProxy extends EventEmitter {
     return this.process
   }
   async stop() {
-    console.log(`client ${this.name} stopped`)
     return this.process && this.process.stop()
   }
   // public json rpc
   async rpc(method, params = []) {
     if (!this.process) {
+      console.log('error: rpc not available - process not running', this.state)
       return // FIXME error handling
     }
     const payload = {
@@ -169,6 +158,63 @@ class PluginProxy extends EventEmitter {
       return error
     }
   }
+  async checkForUpdates() {
+    let result = await this.updater.checkForUpdates()
+    return result
+  }
+}
+
+class PluginProxy extends EventEmitter {
+  constructor(plugin) {
+    super()
+    this.plugin = plugin
+  }
+  get name() {
+    return this.plugin.name
+  }
+  get type() {
+    return this.plugin.type
+  }
+  get order() {
+    return this.plugin.order
+  }
+  get displayName() {
+    return this.plugin.displayName
+  }
+  get state() {
+    return this.plugin.state
+  }
+  get isRunning() {
+    return this.plugin.isRunning
+  }
+  get error() {
+    return ''
+  }
+  getLogs() {
+    return this.plugin.getLogs()
+  }
+  getReleases() {
+    return this.plugin.getReleases()
+  }
+  download(release, onProgress) {
+    return this.plugin.download(release, progress => {
+      onProgress(progress)
+    })
+  }
+  getLocalBinary(release) {
+    return this.plugin.getLocalBinary(release)
+  }
+  start(release, config) {
+    return this.plugin.start(release, config, this)
+  }
+  stop() {
+    console.log(`client ${this.name} stopped`)
+    return this.plugin.stop()
+  }
+  rpc(method, params = []) {
+    return this.plugin.rpc(method, params)
+  }
+
   checkForUpdates() {
     return this.plugin.checkForUpdates()
   }
