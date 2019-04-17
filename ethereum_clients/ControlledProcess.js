@@ -23,6 +23,7 @@ class ControlledProcess extends EventEmitter {
     this.ipc = undefined
     this.logs = []
     this._state = STATES.STOPPED
+    this.responsePromises = []
   }
   get state() {
     return this._state
