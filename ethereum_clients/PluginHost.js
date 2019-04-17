@@ -18,15 +18,10 @@ class PluginHost {
     pluginFiles.forEach(f => {
       try {
         const fullPath = path.join(PLUGIN_DIR, f)
-        if (
-          fullPath.includes('geth') /*|| fullPath.includes('aleth') */ ||
-          fullPath.includes('parity')
-        ) {
-          const pluginConfig = require(fullPath)
-          // 2. TODO validate / verify
-          const plugin = new Plugin(pluginConfig)
-          plugins.push(plugin)
-        }
+        const pluginConfig = require(fullPath)
+        // 2. TODO validate / verify
+        const plugin = new Plugin(pluginConfig)
+        plugins.push(plugin)
       } catch (error) {
         console.log(`plugin ${f} could not be loaded`, error)
       }
