@@ -196,7 +196,7 @@ class PluginProxy extends EventEmitter {
   getReleases() {
     return this.plugin.getReleases()
   }
-  download(release, onProgress) {
+  download(release, onProgress = () => {}) {
     return this.plugin.download(release, progress => {
       onProgress(progress)
     })
