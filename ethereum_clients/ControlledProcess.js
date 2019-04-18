@@ -151,8 +151,8 @@ class ControlledProcess extends EventEmitter {
 
       const onIpcConnect = () => {
         this.state = STATES.CONNECTED
-        this.emit('connect')
-        this.debug('Emit: connect')
+        this.emit('connected')
+        this.debug('Emit: connected')
         resolve(this.state)
         this.debug('IPC Connected')
       }

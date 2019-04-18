@@ -116,7 +116,7 @@ class Plugin {
       let eventTypes = [
         'starting',
         'started',
-        'connect',
+        'connected',
         'error',
         'stopped',
         'log'
