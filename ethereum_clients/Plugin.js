@@ -6,8 +6,9 @@ const ControlledProcess = require('./ControlledProcess')
 
 let rpcId = 1
 
-class Plugin {
+class Plugin extends EventEmitter {
   constructor(config) {
+    super()
     const { name, repository, filter, prefix } = config
     this.updater = getBinaryUpdater(repository, name, filter, prefix)
     this.config = config
@@ -43,6 +44,26 @@ class Plugin {
   }
   get resolveIpc() {
     return this.config.resolveIpc
+  }
+  registerEventListeners(sourceEmitter, destEmitter) {
+    // FIXME memory leaks start here:
+    // forward all events from the spawned process
+    let eventTypes = [
+      'starting',
+      'started',
+      'connected',
+      'error',
+      'stopped',
+      'log'
+    ]
+    eventTypes.forEach(eventName => {
+      sourceEmitter.on(eventName, arg => {
+        if (eventName !== 'log') {
+          console.log(`forward external process event >> ${eventName}`)
+        }
+        destEmitter.emit(eventName, arg)
+      })
+    })
   }
   async getReleases() {
     const releases = await this.updater.getReleases()
@@ -119,10 +140,10 @@ class Plugin {
     return flags.filter(e => e.length > 0)
   }
 
-  async start(release, config, emitter) {
+  async start(release, config) {
     // TODO do flag validation here based on proxy metadata
 
-    const flags = this.generateFlags(config, emitter.plugin.config.settings)
+    const flags = this.generateFlags(config, this.config.settings)
 
     const { binaryPath, packagePath } = await this.getLocalBinary(release)
     console.log(
@@ -132,24 +153,7 @@ class Plugin {
     )
     try {
       this.process = new ControlledProcess(binaryPath, this.resolveIpc)
-      // FIXME memory leaks start here:
-      // forward all events from the spawned process
-      let eventTypes = [
-        'starting',
-        'started',
-        'connected',
-        'error',
-        'stopped',
-        'log'
-      ]
-      eventTypes.forEach(eventName => {
-        this.process.on(eventName, arg => {
-          if (eventName !== 'log') {
-            console.log(`forward external process event >> ${eventName}`)
-          }
-          emitter.emit(eventName, arg)
-        })
-      })
+      this.registerEventListeners(this.process, this)
 
       await this.process.start(flags)
     } catch (error) {
@@ -189,6 +193,8 @@ class PluginProxy extends EventEmitter {
   constructor(plugin) {
     super()
     this.plugin = plugin
+    // FIXME if listeners are not removed properly this can introduce very nasty memory leaks and effects
+    this.plugin.registerEventListeners(this.plugin, this)
   }
   get name() {
     return this.plugin.name
@@ -230,7 +236,7 @@ class PluginProxy extends EventEmitter {
     return this.plugin.getLocalBinary(release)
   }
   start(release, config) {
-    return this.plugin.start(release, config, this)
+    return this.plugin.start(release, config)
   }
   stop() {
     console.log(`client ${this.name} stopped`)
