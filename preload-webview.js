@@ -8,6 +8,15 @@ window.grid = {
     return {
       sendRpc: async (method, params) => {
         return client.rpc(method, params)
+      },
+      getState: () => {
+        return client.state
+      },
+      on: (eventName, handler) => {
+        return client.on(eventName, handler)
+      },
+      off: (eventName, handler) => {
+        return client.removeListener(eventName, handler)
       }
     }
   }
