@@ -29,10 +29,41 @@ module.exports = {
   repository: 'https://github.com/PhilippLgh/EthCapetownWorkshop',
   prefix: `${process.platform}`, // filter github assets
   binaryName: process.platform === 'win32' ? 'parity.exe' : 'parity',
-  resolveIpc: logs => IPC_PATH,
   config: {
     default: {
-      '--ipc-path': IPC_PATH
+      network: 'mainnet',
+      syncMode: 'warp'
     }
-  }
+  },
+  settings: {
+    network: {
+      label: 'Network',
+      default: 'mainnet',
+      options: [
+        { value: 'mainnet', label: 'Main', flag: '--chain mainnet' },
+        {
+          value: 'ropsten',
+          label: 'Ropsten (testnet)',
+          flag: '--chain ropsten'
+        },
+        { value: 'kovan', label: 'Kovan (testnet)', flag: '--chain kovan' },
+        { value: 'classic', label: 'Ethereum Classic', flag: '--chain classic' }
+      ]
+    },
+    syncMode: {
+      label: 'Sync Mode',
+      default: 'warp',
+      options: [
+        { value: 'warp', label: 'Warp', flag: '' },
+        { value: 'light', label: 'Light', flag: '--light' },
+        { value: 'nowarp', label: 'Full', flag: '--no-warp' }
+      ]
+    },
+    ipcPath: {
+      label: 'IPC Path',
+      default: IPC_PATH,
+      flag: '--ipc-path %s'
+    }
+  },
+  resolveIpc: logs => IPC_PATH,
 }
