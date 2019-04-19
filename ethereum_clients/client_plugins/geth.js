@@ -55,8 +55,8 @@ module.exports = {
   },
   filter: {
     name: {
-      excludes: ['unstable', 'alltools', 'swarm'],
-      includes: [platform]
+      includes: [platform],
+      excludes: ['unstable', 'alltools', 'swarm']
     }
   },
   prefix: `geth-${platform}`,
@@ -64,13 +64,12 @@ module.exports = {
   resolveIpc: logs => findIpcPathInLogs(logs),
   config: {
     default: {
-      name: 'default',
       dataDir,
-      host: 'localhost',
-      port: 8546,
+      api: 'ipc',
       network: 'main',
       syncMode: 'light',
-      ipc: 'ipc'
+      ipc: 'ipc',
+      cache: '2048'
     },
     flags: {
       '--datadir': 'path',
@@ -80,6 +79,42 @@ module.exports = {
       '--rinkeby': '',
       '--ws --wsaddr': 'string',
       '--wsport': 'number'
+    }
+  },
+  settings: {
+    dataDir: {
+      default: dataDir,
+      label: 'Data Directory',
+      flag: '--datadir %s',
+      type: 'path'
+    },
+    api: {
+      default: 'ipc',
+      label: 'API',
+      options: [
+        { value: 'ipc', label: 'IPC', flag: '' },
+        { value: 'websockets', label: 'WebSockets', flag: '--ws' },
+        { value: 'rpc', label: 'RPC HTTP', flag: '--rpc' }
+      ]
+    },
+    network: {
+      default: 'main',
+      options: [
+        { value: 'main', label: 'Main', flag: '' },
+        { value: 'ropsten', label: 'Ropsten (testnet)', flag: '--testnet' },
+        { value: 'rinkeby', label: 'Rinkeby (testnet)', flag: '--rinkeby' }
+      ]
+    },
+    syncMode: {
+      default: 'light',
+      label: 'Sync Mode',
+      options: ['fast', 'full', 'light'],
+      flag: '--syncmode %s'
+    },
+    cache: {
+      default: '2048',
+      label: 'Cache',
+      flag: '--cache %s'
     }
   }
 }
