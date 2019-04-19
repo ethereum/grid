@@ -62,7 +62,11 @@ app.on('web-contents-created', (event, contents) => {
     webPreferences.preload = path.join(__dirname, 'preload-webview')
 
     // Disable Node.js integration
-    webPreferences.nodeIntegration = false
+    if (process.env.MODE === 'insecure') {
+      webPreferences.nodeIntegration = true
+    } else {
+      webPreferences.nodeIntegration = false
+    }
   })
 })
 

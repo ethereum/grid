@@ -10,6 +10,7 @@
   "scripts": {
     "start:prod": "cross-env NODE_ENV=production electron .",
     "start:dev": "cross-env NODE_ENV=development electron .",
+    "start:dev:insecure": "cross-env NODE_ENV=development MODE=insecure electron .",
     "start:dev:verbose": "cross-env NODE_ENV=development DEBUG=geth-js electron .",
     "test:parity": "cross-env NODE_ENV=test mocha ./test/parity_test.js",
     "test": "cross-env NODE_ENV=test mocha ./test",
