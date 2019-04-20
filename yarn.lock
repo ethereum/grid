@@ -88,9 +88,9 @@
     any-observable "^0.3.0"
 
 "@types/node@^10.12.18":
-  version "10.12.27"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.12.27.tgz#eb3843f15d0ba0986cc7e4d734d2ee8b50709ef8"
-  integrity sha512-e9wgeY6gaY21on3ve0xAjgBVjGDWq/xUteK0ujsE53bUoxycMkqfnkUgMt6ffZtykZ5X12Mg3T7Pw4TRCObDKg==
+  version "10.14.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.14.5.tgz#27733a949f5d9972d87109297cffb62207ace70f"
+  integrity sha512-Ja7d4s0qyGFxjGeDq5S7Si25OFibSAHUi6i17UWnwNnpitADN7hah9q0Tl25gxuV5R1u2Bx+np6w4LHXfHyj/g==
 
 address-rfc2822@^2.0.3:
   version "2.0.4"
@@ -1289,10 +1289,10 @@ electron-updater@4.0.6:
     semver "^5.6.0"
     source-map-support "^0.5.9"
 
-electron@5.0.0-beta.7:
-  version "5.0.0-beta.7"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-5.0.0-beta.7.tgz#072fda102c9a08abbd003a81ac2f75c6423fee25"
-  integrity sha512-3Rij+MomuSnUG6cNoZutIg8fq6B3zj42HjzMU3rcKKHh/Lu1Q0epTIR/n2VxmMkQ/CnuyZty1OJAcqxAuZqz0g==
+electron@4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-4.1.4.tgz#41ba9e041f38c25c62a7db806884410654df058f"
+  integrity sha512-MelOjntJvd33izEjR6H4N/Uii7y535z/b2BuYXJGLNSHL6o1IlyhUQmfiT87kWABayERgeuYERgvsyf956OOFw==
   dependencies:
     "@types/node" "^10.12.18"
     electron-download "^4.1.0"
