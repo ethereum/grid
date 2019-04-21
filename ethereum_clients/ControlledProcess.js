@@ -48,7 +48,8 @@ class ControlledProcess extends EventEmitter {
 
       // Spawn process
       const proc = spawn(this.binaryPath, flags)
-      const { stdout, stderr } = proc
+      const { stdout, stderr, stdin } = proc
+      this.stdin = stdin
 
       proc.on('error', error => {
         this.state = STATES.ERROR
@@ -66,7 +67,7 @@ class ControlledProcess extends EventEmitter {
         }
         // Closing with any code other than 0 means there was an error
         const errorMessage = `${
-          this.name
+          this.binaryPath
         } child process exited with code: ${code}`
         // this.emit('error', errorMessage)
         this.debug('Error: ', errorMessage)

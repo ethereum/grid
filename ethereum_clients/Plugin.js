@@ -13,6 +13,16 @@ class Plugin extends EventEmitter {
     this.updater = getBinaryUpdater(repository, name, filter, prefix)
     this.config = config
     this.process = undefined
+    if (config.onInputRequested) {
+      this.on('log', log => {
+        try {
+          const stdin = this.process.stdin
+          config.onInputRequested(log, stdin)
+        } catch (error) {
+          console.log(`error: plugin ${this.name} could not provide input`)
+        }
+      })
+    }
   }
   get cacheDir() {
     return this.updater.cacheDir
