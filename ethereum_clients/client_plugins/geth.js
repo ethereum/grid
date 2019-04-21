@@ -65,7 +65,7 @@ module.exports = {
   config: {
     default: {
       dataDir,
-      api: 'ipc',
+      api: 'rpc',
       network: 'main',
       syncMode: 'light',
       ipc: 'ipc',
@@ -92,7 +92,8 @@ module.exports = {
       default: 'ipc',
       label: 'API',
       options: [
-        { value: 'ipc', label: 'IPC', flag: '' },
+        // FIXME always selects this
+        { value: 'ipc', label: 'IPC', flag: '--rpc' },
         { value: 'websockets', label: 'WebSockets', flag: '--ws' },
         { value: 'rpc', label: 'RPC HTTP', flag: '--rpc' }
       ]
@@ -102,7 +103,8 @@ module.exports = {
       options: [
         { value: 'main', label: 'Main', flag: '' },
         { value: 'ropsten', label: 'Ropsten (testnet)', flag: '--testnet' },
-        { value: 'rinkeby', label: 'Rinkeby (testnet)', flag: '--rinkeby' }
+        { value: 'rinkeby', label: 'Rinkeby (testnet)', flag: '--rinkeby' },
+        { value: 'goerli', label: 'Goerli (testnet)', flag: '--goerli' }
       ]
     },
     syncMode: {
@@ -115,6 +117,18 @@ module.exports = {
       default: '2048',
       label: 'Cache',
       flag: '--cache %s'
+    },
+    apiScopes: {
+      ignore: true,
+      default: 'eth,net,web3,txpool',
+      label: 'API Scopes',
+      flag: '--rpcapi %s  '
+    },
+    cors: {
+      ignore: true,
+      label: 'RPC Cors',
+      default: 'http://127.0.0.1:5001',
+      flag: '--rpccorsdomain %s'
     }
   }
 }
