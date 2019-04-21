@@ -29,8 +29,8 @@ class Plugin extends EventEmitter {
   get displayName() {
     return this.config.displayName
   }
-  get defaultConfig() {
-    return this.config.config.default
+  get configRaw() {
+    return this.config
   }
   get state() {
     // FIXME ugly
@@ -114,14 +114,13 @@ class Plugin extends EventEmitter {
   }
 
   generateFlags(userConfig, nodeSettings) {
-    const userConfigEntries = Object.keys(userConfig)
-    console.log('userConfigEntries', userConfigEntries)
+    // console.log('userConfigEntries', userConfig, 'node settings', nodeSettings)
     let flags = []
+    const userConfigEntries = Object.keys(userConfig)
     userConfigEntries.map(e => {
       let flag
       // ruling out userConfigs not in nodeSettings
-      if (!(e in nodeSettings)) return
-
+      // FIXME remove because it clashed with profiles: if (!(e in nodeSettings)) return
       let flagStr = nodeSettings[e].flag
       if (flagStr) {
         flag = flagStr.replace(/%s/, userConfig[e]).split(' ')
@@ -143,7 +142,28 @@ class Plugin extends EventEmitter {
   async start(release, config) {
     // TODO do flag validation here based on proxy metadata
 
-    const flags = this.generateFlags(config, this.config.settings)
+    let flags = []
+    try {
+      flags = this.generateFlags(config, this.config.settings)
+      console.log('generated flags', flags)
+    } catch (error) {
+      console.log('could not convert config to flags', error)
+    }
+    /*
+    try {
+      for (var flag in config) {
+        let val = config[flag]
+        // TODO plugin needs to tell plugin host flag format? e.g. network=1 vs --network 1
+        flags.push(`${flag}`)
+        flags.push(`${val}`)
+      }
+      console.log('start with flags: ', flags)
+    } catch (error) {
+      console.log('error in flag conversion', error)
+    }
+    */
+
+    console.log('start with flags', flags)
 
     const { binaryPath, packagePath } = await this.getLocalBinary(release)
     console.log(
@@ -212,7 +232,7 @@ class PluginProxy extends EventEmitter {
     return this.plugin.state
   }
   get config() {
-    return this.plugin.defaultConfig
+    return this.plugin.configRaw
   }
   get isRunning() {
     return this.plugin.isRunning
