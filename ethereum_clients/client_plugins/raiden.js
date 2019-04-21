@@ -21,7 +21,9 @@ module.exports = {
       stdin.write('Y\n')
     }
     if (log.startsWith('Select one of them by index to continue:')) {
-      stdin.write('0\n')
+      setTimeout(() => {
+        stdin.write('0\n')
+      }, 250)
     }
     if (log.startsWith('Enter the password')) {
       console.log('plugin recognized input request for password')
