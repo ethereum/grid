@@ -19,6 +19,10 @@ class PluginHost {
       try {
         const fullPath = path.join(PLUGIN_DIR, f)
         const pluginConfig = require(fullPath)
+        if (pluginConfig && pluginConfig.disabled) {
+          // ignore
+          return
+        }
         // 2. TODO validate / verify
         const plugin = new Plugin(pluginConfig)
         plugins.push(plugin)
