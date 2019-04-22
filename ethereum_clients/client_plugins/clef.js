@@ -10,5 +10,20 @@ module.exports = {
     version: '>=1.9.0' // only included in alltool package after (>=) 1.9.0
   },
   prefix: `geth-alltools-${platform}`,
-  binaryName: process.platform === 'win32' ? 'clef.exe' : 'clef'
+  binaryName: process.platform === 'win32' ? 'clef.exe' : 'clef',
+  config: {
+    default: {
+      init: 'yes'
+    }
+  },
+  settings: {
+    init: {
+      label: 'Accept Warning',
+      default: 'yes',
+      options: [
+        { label: 'Yes', value: 'yes', flag: '<<< "ok"' },
+        { label: 'No', value: 'no', flag: '<<< "no"' }
+      ]
+    }
+  }
 }
