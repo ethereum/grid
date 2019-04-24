@@ -78,7 +78,8 @@ module.exports = {
       '--testnet': '',
       '--rinkeby': '',
       '--ws --wsaddr': 'string',
-      '--wsport': 'number'
+      '--wsport': 'number',
+      '--signer': 'string'
     }
   },
   settings: {
@@ -115,6 +116,11 @@ module.exports = {
       default: '2048',
       label: 'Cache',
       flag: '--cache %s'
+    },
+    signer: {
+      default: 'localhost:8550',
+      label: 'Signer URL',
+      flag: '--signer %s'
     }
   }
 }

@@ -54,7 +54,9 @@ class Plugin extends EventEmitter {
       'connected',
       'error',
       'stopped',
-      'log'
+      'log',
+      'request',
+      'notification'
     ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
@@ -165,16 +167,20 @@ class Plugin extends EventEmitter {
     return this.process && this.process.stop()
   }
   // public json rpc
-  async rpc(method, params = []) {
+  async rpc(method, params = [], id, result) {
     if (!this.process) {
       console.log('error: rpc not available - process not running', this.state)
       return // FIXME error handling
     }
     const payload = {
       jsonrpc: '2.0',
-      id: rpcId++,
-      method,
-      params
+      id: id || rpcId++
+    }
+    if (result) {
+      payload.result = result
+    } else {
+      payload.method = method
+      payload.params = params
     }
     try {
       const result = await this.process.send(payload)

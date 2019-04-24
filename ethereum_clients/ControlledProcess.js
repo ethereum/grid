@@ -13,6 +13,21 @@ const STATES = {
   ERROR: 'ERROR' /* Unexpected error */
 }
 
+const requestMethods = [
+  'ui_approveTx',
+  'ui_approveSignData',
+  'ui_approveListing',
+  'ui_approveNewAccount',
+  'ui_onInputRequired'
+]
+
+const notificationMethods = [
+  'ui_showInfo',
+  'ui_showError',
+  'ui_onApprovedTx',
+  'ui_onSignerStartup'
+]
+
 // TODO add file to electron packaged files
 class ControlledProcess extends EventEmitter {
   constructor(binaryPath, resolveIpc) {
@@ -109,19 +124,86 @@ class ControlledProcess extends EventEmitter {
 
       const onData = data => {
         const log = data.toString()
-        if (log) {
-          let parts = log.split(/\r|\n/)
-          parts = parts.filter(p => p !== '')
-          this.logs.push(...parts)
-          parts.map(l => this.emit('log', l))
+
+        // Multiple data may be included at once,
+        // so let's split it up
+        if (log.includes('\n')) {
+          const multiLog = log.split('\n')
+          multiLog.forEach(singleLog => {
+            // Return if blank
+            if (singleLog === '') {
+              return
+            }
+            onData(singleLog)
+          })
+          return
         }
+
+        if (!log) {
+          return
+        }
+
+        let parts = log.split(/\r|\n/)
+        parts = parts.filter(p => p !== '')
+        this.logs.push(...parts)
+        parts.map(l => this.emit('log', l))
+
+        this.handleData(log)
       }
 
       stderr.once('data', onStart.bind(this))
       stdout.on('data', onData.bind(this))
       stderr.on('data', onData.bind(this))
       this.proc = proc
+
+      setTimeout(() => {
+        // clef expects an 'ok' for early version
+        this.proc.stdin.write('ok\n')
+        this.proc.stdin.end()
+      }, 3000)
     })
+  }
+  handleData(data) {
+    if (
+      data.toLowerCase().includes('error') ||
+      data.toLowerCase().includes('fatal')
+    ) {
+      // this.emit('error', data)
+    }
+
+    if (data.charAt(0) !== '{') {
+      // Not JSON
+      return
+    }
+
+    let payload
+    try {
+      payload = JSON.parse(data)
+    } catch (error) {
+      debug('Error parsing incoming data to JSON: ', error)
+    }
+
+    if (!payload) {
+      return
+    }
+
+    const { method } = payload
+
+    if (method && requestMethods.includes(method)) {
+      this.emit('request', payload)
+      this.debug('Emit request: ', payload)
+    } else if (method && notificationMethods.includes(method)) {
+      this.emit('notification', payload)
+      this.debug('Emit notification: ', payload)
+    }
+
+    // In the case of user input required, we need to send a response,
+    // but for notifications there's no need
+    const { id } = payload
+    if (notificationMethods.includes(method) && id) {
+      const message = { jsonrpc: '2.0', id, result: true }
+      this.send(message)
+    }
   }
   stop() {
     return new Promise((resolve, reject) => {
@@ -229,6 +311,7 @@ class ControlledProcess extends EventEmitter {
       }
     }
   }
+
   // private low level ipc
   send(payload) {
     if (this.state !== STATES.CONNECTED) {
