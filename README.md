@@ -47,7 +47,7 @@ See the developer guide [here](/RELEASE.md).
 
 # Landing page development guide
 
-See instructions at [/docs](/docs/README.md).
+See instructions at [/docs](/docs/).
 
 # Contributing
 
