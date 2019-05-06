@@ -189,6 +189,13 @@ class Plugin extends EventEmitter {
       return error
     }
   }
+  // low level stdin write
+  write(payload) {
+    if (!this.process) {
+      return
+    }
+    this.process.write(payload)
+  }
   async checkForUpdates() {
     let result = await this.updater.checkForUpdates()
     return result
@@ -251,7 +258,6 @@ class PluginProxy extends EventEmitter {
   rpc(method, params = []) {
     return this.plugin.rpc(method, params)
   }
-
   checkForUpdates() {
     return this.plugin.checkForUpdates()
   }

@@ -3,6 +3,7 @@ const debug = require('debug')
 const { EventEmitter } = require('events')
 const { spawn } = require('child_process')
 const net = require('net')
+const clef = require('./client_plugins/clef')
 
 const STATES = {
   STARTING: 'STARTING' /* Node about to be started */,
@@ -12,21 +13,6 @@ const STATES = {
   STOPPED: 'STOPPED' /* Node stopped */,
   ERROR: 'ERROR' /* Unexpected error */
 }
-
-const requestMethods = [
-  'ui_approveTx',
-  'ui_approveSignData',
-  'ui_approveListing',
-  'ui_approveNewAccount',
-  'ui_onInputRequired'
-]
-
-const notificationMethods = [
-  'ui_showInfo',
-  'ui_showError',
-  'ui_onApprovedTx',
-  'ui_onSignerStartup'
-]
 
 // TODO add file to electron packaged files
 class ControlledProcess extends EventEmitter {
@@ -159,7 +145,6 @@ class ControlledProcess extends EventEmitter {
       setTimeout(() => {
         // clef expects an 'ok' for early version
         this.proc.stdin.write('ok\n')
-        this.proc.stdin.end()
       }, 3000)
     })
   }
@@ -189,10 +174,10 @@ class ControlledProcess extends EventEmitter {
 
     const { method } = payload
 
-    if (method && requestMethods.includes(method)) {
+    if (method && clef.requestMethods.includes(method)) {
       this.emit('request', payload)
       this.debug('Emit request: ', payload)
-    } else if (method && notificationMethods.includes(method)) {
+    } else if (method && clef.notificationMethods.includes(method)) {
       this.emit('notification', payload)
       this.debug('Emit notification: ', payload)
     }
@@ -200,7 +185,7 @@ class ControlledProcess extends EventEmitter {
     // In the case of user input required, we need to send a response,
     // but for notifications there's no need
     const { id } = payload
-    if (notificationMethods.includes(method) && id) {
+    if (clef.notificationMethods.includes(method) && id) {
       const message = { jsonrpc: '2.0', id, result: true }
       this.send(message)
     }
@@ -311,7 +296,15 @@ class ControlledProcess extends EventEmitter {
       }
     }
   }
-
+  // private low level stdin write
+  write(payload) {
+    if (!this.proc) {
+      return
+    }
+    const { stdin } = this.proc
+    const jsonString = JSON.stringify(payload)
+    stdin.write(jsonString)
+  }
   // private low level ipc
   send(payload) {
     if (this.state !== STATES.CONNECTED) {

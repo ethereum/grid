@@ -60,12 +60,23 @@ const openFolderDialog = defaultPath => {
   })
 }
 
+const notify = (title, body) => {
+  const notification = new Notification(title, { body })
+  notification.onclick = () => {
+    const window = remote.getCurrentWindow()
+    if (window) {
+      window.show()
+    }
+  }
+}
+
 const Mist = {
   PluginHost: remote.getGlobal('PluginHost'),
   window: {
     getArgs: () => {}
   },
-  openFolderDialog
+  openFolderDialog,
+  notify
 }
 
 /*
