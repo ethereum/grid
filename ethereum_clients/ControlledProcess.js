@@ -141,11 +141,6 @@ class ControlledProcess extends EventEmitter {
       stdout.on('data', onData.bind(this))
       stderr.on('data', onData.bind(this))
       this.proc = proc
-
-      setTimeout(() => {
-        // clef expects an 'ok' for early version
-        this.proc.stdin.write('ok\n')
-      }, 3000)
     })
   }
   handleData(data) {
@@ -303,7 +298,8 @@ class ControlledProcess extends EventEmitter {
     }
     const { stdin } = this.proc
     const jsonString = JSON.stringify(payload)
-    stdin.write(jsonString)
+    stdin.write(jsonString + '\n')
+    debug('Wrote to stdin:', jsonString)
   }
   // private low level ipc
   send(payload) {

@@ -56,7 +56,7 @@ module.exports = {
   filter: {
     name: {
       includes: [platform],
-      excludes: ['unstable', 'alltools', 'swarm']
+      excludes: ['alltools', 'swarm']
     }
   },
   prefix: `geth-${platform}`,
@@ -69,7 +69,8 @@ module.exports = {
       network: 'main',
       syncMode: 'light',
       ipc: 'ipc',
-      cache: '2048'
+      cache: '2048',
+      signer: 'http://localhost:8550'
     },
     flags: {
       '--datadir': 'path',
@@ -118,7 +119,7 @@ module.exports = {
       flag: '--cache %s'
     },
     signer: {
-      default: 'localhost:8550',
+      default: 'http://localhost:8550',
       label: 'Signer URL',
       flag: '--signer %s'
     }
