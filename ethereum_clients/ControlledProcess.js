@@ -16,10 +16,11 @@ const STATES = {
 
 // TODO add file to electron packaged files
 class ControlledProcess extends EventEmitter {
-  constructor(binaryPath, resolveIpc) {
+  constructor(binaryPath, resolveIpc, handleData) {
     super()
     this.binaryPath = binaryPath
     this.resolveIpc = resolveIpc
+    this.handleData = handleData
     this.debug = console.log // debug(name)
     this.ipc = undefined
     this.logs = []
@@ -111,20 +112,6 @@ class ControlledProcess extends EventEmitter {
       const onData = data => {
         const log = data.toString()
 
-        // Multiple data may be included at once,
-        // so let's split it up
-        if (log.includes('\n')) {
-          const multiLog = log.split('\n')
-          multiLog.forEach(singleLog => {
-            // Return if blank
-            if (singleLog === '') {
-              return
-            }
-            onData(singleLog)
-          })
-          return
-        }
-
         if (!log) {
           return
         }
@@ -132,9 +119,12 @@ class ControlledProcess extends EventEmitter {
         let parts = log.split(/\r|\n/)
         parts = parts.filter(p => p !== '')
         this.logs.push(...parts)
-        parts.map(l => this.emit('log', l))
-
-        this.handleData(log)
+        parts.map(l => {
+          this.emit('log', l)
+          if (this.handleData) {
+            this.handleData(l, this.emit.bind(this))
+          }
+        })
       }
 
       stderr.once('data', onStart.bind(this))
@@ -142,48 +132,6 @@ class ControlledProcess extends EventEmitter {
       stderr.on('data', onData.bind(this))
       this.proc = proc
     })
-  }
-  handleData(data) {
-    if (
-      data.toLowerCase().includes('error') ||
-      data.toLowerCase().includes('fatal')
-    ) {
-      // this.emit('error', data)
-    }
-
-    if (data.charAt(0) !== '{') {
-      // Not JSON
-      return
-    }
-
-    let payload
-    try {
-      payload = JSON.parse(data)
-    } catch (error) {
-      debug('Error parsing incoming data to JSON: ', error)
-    }
-
-    if (!payload) {
-      return
-    }
-
-    const { method } = payload
-
-    if (method && clef.requestMethods.includes(method)) {
-      this.emit('request', payload)
-      this.debug('Emit request: ', payload)
-    } else if (method && clef.notificationMethods.includes(method)) {
-      this.emit('notification', payload)
-      this.debug('Emit notification: ', payload)
-    }
-
-    // In the case of user input required, we need to send a response,
-    // but for notifications there's no need
-    const { id } = payload
-    if (clef.notificationMethods.includes(method) && id) {
-      const message = { jsonrpc: '2.0', id, result: true }
-      this.send(message)
-    }
   }
   stop() {
     return new Promise((resolve, reject) => {

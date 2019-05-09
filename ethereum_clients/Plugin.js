@@ -45,6 +45,9 @@ class Plugin extends EventEmitter {
   get resolveIpc() {
     return this.config.resolveIpc
   }
+  get handleData() {
+    return this.config.handleData
+  }
   registerEventListeners(sourceEmitter, destEmitter) {
     // FIXME memory leaks start here:
     // forward all events from the spawned process
@@ -154,7 +157,11 @@ class Plugin extends EventEmitter {
       } / ${packagePath} about to start - binary: ${binaryPath}`
     )
     try {
-      this.process = new ControlledProcess(binaryPath, this.resolveIpc)
+      this.process = new ControlledProcess(
+        binaryPath,
+        this.resolveIpc,
+        this.handleData
+      )
       this.registerEventListeners(this.process, this)
 
       await this.process.start(flags)

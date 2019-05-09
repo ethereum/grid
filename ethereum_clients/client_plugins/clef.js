@@ -22,6 +22,53 @@ switch (process.platform) {
   }
 }
 
+const requestMethods = [
+  'ui_approveTx',
+  'ui_approveSignData',
+  'ui_approveListing',
+  'ui_approveNewAccount',
+  'ui_onInputRequired'
+]
+
+const notificationMethods = [
+  'ui_showInfo',
+  'ui_showError',
+  'ui_onApprovedTx',
+  'ui_onSignerStartup'
+]
+
+const handleData = (data, emit) => {
+  if (
+    data.toLowerCase().includes('error') ||
+    data.toLowerCase().includes('fatal')
+  ) {
+    // this.emit('error', data)
+  }
+
+  if (data.charAt(0) !== '{') {
+    // Not JSON
+    return
+  }
+
+  let payload
+  try {
+    payload = JSON.parse(data)
+  } catch (error) {
+    console.error('Error parsing incoming data to JSON: ', error)
+  }
+
+  if (!payload) {
+    return
+  }
+
+  const { method } = payload
+  if (method && requestMethods.includes(method)) {
+    emit('request', payload)
+  } else if (method && notificationMethods.includes(method)) {
+    emit('notification', payload)
+  }
+}
+
 module.exports = {
   type: 'signer',
   order: 4,
@@ -33,19 +80,9 @@ module.exports = {
   },
   prefix: `geth-alltools-${platform}`,
   binaryName: process.platform === 'win32' ? 'clef.exe' : 'clef',
-  requestMethods: [
-    'ui_approveTx',
-    'ui_approveSignData',
-    'ui_approveListing',
-    'ui_approveNewAccount',
-    'ui_onInputRequired'
-  ],
-  notificationMethods: [
-    'ui_showInfo',
-    'ui_showError',
-    'ui_onApprovedTx',
-    'ui_onSignerStartup'
-  ],
+  handleData: (data, emit) => handleData(data, emit),
+  requestMethods,
+  notificationMethods,
   config: {
     default: {
       keystoreDir,
