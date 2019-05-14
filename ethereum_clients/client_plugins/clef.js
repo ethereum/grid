@@ -1,4 +1,5 @@
 let keystoreDir = `${process.env.APPDATA}/Ethereum/keystore`
+let configDir = `${process.env.APPDATA}/.clef`
 let platform = 'windows'
 
 // Platform specific initialization
@@ -6,16 +7,19 @@ switch (process.platform) {
   case 'win32': {
     platform = 'windows'
     keystoreDir = `${process.env.APPDATA}/Ethereum/keystore`
+    configDir = `${process.env.APPDATA}/.clef`
     break
   }
   case 'linux': {
     platform = 'linux'
     keystoreDir = '~/.ethereum/keystore'
+    configDir = '~/.clef'
     break
   }
   case 'darwin': {
     platform = 'darwin'
     keystoreDir = '~/Library/Ethereum/keystore'
+    configDir = '~/.clef'
     break
   }
   default: {
@@ -65,7 +69,7 @@ const handleData = (data, emit) => {
   if (method && requestMethods.includes(method)) {
     emit('request', payload)
   } else if (method && notificationMethods.includes(method)) {
-    emit('notification', payload)
+    emit('signerNotification', payload)
   }
 }
 
@@ -85,12 +89,14 @@ module.exports = {
   notificationMethods,
   config: {
     default: {
-      keystoreDir,
+      // keystoreDir,
+      configDir,
       chainId: 1,
       api: 'rpc'
     },
     flags: {
-      '--keystore': 'path',
+      // '--keystore': 'path',
+      '--configdir': 'path',
       '--chainId': 'string',
       '--rpc': '',
       '--rpcaddr': 'string',
@@ -102,6 +108,12 @@ module.exports = {
     }
   },
   settings: {
+    configDir: {
+      default: configDir,
+      label: 'Config Directory',
+      flag: '--configdir %s',
+      type: 'path'
+    },
     // keystoreDir: {
     //   default: keystoreDir,
     //   label: 'Keystore Directory',
