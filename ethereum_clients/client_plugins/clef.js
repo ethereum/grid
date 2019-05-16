@@ -69,7 +69,7 @@ const handleData = (data, emit) => {
   if (method && requestMethods.includes(method)) {
     emit('request', payload)
   } else if (method && notificationMethods.includes(method)) {
-    emit('signerNotification', payload)
+    emit('pluginNotification', payload)
   }
 }
 

@@ -59,7 +59,7 @@ class Plugin extends EventEmitter {
       'stopped',
       'log',
       'request',
-      'signerNotification'
+      'pluginNotification'
     ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
