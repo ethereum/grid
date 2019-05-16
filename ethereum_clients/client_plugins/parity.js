@@ -65,5 +65,5 @@ module.exports = {
       flag: '--ipc-path %s'
     }
   },
-  resolveIpc: logs => IPC_PATH,
+  resolveIpc: logs => IPC_PATH
 }

@@ -70,7 +70,7 @@ module.exports = {
       syncMode: 'light',
       ipc: 'ipc',
       cache: '2048',
-      signer: 'http://localhost:8550'
+      signer: 'none'
     },
     flags: {
       '--datadir': 'path',
@@ -85,10 +85,10 @@ module.exports = {
   },
   settings: {
     dataDir: {
+      type: 'path',
       default: dataDir,
       label: 'Data Directory',
-      flag: '--datadir %s',
-      type: 'path'
+      flag: '--datadir %s'
     },
     api: {
       default: 'ipc',
@@ -101,6 +101,7 @@ module.exports = {
     },
     network: {
       default: 'main',
+      label: 'Network',
       options: [
         { value: 'main', label: 'Main', flag: '' },
         { value: 'ropsten', label: 'Ropsten (testnet)', flag: '--testnet' },
@@ -119,9 +120,12 @@ module.exports = {
       flag: '--cache %s'
     },
     signer: {
-      default: 'http://localhost:8550',
-      label: 'Signer URL',
-      flag: '--signer %s'
+      default: 'none',
+      label: 'Signer',
+      options: [
+        { value: 'none', label: 'None', flag: '' },
+        { value: 'clef', label: 'Clef', flag: '--signer http://localhost:8550' }
+      ]
     }
   }
 }
