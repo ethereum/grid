@@ -10,9 +10,28 @@ class Plugin extends EventEmitter {
   constructor(config) {
     super()
     const { name, repository, filter, prefix } = config
+    if (!name || !repository) {
+      throw new Error(
+        'plugin is missing required fields "name" or "repository"'
+      )
+    }
     this.updater = getBinaryUpdater(repository, name, filter, prefix)
     this.config = config
     this.process = undefined
+    if (config.onInputRequested) {
+      this.on('log', log => {
+        try {
+          config.onInputRequested(log, input => {
+            this.process.stdin.write(`${input}\n`)
+          })
+        } catch (error) {
+          console.log(
+            `error: plugin ${this.name} could not provide input`,
+            error
+          )
+        }
+      })
+    }
   }
   get cacheDir() {
     return this.updater.cacheDir
@@ -75,7 +94,32 @@ class Plugin extends EventEmitter {
   async getLocalBinary(release) {
     const extractBinary = async (pkg, binaryName) => {
       const entries = await this.updater.getEntries(pkg)
-      const binaryEntry = entries.find(e => e.relativePath.endsWith(binaryName))
+      let binaryEntry = undefined
+      if (binaryName) {
+        binaryEntry = entries.find(e => e.relativePath.endsWith(binaryName))
+      } else {
+        // try to detect binary
+        console.log(
+          'no "binaryName" specified - trying to auto-detect executable within package:'
+        )
+        // const isExecutable = mode => Boolean((mode & 0o0001) || (mode & 0o0010) || (mode & 0o0100))
+        if (process.platform === 'win32') {
+          binaryEntry = entries.find(e => e.relativePath.endsWith('.exe'))
+        } else {
+          // no heuristic available: pick first
+          binaryEntry = entries[0]
+        }
+      }
+
+      if (!binaryEntry) {
+        throw new Error(
+          'binary not found in package: try to specify binaryName'
+        )
+      } else {
+        binaryName = binaryEntry.file.name
+        console.log('auto-detected binary:', binaryName)
+      }
+
       const destAbs = path.join(this.cacheDir, binaryName)
       // The unlinking might fail if the binary is e.g. being used by another instance
       if (fs.existsSync(destAbs)) {

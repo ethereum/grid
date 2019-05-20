@@ -13,6 +13,30 @@ const getUserDataPath = () => {
   return USER_DATA_PATH
 }
 
+const getPluginCachePath = name => {
+  let CLIENT_PLUGINS
+
+  if (process.env.NODE_ENV === 'test') {
+    CLIENT_PLUGINS = path.join(__dirname, `client_plugins`)
+  } else if (process.env.NODE_ENV === 'development') {
+    CLIENT_PLUGINS = path.join(__dirname, `client_plugins`)
+  } else {
+    const USER_DATA_PATH = getUserDataPath()
+    CLIENT_PLUGINS = path.join(USER_DATA_PATH, `client_plugins`)
+  }
+
+  if (!fs.existsSync(CLIENT_PLUGINS)) {
+    fs.mkdirSync(CLIENT_PLUGINS)
+  }
+
+  const cachePath = path.join(CLIENT_PLUGINS, name)
+  if (!fs.existsSync(cachePath)) {
+    fs.mkdirSync(cachePath)
+  }
+
+  return cachePath
+}
+
 const getCachePath = name => {
   let cachePath
   if (process.env.NODE_ENV === 'test') {
@@ -100,5 +124,6 @@ const generateFlags = (userConfig, nodeSettings) => {
 module.exports = {
   generateFlags,
   getCachePath,
+  getPluginCachePath,
   getBinaryUpdater
 }
