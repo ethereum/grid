@@ -9,6 +9,7 @@ class WindowManager {
     let baseOptions = {
       width: 1059,
       height: 658,
+      titleBarStyle: 'hidden',
       webPreferences: {
         preload: preloadPath,
         nodeIntegration: true,

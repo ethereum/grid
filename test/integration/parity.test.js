@@ -1,7 +1,7 @@
 const { assert } = require('chai')
 const fs = require('fs')
 const path = require('path')
-const { PluginHost } = require('../ethereum_clients/PluginHost')
+const { PluginHost } = require('../../ethereum_clients/PluginHost')
 
 describe('Clients', function() {
   describe('Parity', function() {

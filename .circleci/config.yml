@@ -14,7 +14,7 @@ aliases:
         - node-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
         - node-v1--
 
-  # Caches electron build files by job type, to avoid caching only 
+  # Caches electron build files by job type, to avoid caching only
   # one arch and cache-missing from other jobs
   - &save_electron_cache
     save_cache:
@@ -28,9 +28,19 @@ aliases:
         - electron-builder-v1-{{ .Environment.CIRCLE_JOB }}-{{ checksum "yarn.lock" }}
         - electron-builder-v1--
 
+  - &node_installation
+    run:
+      name: "Update Node.js and npm if on MacOS"
+      command: .circleci/install_node.sh
+
+  - &upgrade_yarn
+    run:
+      name: "Updates yarn"
+      command: .circleci/upgrade_yarn.sh
+
   # Custom task removes unnecessary build files before uploading release directory
   - &before_store_artifacts
-    run: 
+    run:
       name: Preparing for artifact upload
       command: rm -rf release/*-unpacked release/mac
 
@@ -39,51 +49,54 @@ aliases:
       path: release/
 
   - &install
-    run: yarn install
+    run: node --version && yarn install
 
   - &test
     run: yarn test:settings
 
+  - &test_e2e
+    run: yarn test:e2e -s
+
   - &run_script
     run: yarn release --$GRID_ENV
-  
+
   - &run_steps
     steps:
       - checkout
+      - run: node -v
       - *restore_modules_cache
       - *install
-      - *test 
+      - *test
+      # - *test_e2e
       - *run_script
       - *save_modules_cache
       - *before_store_artifacts
       - *upload_artifacts
-    
+
 jobs:
   build:
     docker:
       - image: electronuserland/builder:10
-    environment: 
+    environment:
       GRID_ENV: linux
     working_directory: ~/repo
     <<: *run_steps
 
-
   build-win:
     docker:
       - image: electronuserland/builder:wine
-    environment: 
+    environment:
       GRID_ENV: win
     working_directory: ~/repo
     <<: *run_steps
 
   build-mac:
     macos:
-      xcode: '9.0'
-    environment: 
+      xcode: '10.0'
+    environment:
       GRID_ENV: mac
     working_directory: ~/repo
     <<: *run_steps
-
 
 workflows:
   version: 2
