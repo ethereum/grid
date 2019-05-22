@@ -8,6 +8,7 @@ const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
 const { registerGlobalPluginHost } = require('./ethereum_clients/PluginHost')
+const { registerGlobalAppManager } = require('./grid_apps/AppManager')
 
 const log = {
   dev: require('debug')('dev'),
@@ -191,5 +192,7 @@ const onReady = async () => {
     // 1. start UI for quick user-feedback without long init procedures
     await startUI()
   })
+
+  const appManager = registerGlobalAppManager()
 }
 app.once('ready', onReady)
