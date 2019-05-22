@@ -123,13 +123,13 @@ function secureApplication() {
   })
 }
 
-function createRenderer(clientUrl) {
+function createRenderer(clientUrl, args) {
   // secureApplication()
 
   app.on('web-contents-created', (event, contents) => {
     contents.on('will-navigate', (event, navigationUrl) => {
       const parsedUrl = new URL(navigationUrl)
-      console.log('parsedUrl', parsedUrl)
+      // console.log('parsedUrl', parsedUrl)
       if (parsedUrl.protocol === 'https:') {
         shell.openExternal(navigationUrl)
       }
@@ -139,6 +139,7 @@ function createRenderer(clientUrl) {
 
   const loadRenderer = () => {
     win = WindowManager.createInsecureWindow()
+    win.args = args
     //win = WindowManager.createWindow()
     win.loadURL(clientUrl)
     // win.webContents.openDevTools()
