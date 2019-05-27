@@ -60,10 +60,13 @@ const openFolderDialog = defaultPath => {
   })
 }
 
-const Mist = {
+const currentWindow = remote.getCurrentWindow()
+
+const Grid = {
   PluginHost: remote.getGlobal('PluginHost'),
+  AppManager: remote.getGlobal('AppManager'),
   window: {
-    getArgs: () => {}
+    getArgs: () => currentWindow.args
   },
   openFolderDialog
 }
@@ -102,8 +105,8 @@ const Mist = {
   geth: Geth
 }
 */
-window.Mist = Mist
-
+window.Mist = Grid
+window.Grid = Grid
 /*
 webFrame.executeJavaScript(`window.Mist = {geth: {
   getStatus: () => {return{}},

@@ -199,6 +199,35 @@ class Plugin extends EventEmitter {
       return error
     }
   }
+  async execute(command) {
+    return new Promise((resolve, reject) => {
+      console.log('execute command:', command)
+      const { spawn } = require('child_process')
+      const flags = command.split(' ')
+      const binaryPath = 'TODO'
+      const proc = spawn(binaryPath, flags)
+      const { stdout, stderr, stdin } = proc
+      proc.on('error', error => {
+        console.log('process error', error)
+      })
+      const onData = data => {
+        const log = data.toString()
+        if (log) {
+          let parts = log.split(/\r|\n/)
+          parts = parts.filter(p => p !== '')
+          //this.logs.push(...parts)
+          parts.map(l => this.emit('log', l))
+          console.log('process data:', parts)
+        }
+      }
+      stdout.on('data', onData)
+      stderr.on('data', onData)
+      proc.on('close', () => {
+        console.log('done')
+        resolve()
+      })
+    })
+  }
   async checkForUpdates() {
     let result = await this.updater.checkForUpdates()
     return result
@@ -261,7 +290,9 @@ class PluginProxy extends EventEmitter {
   rpc(method, params = []) {
     return this.plugin.rpc(method, params)
   }
-
+  execute(command) {
+    return this.plugin.execute(command)
+  }
   checkForUpdates() {
     return this.plugin.checkForUpdates()
   }

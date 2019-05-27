@@ -12,6 +12,9 @@ window.grid = {
       getState: () => {
         return client.state
       },
+      execute: command => {
+        client.execute(command)
+      },
       on: (eventName, handler) => {
         return client.on(eventName, handler)
       },
