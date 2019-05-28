@@ -1,6 +1,11 @@
 const { ipcRenderer, remote, webFrame } = require('electron')
 const { dialog } = require('electron').remote
 
+// Enabling spectron integration https://github.com/electron/spectron#node-integration
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+  window.electronRequire = require
+}
+
 // const rpc = require('./Rpc')
 
 // const thisWin = remote.getCurrentWindow()

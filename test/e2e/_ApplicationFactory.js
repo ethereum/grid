@@ -8,7 +8,8 @@ class ApplicationFactory {
   static development() {
     const params = {
       path: path.resolve('./node_modules/.bin/electron'),
-      args: [path.resolve('./index.js')]
+      args: [path.resolve('./index.js')],
+      requireName: 'electronRequire'
     }
 
     debug && console.log('development() app parameters', params);

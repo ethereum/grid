@@ -117,10 +117,10 @@ test('As a user, I want to see sync status visually', async t => {
 })
 
 test('As a user, I want to have the connection details remembered', async t => {
-  const {app, client, win} = await init(t)
-  const versionList = new VersionList(app.client)
-  const clientAppBar = new ClientAppBar(app.client)
-  const settings = new ClientSettingsForm(app.client)
+  let {app, client, win} = await init(t)
+  const versionList = new VersionList(client)
+  const clientAppBar = new ClientAppBar(client)
+  const settings = new ClientSettingsForm(client)
 
   await versionList.waitToLoad()
   await versionList.clickOnItem(0)
@@ -131,14 +131,17 @@ test('As a user, I want to have the connection details remembered', async t => {
 
   // Restart the app
   await app.stop()
-  t.context.app = ApplicationFactory.development()
-  const app2 = t.context.app
-  await t.context.app.start()
 
-  const clientAppBar2 = new ClientAppBar(app2.client)
+  const app2 = ApplicationFactory.development()
+  t.context.app = app2
+  await app2.start()
+  const client2 = app2.client
+  await client2.waitUntilWindowLoaded(20000)
+
+  const clientAppBar2 = new ClientAppBar(client2)
   await clientAppBar2.settings.click()
 
-  const settings2 = new ClientSettingsForm(app2.client)
+  const settings2 = new ClientSettingsForm(client2)
   const dataDirValue = await settings2.getPathInput('dataDir').getValue()
 
   t.is(dataDirValue, '/tmp/ac5718')
