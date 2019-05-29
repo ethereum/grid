@@ -1,4 +1,3 @@
-import test from 'ava'
 import ApplicationFactory from './_ApplicationFactory'
 import ClientAppBar from './_ClientAppBar'
 import MainAppBar from './_MainAppBar'
@@ -8,29 +7,29 @@ import Node from './_Node'
 import ClientSettingsForm from './_ClientSettingsForm'
 import {getProcess, getProcessFlags} from './_ProcessMatcher'
 
-const init = async function(t) {
-  const app = t.context.app
-  await app.client.waitUntilWindowLoaded(20000)
-  const win = app.browserWindow
-  const client = app.client
-  return { app, win, client }
+let globalApp;
+
+jest.setTimeout(30000)
+
+const init = async function() {
+  await globalApp.client.waitUntilWindowLoaded(20000)
+  const win = globalApp.browserWindow
+  const client = globalApp.client
+  return { app: globalApp, win, client }
 }
 
-test.beforeEach(async t => {
-  // rmGethDir()
+beforeEach(async () => {
   clearBinDir()
-
-  t.context.app = ApplicationFactory.development()
-
-  await t.context.app.start()
+  globalApp = ApplicationFactory.development()
+  await globalApp.start()
 })
 
-test.afterEach.always(async t => {
-  await t.context.app.stop()
+afterEach(async () => {
+  await globalApp.stop()
 })
 
-test('As a user, I want to download a geth node', async t => {
-  const {app, client, win} = await init(t)
+test('As a user, I want to download a geth node', async () => {
+  const {app, client, win} = await init()
   const versionList = new VersionList(app.client)
 
   await versionList.waitToLoad()
@@ -38,11 +37,11 @@ test('As a user, I want to download a geth node', async t => {
   await versionList.waitUntilVersionDownloading(0)
   await versionList.waitUntilVersionSelected(0)
 
-  t.pass()
+  done()
 })
 
-test('As a user, I want to start/stop my geth node from the app UI', async t => {
-  const {app, client, win} = await init(t)
+test('As a user, I want to start/stop my geth node from the app UI', async () => {
+  const {app, client, win} = await init()
   const versionList = new VersionList(app.client)
   const node = new Node(app.client)
 
@@ -54,16 +53,17 @@ test('As a user, I want to start/stop my geth node from the app UI', async t => 
   await node.waitUntilStarted()
 
   const startedGeth = await getProcess('geth')
-  t.assert(startedGeth.pid > 0)
+
+  expect(startedGeth.pid).toBeGreaterThan(0)
 
   await node.toggle('geth')
   await node.waitUntilStopped()
 
-  t.pass()
+  done()
 })
 
-test('As a user, I want to configure Geth settings', async t => {
-  const {app, client, win} = await init(t)
+test('As a user, I want to configure Geth settings', async () => {
+  const {app, client, win} = await init()
   const versionList = new VersionList(app.client)
   const node = new Node(app.client)
   const clientAppBar = new ClientAppBar(app.client)
@@ -86,15 +86,15 @@ test('As a user, I want to configure Geth settings', async t => {
   const gethFlags = await getProcessFlags('geth')
   const gf = gethFlags.join(' ')
   // t.assert(gethFlags == '--datadir', '/tmp/datadir', '--syncmode', 'light', '--rpcapi', 'websockets', '--rinkeby', '--cache', '1337')
-  t.assert(/--datadir \/tmp\/datadir/.test(gf))
-  t.assert(/--syncmode light/.test(gf))
-  t.assert(/--ws/.test(gf))
-  t.assert(/--rinkeby/.test(gf))
-  t.assert(/--cache 1337/.test(gf))
+  expect(/--datadir \/tmp\/datadir/.test(gf)).toBe(true)
+  expect(/--syncmode light/.test(gf)).toBe(true)
+  expect(/--ws/.test(gf)).toBe(true)
+  expect(/--rinkeby/.test(gf)).toBe(true)
+  expect(/--cache 1337/.test(gf)).toBe(true)
 })
 
-test('As a user, I want to know if my client is up to date', async t => {
-  const {app, client, win} = await init(t)
+test('As a user, I want to know if my client is up to date', async () => {
+  const {app, client, win} = await init()
   const versionList = new VersionList(app.client)
 
   await versionList.waitToLoad()
@@ -109,15 +109,15 @@ test('As a user, I want to know if my client is up to date', async t => {
 
   await client.waitForVisible('[role=alertdialog]', 500, true)
 
-  t.pass()
+  done()
 })
 
-test('As a user, I want to see sync status visually', async t => {
-  t.fail('Not implemented.')
+test('As a user, I want to see sync status visually', async () => {
+  fail('Not implemented.')
 })
 
-test('As a user, I want to have the connection details remembered', async t => {
-  let {app, client, win} = await init(t)
+test('As a user, I want to have the connection details remembered', async () => {
+  let {app, client, win} = await init()
   const versionList = new VersionList(client)
   const clientAppBar = new ClientAppBar(client)
   const settings = new ClientSettingsForm(client)
@@ -133,7 +133,7 @@ test('As a user, I want to have the connection details remembered', async t => {
   await app.stop()
 
   const app2 = ApplicationFactory.development()
-  t.context.app = app2
+  globalApp = app2
   await app2.start()
   const client2 = app2.client
   await client2.waitUntilWindowLoaded(20000)
@@ -144,7 +144,7 @@ test('As a user, I want to have the connection details remembered', async t => {
   const settings2 = new ClientSettingsForm(client2)
   const dataDirValue = await settings2.getPathInput('dataDir').getValue()
 
-  t.is(dataDirValue, '/tmp/ac5718')
+  expect(dataDirValue).toBe('/tmp/ac5718')
 })
 
 
@@ -153,8 +153,7 @@ test('As a user, I want to have the connection details remembered', async t => {
 // OK - As a user, I want to configure my node settings and options easily. #37
 // OK - As a user, I want to be notified when a new version of my node is available, so I don't fork. #22
 // OK - As a user, I want to provide an existing network data directory, so that I don't have two copies of the network. #35
-
-// As a user, I want to have the connection details remembered, so I can have a consistent use of the app #23
+// OK - As a user, I want to have the connection details remembered, so I can have a consistent use of the app #23
 
 // Waiting for PR
 // As a user, I want to see sync status visually, so I don't have to parse the logs and guess #73

@@ -1,27 +1,28 @@
-import test from 'ava';
 import ApplicationFactory from './_ApplicationFactory'
 
-test.beforeEach(async t => {
-  t.context.app = ApplicationFactory.development()
+let globalApp
 
-  await t.context.app.start();
-});
+beforeEach(async () => {
+  globalApp = ApplicationFactory.development()
 
-test.afterEach.always(async t => {
-  await t.context.app.stop();
-});
+  await globalApp.start()
+})
 
-test('sanity', async t => {
-  const app = t.context.app;
-  await app.client.waitUntilWindowLoaded();
+afterEach(async () => {
+  await globalApp.stop()
+})
 
-  const win = app.browserWindow;
-  t.is(await app.client.getWindowCount(), 1);
-  t.false(await win.isMinimized());
-  t.false(await win.isDevToolsOpened());
-  t.true(await win.isVisible());
+test('sanity', async () => {
+  const app = globalApp
+  await app.client.waitUntilWindowLoaded()
 
-  const {width, height} = await win.getBounds();
-  t.true(width > 0);
-  t.true(height > 0);
-});
+  const win = app.browserWindow
+  expect(await app.client.getWindowCount()).toBe(1)
+  expect(await win.isMinimized()).toBeFalsy()
+  expect(await win.isDevToolsOpened()).toBeFalsy()
+  expect(await win.isVisible()).toBeTruthy()
+
+  const {width, height} = await win.getBounds()
+  expect(width).toBeGreaterThan(0)
+  expect(height).toBeGreaterThan(0)
+})
