@@ -64,16 +64,34 @@ class Plugin extends EventEmitter {
   get resolveIpc() {
     return this.config.resolveIpc
   }
+  get handleData() {
+    return this.config.handleData
+  }
+  get getPendingRequests() {
+    return this.config.getPendingRequests
+  }
+  get getPendingNotifications() {
+    return this.config.getPendingNotifications
+  }
+  get removePendingRequest() {
+    return this.config.removePendingRequest
+  }
+  get removePendingNotification() {
+    return this.config.removePendingNotification
+  }
   registerEventListeners(sourceEmitter, destEmitter) {
     // FIXME memory leaks start here:
     // forward all events from the spawned process
     let eventTypes = [
+      'newState',
       'starting',
       'started',
       'connected',
       'error',
       'stopped',
-      'log'
+      'log',
+      'pluginRequest',
+      'pluginNotification'
     ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
@@ -167,7 +185,11 @@ class Plugin extends EventEmitter {
       } / ${packagePath} about to start - binary: ${binaryPath}`
     )
     try {
-      this.process = new ControlledProcess(binaryPath, this.resolveIpc)
+      this.process = new ControlledProcess(
+        binaryPath,
+        this.resolveIpc,
+        this.handleData
+      )
       this.registerEventListeners(this.process, this)
 
       await this.process.start(flags)
@@ -180,16 +202,20 @@ class Plugin extends EventEmitter {
     return this.process && this.process.stop()
   }
   // public json rpc
-  async rpc(method, params = []) {
+  async rpc(method, params = [], id, result) {
     if (!this.process) {
       console.log('error: rpc not available - process not running', this.state)
       return // FIXME error handling
     }
     const payload = {
       jsonrpc: '2.0',
-      id: rpcId++,
-      method,
-      params
+      id: id || rpcId++
+    }
+    if (result) {
+      payload.result = result
+    } else {
+      payload.method = method
+      payload.params = params
     }
     try {
       const result = await this.process.send(payload)
@@ -197,6 +223,13 @@ class Plugin extends EventEmitter {
     } catch (error) {
       return error
     }
+  }
+  // low level stdin write
+  write(payload) {
+    if (!this.process) {
+      return
+    }
+    this.process.write(payload)
   }
   async checkForUpdates() {
     let result = await this.updater.checkForUpdates()

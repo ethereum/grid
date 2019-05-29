@@ -8,6 +8,7 @@ const STATES = {
   STARTING: 'STARTING' /* Node about to be started */,
   STARTED: 'STARTED' /* Node started */,
   CONNECTED: 'CONNECTED' /* IPC connected - all ready */,
+  DISCONNECTED: 'DISCONNECTED' /* IPC disconnected */,
   STOPPING: 'STOPPING' /* Node about to be stopped */,
   STOPPED: 'STOPPED' /* Node stopped */,
   ERROR: 'ERROR' /* Unexpected error */
@@ -15,10 +16,11 @@ const STATES = {
 
 // TODO add file to electron packaged files
 class ControlledProcess extends EventEmitter {
-  constructor(binaryPath, resolveIpc) {
+  constructor(binaryPath, resolveIpc, handleData) {
     super()
     this.binaryPath = binaryPath
     this.resolveIpc = resolveIpc
+    this.handleData = handleData
     this.debug = console.log // debug(name)
     this.ipc = undefined
     this.stdin = undefined
@@ -41,6 +43,7 @@ class ControlledProcess extends EventEmitter {
     return new Promise((resolve, reject) => {
       this.state = STATES.STARTING
       this.emit('starting')
+      this.emit('newState', 'starting')
       this.debug('Emit: starting')
       this.debug('Start: ', this.binaryPath)
       this.debug('Flags: ', flags)
@@ -63,6 +66,7 @@ class ControlledProcess extends EventEmitter {
         if (code === 0) {
           this.state = STATES.STOPPED
           this.emit('stopped')
+          this.emit('newState', 'stopped')
           this.debug('Emit: stopped')
           return
         }
@@ -79,6 +83,7 @@ class ControlledProcess extends EventEmitter {
       const onStart = () => {
         this.state = STATES.STARTED
         this.emit('started')
+        this.emit('newState', 'started')
         this.debug('Emit: started')
         // Check for and connect IPC in 1s
         setTimeout(async () => {
@@ -117,9 +122,12 @@ class ControlledProcess extends EventEmitter {
           this.logs.push(...parts)
           parts.map(l => {
             this.emit('log', l)
+            if (this.handleData) {
+              this.handleData(l, this.emit.bind(this))
+            }
             if (l.toLowerCase().includes('error')) {
-              this.emit('error', l)
-              this.debug('Emit: error', l)
+              // this.emit('error', l)
+              // this.debug('Emit: error', l)
             }
           })
         }
@@ -161,13 +169,15 @@ class ControlledProcess extends EventEmitter {
       const onIpcConnect = () => {
         this.state = STATES.CONNECTED
         this.emit('connected')
+        this.emit('newState', 'connected')
         this.debug('Emit: connected')
         resolve(this.state)
         this.debug('IPC Connected')
       }
 
       const onIpcEnd = () => {
-        this.state = STATES.STOPPED
+        this.state = STATES.DISCONNECTED
+        this.emit('newState', 'disconnected')
         this.ipc = null
         this.debug('IPC Connection Ended')
       }
@@ -236,6 +246,16 @@ class ControlledProcess extends EventEmitter {
         this.emit(subscriptionId, params)
       }
     }
+  }
+  // private low level stdin write
+  write(payload) {
+    if (!this.proc) {
+      return
+    }
+    const { stdin } = this.proc
+    const jsonString = JSON.stringify(payload)
+    stdin.write(jsonString + '\n')
+    debug('Wrote to stdin:', jsonString)
   }
   // private low level ipc
   send(payload) {
