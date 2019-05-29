@@ -13,7 +13,7 @@
     "start:dev:verbose": "cross-env NODE_ENV=development DEBUG=geth-js electron .",
     "test:mocha": "cross-env NODE_ENV=test mocha ./test",
     "test:e2e": "cross-env NODE_ENV=development ava ./test/e2e --verbose -s",
-    "jest:e2e": "jest ./test/e2e",
+    "jest:e2e": "jest ./test/e2e --runInBand --verbose",
     "test:integration:watch": "cross-env NODE_ENV=test mocha ./test/integration --watch",
     "test:integration:parity": "cross-env NODE_ENV=test mocha ./test/integration/parity.test.js",
     "test:integration:geth": "cross-env NODE_ENV=test mocha ./test/integration/geth.test.js",

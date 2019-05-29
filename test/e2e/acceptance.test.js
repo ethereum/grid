@@ -37,7 +37,6 @@ test('As a user, I want to download a geth node', async () => {
   await versionList.waitUntilVersionDownloading(0)
   await versionList.waitUntilVersionSelected(0)
 
-  done()
 })
 
 test('As a user, I want to start/stop my geth node from the app UI', async () => {
@@ -59,7 +58,6 @@ test('As a user, I want to start/stop my geth node from the app UI', async () =>
   await node.toggle('geth')
   await node.waitUntilStopped()
 
-  done()
 })
 
 test('As a user, I want to configure Geth settings', async () => {
@@ -109,11 +107,10 @@ test('As a user, I want to know if my client is up to date', async () => {
 
   await client.waitForVisible('[role=alertdialog]', 500, true)
 
-  done()
 })
 
-test('As a user, I want to see sync status visually', async () => {
-  fail('Not implemented.')
+test.skip('As a user, I want to see sync status visually', async () => {
+  // Not implemented.
 })
 
 test('As a user, I want to have the connection details remembered', async () => {
