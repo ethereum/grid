@@ -1,3 +1,5 @@
+const DELAY_FACTOR = 3
+
 class VersionList {
   constructor(client) {
     this.client = client
@@ -44,19 +46,19 @@ class VersionList {
 
   // Events
   waitToLoad() {
-    return this.client.waitUntilTextExists('h6', '61 versions available', 5000)
+    return this.client.waitUntilTextExists('h6', '61 versions available', DELAY_FACTOR * 7500)
   }
 
   waitUntilVersionSelected(index = 0) {
     // nth-child is not zero-based
     index++
-    return this.client.waitUntilTextExists(`[data-test-id=version-list] [role=button]:nth-child(${index}) span span`, 'SELECTED', 20000)
+    return this.client.waitUntilTextExists(`[data-test-id=version-list] [role=button]:nth-child(${index}) span span`, 'SELECTED', DELAY_FACTOR * 20000)
   }
 
   waitUntilVersionDownloading(index = 0) {
     // nth-child is not zero-based
     index++
-    return this.client.waitUntilTextExists(`[data-test-id=version-list] [role=button]:nth-child(${index}) span span`, 'DOWNLOADING', 1000)
+    return this.client.waitUntilTextExists(`[data-test-id=version-list] [role=button]:nth-child(${index}) span span`, 'DOWNLOADING', DELAY_FACTOR * 1000)
   }
 }
 

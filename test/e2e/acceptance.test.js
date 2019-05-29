@@ -122,10 +122,6 @@ test('As a user, I want to have the connection details remembered', async t => {
   const clientAppBar = new ClientAppBar(client)
   const settings = new ClientSettingsForm(client)
 
-  await versionList.waitToLoad()
-  await versionList.clickOnItem(0)
-  await versionList.waitUntilVersionSelected(0)
-
   await clientAppBar.settings.click()
   await settings.getPathInput('dataDir').setValue('/tmp/ac5718')
 

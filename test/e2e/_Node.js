@@ -8,11 +8,11 @@ class Node {
   }
 
   waitUntilStarted() {
-    return this.client.waitUntilTextExists('[data-test-id=node-state]', 'STARTED')
+    return this.client.waitUntilTextExists('[data-test-id=node-state]', 'STARTED', 3000)
   }
 
   waitUntilStopped() {
-    return this.client.waitUntilTextExists('[data-test-id=node-state]', 'STOPPED')
+    return this.client.waitUntilTextExists('[data-test-id=node-state]', 'STOPPED', 3000)
   }
 
 }

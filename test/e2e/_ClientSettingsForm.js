@@ -26,7 +26,7 @@ class ClientSettingsForm {
   }
 
   waitUntilModalIsClosed() {
-    return this.client.waitUntil(async () => (await this.client.$('div[role=presentation]')).state === 'failure')
+    return this.client.waitUntil(async () => (await this.client.$('div[role=presentation]')).state === 'failure', 1000)
   }
 }
 
