@@ -18,4 +18,4 @@ const clearBinDir = function () {
 
 const delay = time => new Promise(resolve => setTimeout(resolve, time));
 
-export { rmGethDir, clearBinDir }
+export { rmGethDir, clearBinDir, delay }

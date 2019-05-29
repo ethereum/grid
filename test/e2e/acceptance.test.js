@@ -3,7 +3,7 @@ import ApplicationFactory from './_ApplicationFactory'
 import ClientAppBar from './_ClientAppBar'
 import MainAppBar from './_MainAppBar'
 import VersionList from './_VersionList'
-import { rmGethDir, clearBinDir } from './_TestUtils'
+import { rmGethDir, clearBinDir, delay } from './_TestUtils'
 import Node from './_Node'
 import ClientSettingsForm from './_ClientSettingsForm'
 import {getProcess, getProcessFlags} from './_ProcessMatcher'
@@ -63,6 +63,8 @@ test('As a user, I want to start/stop my geth node from the app UI', async t => 
 })
 
 test('As a user, I want to configure Geth settings', async t => {
+  t.timeout(20 * 1000);
+
   const {app, client, win} = await init(t)
   const versionList = new VersionList(app.client)
   const node = new Node(app.client)
@@ -74,11 +76,11 @@ test('As a user, I want to configure Geth settings', async t => {
   await versionList.waitUntilVersionSelected(0)
 
   await clientAppBar.settings.click()
-  await settings.getPathInput('dataDir').setValue('/tmp/datadir')
   await settings.getInput('cache').setValue('1337')
   await settings.chooseSelectOption('syncMode', 'light')
   await settings.chooseSelectOption('api', 'websockets')
   await settings.chooseSelectOption('network', 'rinkeby')
+  await settings.getPathInput('dataDir').setValue('/tmp/datadir')
 
   await node.toggle('geth')
   await node.waitUntilStarted()
@@ -117,6 +119,8 @@ test('As a user, I want to see sync status visually', async t => {
 })
 
 test('As a user, I want to have the connection details remembered', async t => {
+  t.timeout(20 * 1000);
+
   let {app, client, win} = await init(t)
   const versionList = new VersionList(client)
   const clientAppBar = new ClientAppBar(client)
