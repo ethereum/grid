@@ -60,6 +60,16 @@ const openFolderDialog = defaultPath => {
   })
 }
 
+const notify = (title, body) => {
+  const notification = new Notification(title, { body })
+  notification.onclick = () => {
+    const window = remote.getCurrentWindow()
+    if (window) {
+      window.show()
+    }
+  }
+}
+
 const currentWindow = remote.getCurrentWindow()
 
 const Grid = {
