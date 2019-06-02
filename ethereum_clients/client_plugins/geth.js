@@ -83,6 +83,7 @@ module.exports = {
     {
       id: 'network',
       default: 'main',
+      label: 'Network',
       options: [
         { value: 'main', label: 'Main', flag: '' },
         { value: 'ropsten', label: 'Ropsten (testnet)', flag: '--testnet' },

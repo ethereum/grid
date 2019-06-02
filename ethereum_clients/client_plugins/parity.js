@@ -42,6 +42,7 @@ module.exports = {
           flag: '--chain ropsten'
         },
         { value: 'kovan', label: 'Kovan (testnet)', flag: '--chain kovan' },
+        { value: 'goerli', label: 'Görli (testnet)', flag: '--chain goerli' },
         { value: 'classic', label: 'Ethereum Classic', flag: '--chain classic' }
       ]
     },
