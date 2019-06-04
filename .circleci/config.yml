@@ -30,12 +30,12 @@ aliases:
 
   - &node_installation
     run:
-      name: "Update Node.js and npm if on MacOS"
+      name: 'Update Node.js and npm if on MacOS'
       command: .circleci/install_node.sh
 
   - &upgrade_yarn
     run:
-      name: "Updates yarn"
+      name: 'Updates yarn'
       command: .circleci/upgrade_yarn.sh
 
   # Custom task removes unnecessary build files before uploading release directory
@@ -88,11 +88,7 @@ jobs:
 
   build-mac:
     macos:
-<<<<<<< HEAD
-      xcode: '9.0'
-=======
       xcode: '10.0'
->>>>>>> master
     environment:
       GRID_ENV: mac
     working_directory: ~/repo
