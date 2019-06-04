@@ -25,16 +25,6 @@ const {
 } = require('@philipplgh/electron-app-manager')
 registerPackageProtocol()
 
-AppManager.on('menu-available', updaterTemplate => {
-  const template = getMenuTemplate()
-
-  // replace old updater menu with new one
-  const idx = template.findIndex(mItem => mItem.label === 'Updater')
-  template[idx] = updaterTemplate
-
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
-})
-
 const CONFIG_NAME = '.shell.config.js'
 
 // hw acceleration can cause problem in VMs and in certain APIs
@@ -44,6 +34,24 @@ const shellManager = new AppManager({
   repository: 'https://github.com/ethereum/grid',
   auto: true,
   electron: true
+})
+
+AppManager.on('menu-available', updaterTemplate => {
+  const template = getMenuTemplate()
+
+  // replace old updater menu with new one
+  const idx = template.findIndex(mItem => mItem.label === 'Updater')
+  template[idx] = updaterTemplate
+
+  updaterTemplate.submenu.push({
+    id: 'check',
+    label: 'Check Update',
+    click: function() {
+      shellManager.checkForUpdatesAndNotify(true)
+    }
+  })
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 })
 
 // TODO util
