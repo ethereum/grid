@@ -29,12 +29,6 @@ module.exports = {
   repository: 'https://github.com/PhilippLgh/EthCapetownWorkshop',
   prefix: `${process.platform}`, // filter github assets
   binaryName: process.platform === 'win32' ? 'parity.exe' : 'parity',
-  config: {
-    default: {
-      network: 'mainnet',
-      syncMode: 'warp'
-    }
-  },
   settings: [
     {
       id: 'network',
@@ -48,6 +42,7 @@ module.exports = {
           flag: '--chain ropsten'
         },
         { value: 'kovan', label: 'Kovan (testnet)', flag: '--chain kovan' },
+        { value: 'goerli', label: 'Görli (testnet)', flag: '--chain goerli' },
         { value: 'classic', label: 'Ethereum Classic', flag: '--chain classic' }
       ]
     },

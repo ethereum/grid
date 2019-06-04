@@ -1,6 +1,11 @@
 const { ipcRenderer, remote, webFrame } = require('electron')
 const { dialog } = require('electron').remote
 
+// Enabling spectron integration https://github.com/electron/spectron#node-integration
+if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+  window.electronRequire = require
+}
+
 // const rpc = require('./Rpc')
 
 // const thisWin = remote.getCurrentWindow()
@@ -58,16 +63,6 @@ const openFolderDialog = defaultPath => {
       resolve(filePaths[0])
     })
   })
-}
-
-const notify = (title, body) => {
-  const notification = new Notification(title, { body })
-  notification.onclick = () => {
-    const window = remote.getCurrentWindow()
-    if (window) {
-      window.show()
-    }
-  }
 }
 
 const currentWindow = remote.getCurrentWindow()

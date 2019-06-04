@@ -1,16 +1,5 @@
 [
   {
-    "name": "swarm",
-    "displayName": "Swarm",
-    "type": "storage",
-    "author": {
-      "name": "Philipp Langhans",
-      "email": "philipp@ethereum.org",
-      "address": "9fae5e6e2583216f23bdf94f74ceae26e209b31e"
-    },
-    "location": "https://github.com/PhilippLgh/grid-swarm-extension"
-  },
-  {
     "name": "clef",
     "displayName": "Clef",
     "type": "signer",

@@ -40,13 +40,13 @@ module.exports.getMenuTemplate = () => {
       role: 'help',
       submenu: [
         {
-          label: 'Learn More',
-          click () { require('electron').shell.openExternal('https://electronjs.org') }
+          label: 'Learn More...',
+          click () { require('electron').shell.openExternal('https://grid.ethereum.org') }
         }
       ]
     }
   ]
-  
+
   if (process.platform === 'darwin') {
     template.unshift({
       label: app.getName(),
@@ -62,7 +62,7 @@ module.exports.getMenuTemplate = () => {
         { role: 'quit' }
       ]
     })
-  
+
     // Window menu
     template[3].submenu = [
       { role: 'close' },

@@ -2,7 +2,7 @@ const { assert } = require('chai')
 const fs = require('fs')
 const path = require('path')
 const rimraf = require('rimraf')
-const Geth = require('../ethereum_clients/geth')
+const Geth = require('../../ethereum_clients/client_plugins/geth')
 
 const gethBin = path.join(__dirname, 'fixtures', 'geth_bin')
 const dataDir = path.join(__dirname, 'fixtures', 'data_dir')
