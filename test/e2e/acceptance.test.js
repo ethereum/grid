@@ -85,7 +85,7 @@ test('As a user, I want to configure Geth settings', async t => {
 
   const gethFlags = await getProcessFlags('geth')
   const gf = gethFlags.join(' ')
-  // t.assert(gethFlags == '--datadir', '/tmp/datadir', '--syncmode', 'light', '--rpcapi', 'websockets', '--rinkeby', '--cache', '1337')
+
   t.assert(/--datadir \/tmp\/datadir/.test(gf))
   t.assert(/--syncmode light/.test(gf))
   t.assert(/--ws/.test(gf))

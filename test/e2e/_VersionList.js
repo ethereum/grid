@@ -46,7 +46,7 @@ class VersionList {
 
   // Events
   waitToLoad() {
-    return this.client.waitUntilTextExists('h6', '61 versions available', DELAY_FACTOR * 7500)
+    return this.client.waitForExist(`[data-test-id=version-list] > *`, DELAY_FACTOR * 7500)
   }
 
   waitUntilVersionSelected(index = 0) {

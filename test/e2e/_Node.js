@@ -7,8 +7,12 @@ class Node {
     return this.client.click(`[data-test-id=switch-${nodeName}]`)
   }
 
+  select(nodeName) {
+    return this.client.click(`[data-test-id=node-${nodeName}]`)
+  }
+
   waitUntilStarted() {
-    return this.client.waitUntilTextExists('[data-test-id=node-state]', 'STARTED', 3000)
+    return this.client.waitUntilTextExists('[data-test-id=node-state]', 'STARTED', 5000)
   }
 
   waitUntilStopped() {
