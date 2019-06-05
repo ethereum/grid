@@ -48,9 +48,6 @@ class Plugin extends EventEmitter {
   get displayName() {
     return this.config.displayName
   }
-  get defaultConfig() {
-    return this.config.config.default
-  }
   get state() {
     // FIXME ugly
     return this.process ? this.process.state : 'STOPPED'
@@ -67,17 +64,8 @@ class Plugin extends EventEmitter {
   get handleData() {
     return this.config.handleData
   }
-  get getPendingRequests() {
-    return this.config.getPendingRequests
-  }
-  get getPendingNotifications() {
-    return this.config.getPendingNotifications
-  }
-  get removePendingRequest() {
-    return this.config.removePendingRequest
-  }
-  get removePendingNotification() {
-    return this.config.removePendingNotification
+  get api() {
+    return this.config.api
   }
   registerEventListeners(sourceEmitter, destEmitter) {
     // FIXME memory leaks start here:

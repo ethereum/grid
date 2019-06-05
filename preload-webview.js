@@ -16,6 +16,26 @@ window.grid = {
   notify,
   getClient: name => {
     const client = PluginHost.getAllPlugins().find(p => p.name === name)
-    return client
+    return {
+      sendRpc: async (method, params) => {
+        return client.rpc(method, params)
+      },
+      getState: () => {
+        return client.state
+      },
+      execute: command => {
+        client.execute(command)
+      },
+      on: (eventName, handler) => {
+        return client.on(eventName, handler)
+      },
+      off: (eventName, handler) => {
+        return client.removeListener(eventName, handler)
+      },
+      stdinWrite: payload => {
+        return client.plugin.write(payload)
+      },
+      api: client.plugin.api
+    }
   }
 }
