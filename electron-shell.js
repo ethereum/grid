@@ -1,7 +1,6 @@
 const path = require('path')
 const url = require('url')
 const Module = require('module')
-const fs = require('original-fs')
 const { app, shell } = require('electron')
 const WindowManager = require('./WindowManager')
 
