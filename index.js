@@ -32,7 +32,7 @@ app.disableHardwareAcceleration()
 
 const shellManager = new AppManager({
   repository: 'https://github.com/ethereum/grid',
-  auto: true,
+  auto: false,
   electron: true
 })
 
@@ -43,13 +43,13 @@ AppManager.on('menu-available', updaterTemplate => {
   const idx = template.findIndex(mItem => mItem.label === 'Updater')
   template[idx] = updaterTemplate
 
-  updaterTemplate.submenu.push({
-    id: 'check',
-    label: 'Check Update',
-    click: function() {
-      shellManager.checkForUpdatesAndNotify(true)
-    }
-  })
+  // updaterTemplate.submenu.push({
+  //   id: 'check',
+  //   label: 'Check Update',
+  //   click: function() {
+  //     shellManager.checkForUpdatesAndNotify(true)
+  //   }
+  // })
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 })
