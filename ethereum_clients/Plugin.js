@@ -308,8 +308,8 @@ class PluginProxy extends EventEmitter {
     console.log(`client ${this.name} stopped`)
     return this.plugin.stop()
   }
-  rpc(method, params = []) {
-    return this.plugin.rpc(method, params)
+  rpc(method, params = [], id, result) {
+    return this.plugin.rpc(method, params, id, result)
   }
   execute(command) {
     return this.plugin.execute(command)
