@@ -17,10 +17,10 @@ const init = async function(t) {
 }
 
 test.beforeEach(async t => {
-  // rmGethDir()
   clearBinDir()
 
-  t.context.app = ApplicationFactory.development()
+  // t.context.app = ApplicationFactory.development()
+  t.context.app = ApplicationFactory.release()
 
   await t.context.app.start()
 })
