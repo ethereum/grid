@@ -71,7 +71,7 @@ aliases:
       - run: node -v
       - *restore_modules_cache
       - *install
-      # - *test_e2e
+      - *test_e2e
       - *run_script
       - *save_modules_cache
       - *before_store_artifacts
