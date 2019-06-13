@@ -6,7 +6,7 @@ import VersionList from './_VersionList'
 import { rmGethDir, clearBinDir } from './_TestUtils'
 import Node from './_Node'
 import ClientSettingsForm from './_ClientSettingsForm'
-import {getProcess, getProcessFlags} from './_ProcessMatcher'
+import { getProcess, getProcessFlags } from './_ProcessMatcher'
 
 const init = async function(t) {
   const app = t.context.app
@@ -17,7 +17,6 @@ const init = async function(t) {
 }
 
 test.beforeEach(async t => {
-  // rmGethDir()
   clearBinDir()
 
   t.context.app = ApplicationFactory.development()
@@ -30,7 +29,7 @@ test.afterEach.always(async t => {
 })
 
 test('Parity config to flags', async t => {
-  const {app, client, win} = await init(t)
+  const { app, client, win } = await init(t)
   const versionList = new VersionList(app.client)
   const node = new Node(app.client)
   const clientAppBar = new ClientAppBar(app.client)
@@ -54,5 +53,5 @@ test('Parity config to flags', async t => {
   const parityFlags = await getProcessFlags('parity')
   const gf = parityFlags.join(' ')
 
-  t.true(gf.includes(`--ipc-path ${defaultIpcPathValue}`));
+  t.true(gf.includes(`--ipc-path ${defaultIpcPathValue}`))
 })
