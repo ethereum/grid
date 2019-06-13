@@ -7,8 +7,15 @@ class ApplicationFactory {
   static development() {
     const params = {
       path: path.resolve('./node_modules/.bin/electron'),
+      // path: path.resolve('./node_modules/electron/dist/Electron.app/Contents/MacOS/electron'),
       args: [path.resolve('./index.js')],
-      requireName: 'electronRequire'
+      requireName: 'electronRequire',
+      startTimeout: 10000,
+      chromeDriverLogPath: path.resolve(
+        __dirname,
+        '/test/e2e/chromedriver.log'
+      ),
+      webdriverLogPath: path.resolve(__dirname, '/test/e2e/webdriver.log)')
     }
 
     debug && console.log('development() app parameters', params)
@@ -16,7 +23,9 @@ class ApplicationFactory {
   }
 
   static release() {
-    const params = {}
+    const params = {
+      startTimeout: 20000
+    }
 
     switch (process.platform) {
       case 'win32': {

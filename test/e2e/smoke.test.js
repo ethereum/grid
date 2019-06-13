@@ -2,7 +2,7 @@ import test from 'ava'
 import ApplicationFactory from './_ApplicationFactory'
 
 test.beforeEach(async t => {
-  t.context.app = ApplicationFactory.development()
+  t.context.app = ApplicationFactory.release()
 
   await t.context.app.start()
 })
