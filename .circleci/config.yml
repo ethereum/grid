@@ -55,7 +55,13 @@ aliases:
     run: yarn test:e2e -s
 
   - &run_script
-    run: yarn release --$GRID_ENV
+    run: | 
+      if [[ $CIRCLE_BRANCH == 'master' ]]; then
+        yarn release --$GRID_ENV;
+      else
+        yarn build --$GRID_ENV;
+      fi;
+
 
   - &run_steps
     steps:
