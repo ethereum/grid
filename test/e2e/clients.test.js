@@ -25,7 +25,9 @@ test.beforeEach(async t => {
 })
 
 test.afterEach.always(async t => {
-  await t.context.app.stop()
+  if (t.context.app.running === true) {
+    await t.context.app.stop()
+  }
 })
 
 test('Parity config to flags', async t => {
@@ -54,4 +56,46 @@ test('Parity config to flags', async t => {
   const gf = parityFlags.join(' ')
 
   t.true(gf.includes(`--ipc-path ${defaultIpcPathValue}`))
+
+  await node.toggle('parity')
 })
+
+const clientShouldStopWhenAppIsClosedMacro = async (t, input) => {
+  const { app } = await init(t)
+  const versionList = new VersionList(app.client)
+  const node = new Node(app.client)
+  const CLIENT = input
+
+  await versionList.waitToLoad()
+
+  await node.select(CLIENT)
+
+  await versionList.waitToLoad()
+  await versionList.clickOnItem(0)
+  await versionList.waitUntilVersionSelected(0)
+
+  await node.toggle(CLIENT)
+
+  await node.waitUntilStarted()
+
+  await app.stop()
+
+  await node.waitUntilProcessExited(CLIENT, 10000)
+
+  t.pass()
+}
+clientShouldStopWhenAppIsClosedMacro.title = (
+  title = 'should stop when app is closed',
+  input
+) => `${input} ${title}`
+
+/**
+ * The tests below use Macro:
+ * https://github.com/avajs/ava/blob/master/docs/01-writing-tests.md#reusing-test-logic-through-macros
+ *
+ * You can run a single test with the following command:
+ * yarn test:e2e -m 'parity should stop when app is closed'
+ */
+test(clientShouldStopWhenAppIsClosedMacro, 'geth')
+test(clientShouldStopWhenAppIsClosedMacro, 'aleth')
+test.failing(clientShouldStopWhenAppIsClosedMacro, 'parity')
