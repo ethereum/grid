@@ -80,7 +80,8 @@ aliases:
 jobs:
   build:
     docker:
-      - image: electronuserland/builder:10
+      - image: electronuserland/builder:wine-chrome
+      # - image: electronuserland/builder:10
     environment:
       GRID_ENV: linux
     working_directory: ~/repo
