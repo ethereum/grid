@@ -1,5 +1,5 @@
 import test from 'ava'
-import ApplicationFactory from './_ApplicationFactory'
+import ApplicationFactory from './helpers/_ApplicationFactory'
 
 test.beforeEach(async t => {
   t.context.app = ApplicationFactory.development()

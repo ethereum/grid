@@ -1,12 +1,12 @@
 import test from 'ava'
-import ApplicationFactory from './_ApplicationFactory'
-import ClientAppBar from './_ClientAppBar'
-import MainAppBar from './_MainAppBar'
-import VersionList from './_VersionList'
-import { rmGethDir, clearBinDir } from './_TestUtils'
-import Node from './_Node'
-import ClientSettingsForm from './_ClientSettingsForm'
-import { getProcess, getProcessFlags } from './_ProcessMatcher'
+
+import ApplicationFactory from './helpers/_ApplicationFactory'
+import ClientSettingsForm from './helpers/_ClientSettingsForm'
+import { getProcessFlags } from './helpers/_ProcessMatcher'
+import ClientAppBar from './helpers/_ClientAppBar'
+import { clearBinDir } from './helpers/_TestUtils'
+import VersionList from './helpers/_VersionList'
+import Node from './helpers/_Node'
 
 const init = async function(t) {
   const app = t.context.app
