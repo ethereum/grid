@@ -17,7 +17,6 @@ const init = async function(t) {
 }
 
 test.beforeEach(async t => {
-  // rmGethDir()
   clearBinDir()
 
   t.context.app = ApplicationFactory.development()
@@ -26,11 +25,13 @@ test.beforeEach(async t => {
 })
 
 test.afterEach.always(async t => {
-  await t.context.app.stop()
+  if (t.context.app.running === true) {
+    await t.context.app.stop()
+  }
 })
 
 test('As a user, I want to download a geth node', async t => {
-  const { app, client, win } = await init(t)
+  const { app } = await init(t)
   const versionList = new VersionList(app.client)
 
   await versionList.waitToLoad()
@@ -43,7 +44,7 @@ test('As a user, I want to download a geth node', async t => {
 
 // #38
 test('As a user, I want to start/stop my geth node from the app UI', async t => {
-  const { app, client, win } = await init(t)
+  const { app } = await init(t)
   const versionList = new VersionList(app.client)
   const node = new Node(app.client)
 
@@ -65,7 +66,7 @@ test('As a user, I want to start/stop my geth node from the app UI', async t => 
 
 // #37
 test('As a user, I want to configure Geth settings', async t => {
-  const { app, client, win } = await init(t)
+  const { app } = await init(t)
   const versionList = new VersionList(app.client)
   const node = new Node(app.client)
   const clientAppBar = new ClientAppBar(app.client)
@@ -97,7 +98,7 @@ test('As a user, I want to configure Geth settings', async t => {
 
 // #22
 test('As a user, I want to know if my client is up to date', async t => {
-  const { app, client, win } = await init(t)
+  const { app, client } = await init(t)
   const versionList = new VersionList(app.client)
 
   await versionList.waitToLoad()
@@ -119,8 +120,7 @@ test('As a user, I want to know if my client is up to date', async t => {
 test.failing(
   'As a user, I want to have the connection details remembered',
   async t => {
-    let { app, client, win } = await init(t)
-    const versionList = new VersionList(client)
+    let { app, client } = await init(t)
     const clientAppBar = new ClientAppBar(client)
     const settings = new ClientSettingsForm(client)
 
