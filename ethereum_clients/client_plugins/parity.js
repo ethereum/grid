@@ -26,17 +26,12 @@ module.exports = {
   displayName: 'Parity',
   name: 'parity',
   // repository: 'https://github.com/paritytech/parity-ethereum'
-  repository: 'https://github.com/PhilippLgh/EthCapetownWorkshop',
+  repository: 'https://github.com/evertonfraga/releases-parity',
   prefix: `${process.platform}`, // filter github assets
   binaryName: process.platform === 'win32' ? 'parity.exe' : 'parity',
-  config: {
-    default: {
-      network: 'mainnet',
-      syncMode: 'warp'
-    }
-  },
-  settings: {
-    network: {
+  settings: [
+    {
+      id: 'network',
       label: 'Network',
       default: 'mainnet',
       options: [
@@ -47,10 +42,12 @@ module.exports = {
           flag: '--chain ropsten'
         },
         { value: 'kovan', label: 'Kovan (testnet)', flag: '--chain kovan' },
+        { value: 'goerli', label: 'Görli (testnet)', flag: '--chain goerli' },
         { value: 'classic', label: 'Ethereum Classic', flag: '--chain classic' }
       ]
     },
-    syncMode: {
+    {
+      id: 'syncMode',
       label: 'Sync Mode',
       default: 'warp',
       options: [
@@ -59,11 +56,13 @@ module.exports = {
         { value: 'nowarp', label: 'Full', flag: '--no-warp' }
       ]
     },
-    ipcPath: {
+    {
+      id: 'ipcPath',
+      type: 'path',
       label: 'IPC Path',
       default: IPC_PATH,
       flag: '--ipc-path %s'
     }
-  },
+  ],
   resolveIpc: logs => IPC_PATH
 }

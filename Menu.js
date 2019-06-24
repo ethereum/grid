@@ -4,10 +4,7 @@ module.exports.getMenuTemplate = () => {
   const template = [
     {
       label: 'Edit',
-      submenu: [
-        { role: 'undo' },
-        { role: 'redo' }
-      ]
+      submenu: [{ role: 'undo' }, { role: 'redo' }]
     },
     {
       label: 'View',
@@ -25,10 +22,7 @@ module.exports.getMenuTemplate = () => {
     },
     {
       role: 'window',
-      submenu: [
-        { role: 'minimize' },
-        { role: 'close' }
-      ]
+      submenu: [{ role: 'minimize' }, { role: 'close' }]
     },
     {
       label: 'Updater',
@@ -40,13 +34,15 @@ module.exports.getMenuTemplate = () => {
       role: 'help',
       submenu: [
         {
-          label: 'Learn More',
-          click () { require('electron').shell.openExternal('https://electronjs.org') }
+          label: 'Learn More...',
+          click() {
+            require('electron').shell.openExternal('https://grid.ethereum.org')
+          }
         }
       ]
     }
   ]
-  
+
   if (process.platform === 'darwin') {
     template.unshift({
       label: app.getName(),
@@ -62,7 +58,7 @@ module.exports.getMenuTemplate = () => {
         { role: 'quit' }
       ]
     })
-  
+
     // Window menu
     template[3].submenu = [
       { role: 'close' },

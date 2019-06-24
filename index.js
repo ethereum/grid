@@ -8,6 +8,7 @@ const { setupRpc } = require('./Rpc')
 const { getMenuTemplate } = require('./Menu')
 
 const { registerGlobalPluginHost } = require('./ethereum_clients/PluginHost')
+const { registerGlobalAppManager } = require('./grid_apps/AppManager')
 
 const log = {
   dev: require('debug')('dev'),
@@ -24,6 +25,17 @@ const {
 } = require('@philipplgh/electron-app-manager')
 registerPackageProtocol()
 
+const CONFIG_NAME = '.shell.config.js'
+
+// hw acceleration can cause problem in VMs and in certain APIs
+app.disableHardwareAcceleration()
+
+const shellManager = new AppManager({
+  repository: 'https://github.com/ethereum/grid',
+  auto: true,
+  electron: true
+})
+
 AppManager.on('menu-available', updaterTemplate => {
   const template = getMenuTemplate()
 
@@ -31,22 +43,15 @@ AppManager.on('menu-available', updaterTemplate => {
   const idx = template.findIndex(mItem => mItem.label === 'Updater')
   template[idx] = updaterTemplate
 
+  updaterTemplate.submenu.push({
+    id: 'check',
+    label: 'Check Update',
+    click: function() {
+      shellManager.checkForUpdatesAndNotify(true)
+    }
+  })
+
   Menu.setApplicationMenu(Menu.buildFromTemplate(template))
-})
-
-const CONFIG_NAME = '.shell.config.js'
-
-// hw acceleration can cause problem in VMs and in certain APIs
-app.disableHardwareAcceleration()
-
-const WindowManager = require('./WindowManager')
-// TODO move into WindowManager
-let mainWindow = null
-
-const shellManager = new AppManager({
-  repository: 'https://github.com/ethereum/grid',
-  auto: true,
-  electron: true
 })
 
 // TODO util
@@ -90,12 +95,6 @@ const checkConnection = async (host, port, timeout = 2000) => {
       resolve(false)
     })
   })
-}
-
-// Step 0
-const initialize = async geth => {
-  // IMPORTANT don't await here: menu construction will defer startup
-  initializeMenu(geth)
 }
 
 // Step 1 - configure and start user interface
@@ -184,9 +183,14 @@ const startUI = async () => {
 
 // ########## MAIN APP ENTRY POINT #########
 const onReady = async () => {
-  registerGlobalPluginHost()
+  const pluginHost = registerGlobalPluginHost()
 
-  // 1. start UI for quick user-feedback without long init procedures
-  await startUI()
+  pluginHost.on('plugins-loaded', async () => {
+    // FIXME don't defer start
+    // 1. start UI for quick user-feedback without long init procedures
+    await startUI()
+  })
+
+  const appManager = registerGlobalAppManager()
 }
 app.once('ready', onReady)

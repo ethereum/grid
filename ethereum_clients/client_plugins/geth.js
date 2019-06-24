@@ -62,35 +62,15 @@ module.exports = {
   prefix: `geth-${platform}`,
   binaryName: process.platform === 'win32' ? 'geth.exe' : 'geth',
   resolveIpc: logs => findIpcPathInLogs(logs),
-  config: {
-    default: {
-      dataDir,
-      api: 'ipc',
-      network: 'main',
-      syncMode: 'light',
-      ipc: 'ipc',
-      cache: '2048',
-      signer: 'none'
-    },
-    flags: {
-      '--datadir': 'path',
-      '--syncmode': ['fast', 'light', 'full'],
-      '--networkid': 'number',
-      '--testnet': '',
-      '--rinkeby': '',
-      '--ws --wsaddr': 'string',
-      '--wsport': 'number',
-      '--signer': 'string'
-    }
-  },
-  settings: {
-    dataDir: {
-      type: 'path',
+  settings: [
+    {
+      id: 'dataDir',
       default: dataDir,
       label: 'Data Directory',
       flag: '--datadir %s'
     },
-    api: {
+    {
+      id: 'api',
       default: 'ipc',
       label: 'API',
       options: [
@@ -99,33 +79,39 @@ module.exports = {
         { value: 'rpc', label: 'RPC HTTP', flag: '--rpc' }
       ]
     },
-    network: {
+    {
+      id: 'network',
       default: 'main',
       label: 'Network',
       options: [
         { value: 'main', label: 'Main', flag: '' },
         { value: 'ropsten', label: 'Ropsten (testnet)', flag: '--testnet' },
-        { value: 'rinkeby', label: 'Rinkeby (testnet)', flag: '--rinkeby' }
+        { value: 'rinkeby', label: 'Rinkeby (testnet)', flag: '--rinkeby' },
+        { value: 'goerli', label: 'Görli (testnet)', flag: '--goerli' }
       ]
     },
-    syncMode: {
+    {
+      id: 'syncMode',
       default: 'light',
       label: 'Sync Mode',
       options: ['fast', 'full', 'light'],
       flag: '--syncmode %s'
     },
-    cache: {
+    {
+      id: 'cache',
       default: '2048',
       label: 'Cache',
       flag: '--cache %s'
     },
-    signer: {
+    {
+      id: 'signer',
       default: 'none',
       label: 'Signer',
       options: [
         { value: 'none', label: 'None', flag: '' },
-        { value: 'clef', label: 'Clef', flag: '--signer http://localhost:8550' }
-      ]
+        { value: 'clef', label: 'Clef', flag: 'http://localhost:8550' }
+      ],
+      flag: '--signer %s'
     }
-  }
+  ]
 }
