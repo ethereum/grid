@@ -120,7 +120,7 @@ class ControlledProcess extends EventEmitter {
         const log = data.toString()
         if (log) {
           let parts = log.split(/\r|\n/)
-          parts = parts.filter(p => p !== '')
+          parts = parts.filter(p => !['', '> '].includes(p))
           this.logs.push(...parts)
           parts.map(l => {
             this.emit('log', l)
@@ -249,6 +249,14 @@ class ControlledProcess extends EventEmitter {
       const { params } = message
       this.emit('notification', params)
     }
+  }
+  write(payload) {
+    if (!this.proc) {
+      return
+    }
+    const { stdin } = this.proc
+    stdin.write(payload + '\n')
+    debug('Wrote to stdin: ', payload)
   }
   // private low level ipc
   send(payload) {
