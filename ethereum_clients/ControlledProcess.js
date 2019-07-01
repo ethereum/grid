@@ -122,7 +122,7 @@ class ControlledProcess extends EventEmitter {
         const log = data.toString()
         if (log) {
           let parts = log.split(/\r|\n/)
-          parts = parts.filter(p => p !== '')
+          parts = parts.filter(p => !['', '> '].includes(p))
           this.logs.push(...parts)
           parts.map(l => {
             this.emit('log', l)
@@ -181,6 +181,7 @@ class ControlledProcess extends EventEmitter {
 
       const onIpcEnd = () => {
         this.state = STATES.DISCONNECTED
+        this.emit('disconnected')
         this.emit('newState', 'disconnected')
         this.ipc = null
         this.debug('IPC Connection Ended')
@@ -254,15 +255,13 @@ class ControlledProcess extends EventEmitter {
       this.emit('notification', params)
     }
   }
-  // private low level stdin write
   write(payload) {
     if (!this.proc) {
       return
     }
     const { stdin } = this.proc
-    const jsonString = JSON.stringify(payload)
-    stdin.write(jsonString + '\n')
-    debug('Wrote to stdin:', jsonString)
+    stdin.write(payload + '\n')
+    debug('Wrote to stdin: ', payload)
   }
   // private low level ipc
   send(payload) {

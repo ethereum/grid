@@ -1,7 +1,6 @@
 const path = require('path')
 const url = require('url')
 const Module = require('module')
-const fs = require('original-fs')
 const { app, shell } = require('electron')
 const WindowManager = require('./WindowManager')
 
@@ -55,7 +54,7 @@ function secureApplication() {
   })
 }
 
-function createRenderer(clientUrl, args) {
+function createRenderer(clientUrl, options, args) {
   // secureApplication()
 
   app.on('web-contents-created', (event, contents) => {
@@ -70,7 +69,7 @@ function createRenderer(clientUrl, args) {
   })
 
   const loadRenderer = () => {
-    win = WindowManager.createWindow()
+    win = WindowManager.createWindow(options)
     win.args = args
     win.loadURL(clientUrl)
     // win.webContents.openDevTools()

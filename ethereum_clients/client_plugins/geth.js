@@ -67,8 +67,8 @@ module.exports = {
       id: 'dataDir',
       default: dataDir,
       label: 'Data Directory',
-      flag: '--datadir="%s"',
-      type: 'path'
+      flag: '--datadir %s',
+      type: 'directory'
     },
     {
       id: 'api',
@@ -87,7 +87,8 @@ module.exports = {
       options: [
         { value: 'main', label: 'Main', flag: '' },
         { value: 'ropsten', label: 'Ropsten (testnet)', flag: '--testnet' },
-        { value: 'rinkeby', label: 'Rinkeby (testnet)', flag: '--rinkeby' }
+        { value: 'rinkeby', label: 'Rinkeby (testnet)', flag: '--rinkeby' },
+        { value: 'goerli', label: 'Görli (testnet)', flag: '--goerli' }
       ]
     },
     {
@@ -95,13 +96,22 @@ module.exports = {
       default: 'light',
       label: 'Sync Mode',
       options: ['fast', 'full', 'light'],
-      flag: '--syncmode=%s'
+      flag: '--syncmode %s'
     },
     {
       id: 'cache',
       default: '2048',
       label: 'Cache',
-      flag: '--cache=%s'
+      flag: '--cache %s'
+    },
+    {
+      id: 'console',
+      label: 'Enable console',
+      default: 'false',
+      options: [
+        { value: 'true', flag: 'console', label: 'Yes' },
+        { value: 'false', flag: '', label: 'No' }
+      ]
     }
   ]
 }

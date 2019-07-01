@@ -1,10 +1,10 @@
 {
   "name": "grid",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Ethereum Grid",
   "main": "index.js",
   "homepage": "https://github.com/ethereum/grid",
-  "author": "Mist team <mist@ethereum.org>",
+  "author": "Grid team <mist@ethereum.org>",
   "license": "ISC",
   "repository": "https://github.com/ethereum/grid",
   "scripts": {
@@ -21,7 +21,7 @@
     "release": "env-cmd .env build"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.37.0",
+    "@philipplgh/electron-app-manager": "^0.42.0",
     "debug": "^4.1.1"
   },
   "peerDependencies": {},
@@ -46,12 +46,9 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,json,css,md}": [
+    "*.{js,jsx,json,css}": [
       "prettier --no-semi --single-quote --write",
       "git add"
-    ],
-    "ignore": [
-      "docs/**/*.md"
     ]
   },
   "build": {
@@ -66,13 +63,16 @@
       "preload-webview.js",
       "WindowManager.js",
       "ui/download-splash.html",
+      "ui/json-editor.html",
       "public/error.html",
       "Menu.js",
+      "Config.js",
       "Rpc.js",
       "ethereum_clients/**/*.js",
       "ethereum_clients/**/*.json",
       "grid_apps/**/*.js",
       "grid_apps/**/*.json",
+      "utils/**/*.js",
       "*.asar",
       "*.zip"
     ],

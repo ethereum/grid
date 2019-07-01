@@ -75,6 +75,7 @@ class Plugin extends EventEmitter {
       'starting',
       'started',
       'connected',
+      'disconnected',
       'error',
       'stopped',
       'log',
@@ -99,6 +100,12 @@ class Plugin extends EventEmitter {
     return this.updater.download(release, { onProgress })
   }
   async getLocalBinary(release) {
+    if (this.binPath) {
+      return {
+        binaryPath: this.binPath
+      }
+    }
+
     const extractBinary = async (pkg, binaryName) => {
       const entries = await this.updater.getEntries(pkg)
       let binaryEntry = undefined
@@ -136,7 +143,11 @@ class Plugin extends EventEmitter {
       fs.writeFileSync(destAbs, await binaryEntry.file.readContent(), {
         mode: parseInt('754', 8) // strict mode prohibits octal numbers in some cases
       })
-      return destAbs
+
+      // cache the binary path
+      this.binPath = destAbs
+
+      return this.binPath
     }
 
     release = release || (await this.updater.getLatestCached())
@@ -161,7 +172,7 @@ class Plugin extends EventEmitter {
       }
     }
     console.warn('no binary found for', release)
-    return {}
+    return undefined
   }
 
   async start(release, flags, config) {
@@ -213,7 +224,6 @@ class Plugin extends EventEmitter {
       return error
     }
   }
-  // low level stdin write
   write(payload) {
     if (!this.process) {
       return
@@ -221,16 +231,30 @@ class Plugin extends EventEmitter {
     this.process.write(payload)
   }
   async execute(command) {
+    const { binaryPath } = await this.getLocalBinary()
+    if (!binaryPath) {
+      console.log(
+        'execution error: binary not found. bad package path or missing/ambiguous binaryName'
+      )
+      return Promise.reject(new Error('execution error: binary not found'))
+    }
+
     return new Promise((resolve, reject) => {
       console.log('execute command:', command)
       const { spawn } = require('child_process')
       const flags = command.split(' ')
-      const binaryPath = 'TODO'
-      const proc = spawn(binaryPath, flags)
+      let proc = undefined
+      try {
+        proc = spawn(binaryPath, flags)
+      } catch (error) {
+        // console.log('spawn error', error)
+        reject(error)
+      }
       const { stdout, stderr, stdin } = proc
       proc.on('error', error => {
         console.log('process error', error)
       })
+      const procData = []
       const onData = data => {
         const log = data.toString()
         if (log) {
@@ -238,14 +262,14 @@ class Plugin extends EventEmitter {
           parts = parts.filter(p => p !== '')
           //this.logs.push(...parts)
           parts.map(l => this.emit('log', l))
+          procData.push(...parts)
           console.log('process data:', parts)
         }
       }
       stdout.on('data', onData)
       stderr.on('data', onData)
       proc.on('close', () => {
-        console.log('done')
-        resolve()
+        resolve(procData)
       })
     })
   }
@@ -310,6 +334,9 @@ class PluginProxy extends EventEmitter {
   }
   rpc(method, params = [], id, result) {
     return this.plugin.rpc(method, params, id, result)
+  }
+  write(payload) {
+    return this.plugin.write(payload)
   }
   execute(command) {
     return this.plugin.execute(command)

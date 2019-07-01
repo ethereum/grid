@@ -1,5 +1,5 @@
 const { ipcRenderer, remote, webFrame } = require('electron')
-const { dialog } = require('electron').remote
+const { notify, showOpenDialog } = require('./utils/renderer/electron')
 
 // Enabling spectron integration https://github.com/electron/spectron#node-integration
 if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
@@ -49,31 +49,17 @@ window.addEventListener('message', function(event) {
 */
 console.log('preload loaded')
 
-const openFolderDialog = defaultPath => {
-  return new Promise((resolve, reject) => {
-    const options = {
-      defaultPath,
-      properties: ['openDirectory', 'showHiddenFiles']
-    }
-    dialog.showOpenDialog(options, filePaths => {
-      if (!filePaths || filePaths.length === 0) {
-        reject('No selection')
-        return
-      }
-      resolve(filePaths[0])
-    })
-  })
-}
-
 const currentWindow = remote.getCurrentWindow()
 
 const Grid = {
   PluginHost: remote.getGlobal('PluginHost'),
   AppManager: remote.getGlobal('AppManager'),
+  Config: remote.getGlobal('UserConfig'),
   window: {
     getArgs: () => currentWindow.args
   },
-  openFolderDialog
+  notify,
+  showOpenDialog
 }
 
 /*
