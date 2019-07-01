@@ -124,14 +124,13 @@ class ControlledProcess extends EventEmitter {
           let parts = log.split(/\r|\n/)
           parts = parts.filter(p => !['', '> '].includes(p))
           this.logs.push(...parts)
-          parts.map(l => {
-            this.emit('log', l)
+          parts.map(logPart => {
+            this.emit('log', logPart)
             if (this.handleData) {
-              this.handleData(l, this.emit.bind(this))
+              this.handleData(logPart, this.emit.bind(this))
             }
-            if (l.toLowerCase().includes('error')) {
-              // this.emit('error', l)
-              // this.debug('Emit: error', l)
+            if (logPart.toLowerCase().includes('error')) {
+              this.debug('Error onData: ', logPart)
             }
           })
         }

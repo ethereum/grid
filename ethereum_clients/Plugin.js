@@ -80,8 +80,7 @@ class Plugin extends EventEmitter {
       'stopped',
       'log',
       'notification',
-      'pluginRequest',
-      'pluginNotification'
+      'pluginData'
     ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
@@ -291,6 +290,9 @@ class PluginProxy extends EventEmitter {
   }
   get type() {
     return this.plugin.type
+  }
+  get api() {
+    return this.plugin.api
   }
   get order() {
     return this.plugin.order

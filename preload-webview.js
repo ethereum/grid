@@ -12,6 +12,10 @@ const clientInterface = client => {
     name: client.name,
     displayName: client.displayName,
     type: client.type,
+    api: client.api,
+    stdinWrite: payload => {
+      return client.write(payload)
+    },
     sendRpc: async (method, params) => {
       return client.rpc(method, params)
     },
