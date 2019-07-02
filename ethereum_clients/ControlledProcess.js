@@ -1,3 +1,4 @@
+const { Notification } = require('electron')
 const path = require('path')
 const debug = require('debug')
 const { EventEmitter } = require('events')
@@ -137,7 +138,7 @@ class ControlledProcess extends EventEmitter {
           parts.map(logPart => {
             this.emit('log', logPart)
             if (this.handleData) {
-              this.handleData(logPart, this.emit.bind(this))
+              this.handleData(logPart, this.emit.bind(this), Notification)
             }
             if (logPart.toLowerCase().includes('error')) {
               this.debug('Error onData: ', logPart)
