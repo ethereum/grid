@@ -39,8 +39,18 @@ class ControlledProcess extends EventEmitter {
       this.state
     )
   }
+  createStateListeners() {
+    // Listen to state events that may emit from plugin code
+    this.on('newState', newState => {
+      this.state = newState
+    })
+  }
+  removeStateListeners() {
+    this.removeAllListeners('newState')
+  }
   start(flags) {
     return new Promise((resolve, reject) => {
+      this.createStateListeners()
       this.state = STATES.STARTING
       this.emit('starting')
       this.emit('newState', 'starting')
@@ -144,6 +154,8 @@ class ControlledProcess extends EventEmitter {
   }
   stop() {
     return new Promise((resolve, reject) => {
+      this.removeStateListeners()
+
       // FIXME kill IPC ? or is it indirectly closed: onIpcEnd
       if (!this.proc || !this.isRunning) {
         resolve(this)
