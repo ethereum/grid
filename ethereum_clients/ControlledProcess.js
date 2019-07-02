@@ -42,7 +42,7 @@ class ControlledProcess extends EventEmitter {
   createStateListeners() {
     // Listen to state events that may emit from plugin code
     this.on('newState', newState => {
-      this.state = newState
+      this.state = STATES[newState.toUpperCase()]
     })
   }
   removeStateListeners() {
