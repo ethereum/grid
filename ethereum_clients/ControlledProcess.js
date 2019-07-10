@@ -147,7 +147,7 @@ class ControlledProcess extends EventEmitter {
         }
       }
 
-      stderr.once('data', onStart.bind(this))
+      stdout.once('data', onStart.bind(this))
       stdout.on('data', onData.bind(this))
       stderr.on('data', onData.bind(this))
       this.proc = proc
