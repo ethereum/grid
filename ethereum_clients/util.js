@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const { AppManager } = require('@philipplgh/electron-app-manager')
+const semver = require('semver')
 
 const getUserDataPath = () => {
   const USER_DATA_PATH =
@@ -75,12 +76,21 @@ const getBinaryUpdater = (repo, name, filter, prefix, cachePath) => {
     auto: false,
     paths: [],
     cacheDir: cachePath,
-    filter: ({ fileName }) => {
+    filter: ({ fileName, version }) => {
       if (!fileName) {
         return 0
       }
       fileName = fileName.toLowerCase()
+      let satisfiesVersionFilter = true
+      if (
+        filter &&
+        filter.version &&
+        !semver.satisfies(semver.coerce(version), filter.version)
+      ) {
+        satisfiesVersionFilter = false
+      }
       return (
+        satisfiesVersionFilter &&
         (!includes || includes.every(val => fileName.indexOf(val) >= 0)) &&
         (!excludes || excludes.every(val => fileName.indexOf(val) === -1))
       )
