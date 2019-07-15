@@ -81,7 +81,7 @@ class Plugin extends EventEmitter {
   registerEventListeners(sourceEmitter, destEmitter) {
     // FIXME memory leaks start here:
     // forward all events from the spawned process
-    let eventTypes = ['newState', 'error', 'log', 'notification']
+    let eventTypes = ['newState', 'error', 'log', 'notification', 'pluginData']
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
         if (eventName !== 'log') {
@@ -185,9 +185,7 @@ class Plugin extends EventEmitter {
     }
     const { binaryPath, packagePath } = await this.getLocalBinary(release)
     console.log(
-      `client ${
-        this.name
-      } / ${packagePath} about to start - binary: ${binaryPath}`
+      `client ${this.name} / ${packagePath} about to start - binary: ${binaryPath}`
     )
     try {
       this.process = new ControlledProcess(
