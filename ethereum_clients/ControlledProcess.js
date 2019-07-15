@@ -58,7 +58,7 @@ class ControlledProcess extends EventEmitter {
 
       proc.on('error', error => {
         this.state = STATES.ERROR
-        this.emit('error', error)
+        this.emit('pluginError', error)
         this.debug('Emit: error', error)
         reject(error)
       })
@@ -74,7 +74,7 @@ class ControlledProcess extends EventEmitter {
         const errorMessage = `${
           this.name
         } child process exited with code: ${code}`
-        // this.emit('error', errorMessage)
+        this.emit('pluginError', errorMessage)
         this.debug('Error: ', errorMessage)
         this.debug('DEBUG Last 10 log lines: ', this.logs.slice(-10))
         reject(errorMessage)
@@ -119,11 +119,10 @@ class ControlledProcess extends EventEmitter {
           let parts = log.split(/\r|\n/)
           parts = parts.filter(p => !['', '> '].includes(p))
           this.logs.push(...parts)
-          parts.map(l => {
-            this.emit('log', l)
-            if (l.toLowerCase().includes('error')) {
-              this.emit('error', l)
-              this.debug('Emit: error', l)
+          parts.map(logPart => {
+            this.emit('log', logPart)
+            if (logPart.toLowerCase().includes('error')) {
+              this.emit('pluginError', logPart)
             }
           })
         }
@@ -181,6 +180,7 @@ class ControlledProcess extends EventEmitter {
       const onIpcError = error => {
         this.state = STATES.ERROR
         this.ipc = null
+        this.emit('pluginError', error)
         this.debug('IPC Connection Error: ', error)
       }
 
@@ -189,7 +189,7 @@ class ControlledProcess extends EventEmitter {
         this.ipc = null
         const errorMessage = 'IPC Connection Timeout'
         reject(new Error('IPC connection timed out'))
-        this.emit('error', errorMessage)
+        this.emit('pluginError', errorMessage)
         this.debug(errorMessage)
       }
 
