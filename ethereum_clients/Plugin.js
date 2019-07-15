@@ -81,18 +81,7 @@ class Plugin extends EventEmitter {
   registerEventListeners(sourceEmitter, destEmitter) {
     // FIXME memory leaks start here:
     // forward all events from the spawned process
-    let eventTypes = [
-      'newState',
-      'starting',
-      'started',
-      'connected',
-      'disconnected',
-      'error',
-      'stopped',
-      'log',
-      'notification',
-      'pluginData'
-    ]
+    let eventTypes = ['newState', 'error', 'log', 'notification']
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
         if (eventName !== 'log') {
@@ -185,9 +174,15 @@ class Plugin extends EventEmitter {
     return undefined
   }
 
-  async start(release, flags, config) {
+  async start(release, flags) {
     // TODO do flag validation here based on proxy metadata
-
+    const { beforeStart } = this.config
+    if (beforeStart && beforeStart.execute) {
+      const cmds = beforeStart.execute
+      for (const cmd of cmds) {
+        await this.execute(cmd)
+      }
+    }
     const { binaryPath, packagePath } = await this.getLocalBinary(release)
     console.log(
       `client ${
@@ -201,7 +196,6 @@ class Plugin extends EventEmitter {
         this.handleData
       )
       this.registerEventListeners(this.process, this)
-
       await this.process.start(flags)
     } catch (error) {
       console.log('error start', error)
@@ -252,7 +246,10 @@ class Plugin extends EventEmitter {
     return new Promise((resolve, reject) => {
       console.log('execute command:', command)
       const { spawn } = require('child_process')
-      const flags = command.split(' ')
+      let flags = command
+      if (typeof command === 'string') {
+        flags = command.split(' ')
+      }
       let proc = undefined
       try {
         proc = spawn(binaryPath, flags)
@@ -344,8 +341,8 @@ class PluginProxy extends EventEmitter {
   getLocalBinary(release) {
     return this.plugin.getLocalBinary(release)
   }
-  start(release, config) {
-    return this.plugin.start(release, config)
+  start(release, flags) {
+    return this.plugin.start(release, flags)
   }
   stop() {
     console.log(`client ${this.name} stopped`)

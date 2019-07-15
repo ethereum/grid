@@ -21,7 +21,7 @@
   },
   {
     "name": "Grid RPC Tester",
-    "description": "Grid app to test RPC endpoints",
+    "description": "Grid app to test RPC endpoints.",
     "screenshot": "https://i.imgur.com/zI5QLEv.png",
     "url": "package://github.com/ryanio/grid-rpc-app"
   },
@@ -36,5 +36,11 @@
     "description": "Respond to Clef requests",
     "screenshot": "https://i.imgur.com/yS37W9x.png",
     "url": "package://github.com/ryanio/grid-clef-app"
-  }
+  },
+  {
+    "name": "IPFS Web UI",
+    "description": "Ensure daemon setting is enabled in IPFS settings for app to load.",
+    "screenshot": "https://github.com/ipfs-shipyard/ipfs-webui/raw/master/docs/screenshots/ipfs-webui-status.png",
+    "url": "http://127.0.0.1:5001/webui"
+}
 ]
