@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="https://unpkg.com/buefy/dist/buefy.min.css" />
+    <style>
+      html,
+      body {
+        padding: 0px;
+        margin: 0px;
+        background-color: transparent;
+        overflow: hidden;
+      }
+      body {
+        min-height: 100vh;
+      }
+    </style>
+    <style>
+      .switch {
+        margin-right: 4px;
+      }
+      .switch input[type='checkbox']:checked + .check {
+        background: #57d57e;
+      }
+      .switch:hover input[type='checkbox']:checked + .check {
+        background: rgba(87, 213, 126, 0.9);
+      }
+      .switch input[type='checkbox']:focus:checked + .check {
+        box-shadow: 0 0 0.5em rgba(87, 213, 126, 0.8);
+      }
+
+      .switch input[type='checkbox'] + .check {
+        background: #3e3e3e;
+      }
+
+      #app {
+        padding: 8px 6px;
+        height: calc(100vh - 18px);
+        margin-top: 18px;
+        z-index: 1;
+        background-color: rgba(30, 30, 30, 1);
+        border-radius: 12px;
+      }
+
+      .tip {
+        display: block;
+        height: 16px;
+        width: 70px;
+        position: absolute;
+        left: 50%;
+        top: 3px;
+        overflow: hidden;
+        transform: translateX(-48%);
+      }
+      .tip::before {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background-color: rgba(30, 30, 30, 1);
+        border-radius: 8px;
+        transform: rotate(-45deg) translateX(1px) translateY(11px);
+        transform-origin: center;
+      }
+
+      /* they need to share the same border. DRY'ing */
+      #app,
+      .tip::before {
+        border: 1px solid #262626;
+      }
+
+      /* variant of the tip when the window is docked to the bottom */
+      body.docked-to-bottom #app {
+        margin-top: 3px;
+      }
+      body.docked-to-bottom .tip {
+        transform: rotate(180deg) translateX(50%);
+        top: initial;
+        bottom: 0;
+        margin-left: -2px;
+      }
+
+      .client-item {
+        padding: 5px;
+        display: flex;
+        color: white;
+      }
+
+      .client-name {
+        margin-right: 5px;
+      }
+
+      .client-name:hover {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      .client-profile {
+        color: #44a1d9;
+        margin-right: 5px;
+      }
+
+      span.centered {
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .client-info {
+        line-height: 1rem;
+        position: relative;
+        overflow: hidden;
+        flex-grow: 1;
+      }
+      .client-info span {
+        display: inline-block;
+        position: absolute;
+        left: 0;
+        transition: 200ms all ease-out;
+        line-height: 1.85rem;
+      }
+      .client-item:hover .client-state {
+        top: -1.85rem;
+        opacity: 0;
+      }
+      .client-item:hover .client-version {
+        top: 0rem;
+        opacity: 1;
+      }
+
+      .client-state {
+        color: #555;
+        margin-right: 5px;
+        font-size: 0.8rem;
+        top: 0;
+        opacity: 1;
+      }
+
+      .client-version {
+        font-size: 0.7rem;
+        color: #555;
+        white-space: nowrap;
+        top: 1.85rem;
+        opacity: 0;
+      }
+
+      /* .client-item:hover .client-version {
+        visibility: visible;
+      } */
+
+      .icon-indicator {
+        padding: 1px;
+        color: #555;
+        cursor: pointer;
+        margin-left: 2px;
+        transition: color 120ms linear;
+      }
+      .icon-indicator:hover {
+        color: #888;
+      }
+
+      /*
+      .icon-indicator.active {
+        color: #5789d5cc;
+      }
+      */
+
+      .icon-indicator i {
+        font-size: 1rem;
+      }
+
+      .separator {
+        height: 1px;
+        margin-top: 3px;
+        margin-bottom: 3px;
+        background-color: #333;
+      }
+
+      .header {
+        display: flex;
+        padding-left: 5px;
+        padding-right: 5px;
+      }
+
+      .spacer {
+        flex-grow: 1;
+      }
+
+      .grid-config > div:not(.separator) {
+        padding: 5px;
+      }
+      .grid-config > .separator {
+        margin: 5px 0;
+      }
+    </style>
+
+    <script src="https://unpkg.com/vue"></script>
+    <!-- Full bundle -->
+    <script src="https://unpkg.com/buefy/dist/buefy.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.2.0/css/all.css"
+    />
+
+    <script>
+      Vue.component('icon-indicator', {
+        props: ['icon', 'pack', 'active'],
+        template: `
+        <span class="icon-indicator" v-bind:class="{ active: active }" v-on:click="$emit('change', !active)">
+          <b-icon :pack="pack" :icon="icon"></b-icon>
+        </span>
+        `
+      })
+
+      Vue.component('profile-select', {
+        template: `
+          <b-dropdown aria-role="list">
+            <button size="is-small" class="button is-primary" slot="trigger">
+                <span>Click me!</span>
+                <b-icon pack="fas" icon="caret-down" size="is-small"></b-icon>
+            </button>
+            <b-dropdown-item aria-role="listitem">Action</b-dropdown-item>
+            <b-dropdown-item aria-role="listitem">Another action</b-dropdown-item>
+            <b-dropdown-item aria-role="listitem">Something else</b-dropdown-item>
+          </b-dropdown>
+          `
+      })
+    </script>
+  </head>
+
+  <!-- <body class="docked-to-bottom"> -->
+  <body class="">
+    <span class="tip"></span>
+    <div id="app">
+      <div class="header">
+        <span>Grid v1.0.0</span>
+        <span class="spacer"></span>
+        <icon-indicator
+          :active="configActive"
+          @change="toggleSettings($event)"
+          pack="fas"
+          icon="cog"
+        ></icon-indicator>
+      </div>
+      <div class="separator"></div>
+      <client-item
+        v-if="!configActive"
+        v-for="client in clients"
+        :client="client"
+      ></client-item>
+      <grid-config v-if="configActive"></grid-config>
+    </div>
+
+    <script>
+      Vue.component('client-item', {
+        props: ['client'],
+        data: function() {
+          return {
+            isSwitched: false,
+            clientVersion: '',
+            state: '',
+            isDownloading: false,
+            downloadProgress: 0,
+            checkbox: [],
+            terminalWindowId: undefined,
+            uiWindowId: undefined,
+            polling: null
+          }
+        },
+        template: `
+          <div>
+            <div class="client-item">
+              <b-switch v-model="isSwitched" @input="handleChange($event)" size="is-small"></b-switch>
+              <span class="client-name centered" v-on:click="openUI()">{{ client.displayName }}</span>
+              <span class="client-profile centered">{{ client.profile }}</span>
+              <span class="client-info centered">
+                <span class="client-state">{{ state }}</span>
+                <span class="client-version">{{ clientVersion }}</span>
+              </span>
+              <icon-indicator @change="openTerminal()" pack="far" icon="window-maximize"></icon-indicator>
+            </div>
+            <progress v-if="isDownloading" max="100" class="progress is-small is-primary" :value="downloadProgress"></progress>
+          </div>
+          `,
+        created: function() {
+          try {
+            const clientPlugin = window.Grid.PluginHost.getPluginByName(
+              this.client.name
+            )
+            this.listenForStateUpdates(clientPlugin)
+          } catch (error) {
+            console.log('error polling for state updates', error)
+          }
+        },
+        beforeDestroy: function() {
+          const clientPlugin = window.Grid.PluginHost.getPluginByName(
+            this.client.name
+          )
+          clientPlugin.removeAllListeners('newState')
+        },
+        methods: {
+          listenForStateUpdates: function(clientPlugin) {
+            clientPlugin.on('newState', state => {
+              console.log('new state', state)
+              this.state = state
+
+              if (['starting', 'started', 'connected'].includes(state)) {
+                this.isSwitched = true
+              } else {
+                this.isSwitched = false
+              }
+            })
+          },
+          handleSwitchedOn: async function(clientPlugin) {
+            // check if downloaded version is available
+            let latestBinCached = await clientPlugin.getLatestCached()
+            if (!latestBinCached) {
+              console.log('no client binary found --> download now')
+              const latestRemote = await clientPlugin.getLatestRemote()
+              // TODO handle no remote release found
+              try {
+                this.state = 'downloading'
+                this.isDownloading = true
+                latestBinCached = await clientPlugin.download(
+                  latestRemote,
+                  downloadProgress => {
+                    console.log('download progress', downloadProgress)
+                    this.downloadProgress = downloadProgress
+                    this.state = `downloading ${downloadProgress}%`
+                  }
+                )
+                this.isDownloading = false
+                this.state = ''
+              } catch (error) {
+                console.log('error during download', error)
+                return //TODO handleDownloadError(error)
+              }
+            }
+
+            this.clientVersion = latestBinCached.version
+
+            console.log('cached release found --> start now')
+            const persistedFlags = (await Grid.Config.getItem('flags')) || {}
+            const flags = persistedFlags[clientPlugin.name]
+
+            clientPlugin.start(latestBinCached, flags)
+          },
+          handleChange: function(ev) {
+            // get reference to plugin
+            const clientPlugin = window.Grid.PluginHost.getPluginByName(
+              this.client.name
+            )
+            if (this.isSwitched) {
+              this.handleSwitchedOn(clientPlugin)
+            } else {
+              // TODO cancel download if currently running
+              if (['started', 'starting', 'connected'].includes(this.state)) {
+                clientPlugin.stop()
+              }
+            }
+          },
+          openUI: async function() {
+            const settings = Grid.Config.getItem('settings')
+            const newSettings = Object.assign({}, settings, {
+              selected: this.client.name
+            })
+            Grid.Config.setItem('settings', newSettings)
+
+            this.uiWindowId = await window.Grid.AppManager.launch({
+              name: 'grid-ui',
+              id: this.uiWindowId,
+              args: {
+                scope: {
+                  component: 'ui',
+                  client: this.client.name
+                }
+              }
+            })
+          },
+          openTerminal: async function() {
+            this.terminalWindowId = await window.Grid.AppManager.launch({
+              name: 'grid-ui',
+              id: this.terminalWindowId,
+              args: {
+                scope: {
+                  component: 'terminal',
+                  client: this.client.name
+                }
+              }
+            })
+          }
+        }
+      })
+
+      Vue.component('grid-config', {
+        data: function() {
+          return {
+            launchOnBoot: false
+          }
+        },
+        template: `
+          <div class="grid-config">
+            <div><a v-on:click="openApps()">View Apps</a></div>
+            <div><a @click.prevent="openExternal('https://github.com/ethereum/grid')">Grid Repository</a></div>
+            <div class="separator"></div>
+            <div><b-switch v-model="launchOnBoot" @input="handleChangeLaunch($event)" size="is-small">Start Grid on boot</b-switch></div>
+          </div>
+          `,
+        methods: {
+          openApps: async function() {
+            this.appsWindowId = await window.Grid.AppManager.launch({
+              name: 'grid-ui',
+              id: this.appsWindowId,
+              args: {
+                scope: {
+                  component: 'apps'
+                }
+              }
+            })
+          },
+          openExternal: function(href) {
+            window.Grid.openExternalLink(href)
+          },
+          handleChangeLaunch: function(event) {
+            window.Grid.setLaunchOnBoot(this.launchOnBoot)
+          }
+        },
+        created: async function() {
+          this.launchOnBoot = await window.Grid.getLaunchOnBoot()
+        }
+      })
+
+      new Vue({
+        el: '#app',
+        data: function() {
+          return {
+            clients: [],
+            isSwitched: false,
+            configActive: false
+          }
+        },
+        methods: {
+          init: function() {
+            const plugins = window.Grid.PluginHost.getAllPlugins()
+            this.clients = plugins.map(p => ({
+              name: p.name,
+              displayName: p.displayName,
+              profile: '',
+              version: ''
+            }))
+            console.log('plugins loaded', plugins.length)
+          },
+          toggleSettings: function(val) {
+            console.log('set configActive to', val)
+            this.configActive = val
+          }
+        },
+        mounted: async function() {
+          try {
+            this.init()
+            window.Grid.PluginHost.on('plugins-loaded', () => {
+              this.init()
+            })
+          } catch (error) {
+            console.log('error loading plugins', error)
+          }
+        }
+      })
+
+      // Tip placement, only at startup
+      var distanceToBottom =
+        window.screen.height - (window.screenTop + window.innerHeight)
+      var distanceToTop = window.screenTop
+      document.body.classList.add(
+        distanceToBottom < distanceToTop ? 'docked-to-bottom' : 'docked-to-top'
+      )
+    </script>
+  </body>
+</html>

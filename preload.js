@@ -1,5 +1,11 @@
 const { ipcRenderer, remote, webFrame } = require('electron')
-const { notify, showOpenDialog } = require('./utils/renderer/electron')
+const {
+  notify,
+  showOpenDialog,
+  openExternalLink,
+  getLaunchOnBoot,
+  setLaunchOnBoot
+} = require('./utils/renderer/electron')
 
 // Enabling spectron integration https://github.com/electron/spectron#node-integration
 if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
@@ -47,7 +53,7 @@ window.addEventListener('message', function(event) {
   }
 }, false);
 */
-console.log('preload loaded')
+console.log('grid preload script loaded')
 
 const currentWindow = remote.getCurrentWindow()
 
@@ -59,7 +65,10 @@ const Grid = {
     getArgs: () => currentWindow.args
   },
   notify,
-  showOpenDialog
+  showOpenDialog,
+  openExternalLink,
+  getLaunchOnBoot,
+  setLaunchOnBoot
 }
 
 /*
