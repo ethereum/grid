@@ -23,7 +23,7 @@ const gridUiManager = new PackageManager({
 const getGridUiUrl = async () => {
   const useHotLoading = false
   if (is.dev()) {
-    let appUrl = 'http://localhost:3080/'
+    let appUrl = 'http://localhost:3080'
     return appUrl
   } else {
     if (useHotLoading) {
@@ -107,28 +107,28 @@ class AppManager extends EventEmitter {
       let appUrl = await getGridUiUrl()
       const { scope } = args
       const { client: clientName, component } = scope
-      if (component === 'terminal') {
-        appUrl = `file://${path.join(__dirname, '..', 'ui', 'terminal.html')}`
-      }
-      const clientDisplayName = 'Geth'
+      const clientDisplayName = global.PluginHost.getPluginByName(clientName)
+        .displayName
       let mainWindow = createRenderer(
         appUrl,
         {
           x: 400,
           y: 400,
+          title: 'Ethereum Grid Terminal for ' + clientDisplayName,
           backgroundColor: component === 'terminal' ? '#1E1E1E' : '#ffffff'
         },
         {
           scope
         }
       )
-      mainWindow.setMenu(null)
+      if (component === 'terminal') {
+        mainWindow.setMenu(null)
+      }
       /*
       mainWindow.webContents.openDevTools({
         mode: 'detach'
       })
       */
-      mainWindow.setTitle('Ethereum Grid Terminal for ' + clientDisplayName)
       return mainWindow.id
     }
 
