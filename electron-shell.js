@@ -70,6 +70,12 @@ function createRenderer(clientUrl, options, args) {
 
   const loadRenderer = () => {
     win = WindowManager.createWindow(options)
+    if (options.title) {
+      win.on('page-title-updated', evt => {
+        evt.preventDefault()
+      })
+      win.setTitle(options.title)
+    }
     win.args = args
     win.loadURL(clientUrl)
     // win.webContents.openDevTools()
