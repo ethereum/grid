@@ -483,6 +483,7 @@
         }
       })
 
+      
       // Tip placement, only at startup
       var distanceToBottom =
         window.screen.height - (window.screenTop + window.innerHeight)
@@ -490,7 +491,6 @@
       document.body.classList.add(
         distanceToBottom < distanceToTop ? 'is-docked-to-bottom' : 'is-docked-to-top'
       )
-
 
       // OS detection
       var osClass;
@@ -503,6 +503,12 @@
         osClass = 'is-linux'
       }
       document.body.classList.add(osClass)
+
+      document.onkeydown = function(evt) {
+        if (evt && evt.key === "Escape") {
+          Grid.hideWindow()
+        }
+      };
 
     </script>
   </body>
