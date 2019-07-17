@@ -82,20 +82,20 @@
         margin-left: -2px;
       }
 
-      /* 
+      /*
        * Removes windows and linux window tip.
-       * I'd rather remove the tip on W+L instead of 
-       * adding it only for mac, due to Mac shadow rendering reasons. 
+       * Mac on by default for shadow rendering reasons.
        */
-      body.is-windows .tip, body.is-linux .tip {
+      body.is-windows .tip,
+      body.is-linux .tip {
         display: none;
       }
-      body.is-windows #app, body.is-linux #app {
+      body.is-windows #app,
+      body.is-linux #app {
         height: 100vh;
         margin: 0;
         border-radius: 2px;
       }
-
 
       .client-item {
         padding: 5px;
@@ -279,8 +279,7 @@
             downloadProgress: 0,
             checkbox: [],
             terminalWindowId: undefined,
-            uiWindowId: undefined,
-            polling: null
+            uiWindowId: undefined
           }
         },
         template: `
@@ -299,24 +298,14 @@
           </div>
           `,
         created: function() {
-          try {
-            const clientPlugin = window.Grid.PluginHost.getPluginByName(
-              this.client.name
-            )
-            this.listenForStateUpdates(clientPlugin)
-          } catch (error) {
-            console.log('error polling for state updates', error)
-          }
+          this.listenForStateUpdates()
         },
         beforeDestroy: function() {
-          const clientPlugin = window.Grid.PluginHost.getPluginByName(
-            this.client.name
-          )
-          clientPlugin.removeAllListeners('newState')
+          this.client.plugin.removeAllListeners('newState')
         },
         methods: {
-          listenForStateUpdates: function(clientPlugin) {
-            clientPlugin.on('newState', state => {
+          listenForStateUpdates: function() {
+            this.client.plugin.on('newState', state => {
               console.log('new state', state)
               this.state = state
 
@@ -327,17 +316,17 @@
               }
             })
           },
-          handleSwitchedOn: async function(clientPlugin) {
+          handleSwitchedOn: async function() {
             // check if downloaded version is available
-            let latestBinCached = await clientPlugin.getLatestCached()
+            let latestBinCached = await this.client.plugin.getLatestCached()
             if (!latestBinCached) {
               console.log('no client binary found --> download now')
-              const latestRemote = await clientPlugin.getLatestRemote()
+              const latestRemote = await this.client.plugin.getLatestRemote()
               // TODO handle no remote release found
               try {
                 this.state = 'downloading'
                 this.isDownloading = true
-                latestBinCached = await clientPlugin.download(
+                latestBinCached = await this.client.plugin.download(
                   latestRemote,
                   downloadProgress => {
                     console.log('download progress', downloadProgress)
@@ -357,21 +346,17 @@
 
             console.log('cached release found --> start now')
             const persistedFlags = (await Grid.Config.getItem('flags')) || {}
-            const flags = persistedFlags[clientPlugin.name]
+            const flags = persistedFlags[this.client.plugin.name]
 
-            clientPlugin.start(latestBinCached, flags)
+            this.client.plugin.start(latestBinCached, flags)
           },
           handleChange: function(ev) {
-            // get reference to plugin
-            const clientPlugin = window.Grid.PluginHost.getPluginByName(
-              this.client.name
-            )
             if (this.isSwitched) {
-              this.handleSwitchedOn(clientPlugin)
+              this.handleSwitchedOn()
             } else {
               // TODO cancel download if currently running
               if (['started', 'starting', 'connected'].includes(this.state)) {
-                clientPlugin.stop()
+                this.client.plugin.stop()
               }
             }
           },
@@ -458,11 +443,12 @@
         methods: {
           init: function() {
             const plugins = window.Grid.PluginHost.getAllPlugins()
-            this.clients = plugins.map(p => ({
-              name: p.name,
-              displayName: p.displayName,
+            this.clients = plugins.map(plugin => ({
+              name: plugin.name,
+              displayName: plugin.displayName,
               profile: '',
-              version: ''
+              version: '',
+              plugin
             }))
             console.log('plugins loaded', plugins.length)
           },
@@ -483,33 +469,35 @@
         }
       })
 
-      
       // Tip placement, only at startup
       var distanceToBottom =
         window.screen.height - (window.screenTop + window.innerHeight)
       var distanceToTop = window.screenTop
       document.body.classList.add(
-        distanceToBottom < distanceToTop ? 'is-docked-to-bottom' : 'is-docked-to-top'
+        distanceToBottom < distanceToTop
+          ? 'is-docked-to-bottom'
+          : 'is-docked-to-top'
       )
 
       // OS detection
-      var osClass;
-      function checkPlatform(pattern) { return pattern.test(window.navigator.platform) }
+      var osClass
+      function checkPlatform(pattern) {
+        return pattern.test(window.navigator.platform)
+      }
       if (checkPlatform(/win/i)) {
-        osClass = 'is-windows';
+        osClass = 'is-windows'
       } else if (checkPlatform(/mac/i)) {
-        osClass = 'is-mac';
+        osClass = 'is-mac'
       } else {
         osClass = 'is-linux'
       }
       document.body.classList.add(osClass)
 
       document.onkeydown = function(evt) {
-        if (evt && evt.key === "Escape") {
+        if (evt && evt.key === 'Escape') {
           Grid.hideWindow()
         }
-      };
-
+      }
     </script>
   </body>
 </html>
