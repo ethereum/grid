@@ -11,8 +11,6 @@ registerGlobalUserConfig()
 // auto-launch may start process with --hidden
 const startMinimized = (process.argv || []).indexOf('--hidden') !== -1
 
-let keepWindowOpen = false
-
 const preloadPath = path.join(__dirname, 'preload.js')
 
 const makePath = p =>
@@ -20,7 +18,7 @@ const makePath = p =>
 
 const mb = menubar({
   browserWindow: {
-    alwaysOnTop: true, // good for debugging
+    alwaysOnTop: true,
     transparent: true,
     backgroundColor: '#00FFFFFF',
     frame: false,
@@ -66,11 +64,6 @@ const init = function(mb) {
     //   mb.showWindow()
     // }
     mb.showWindow()
-
-    mb.window.on('blur', function() {
-      // it prevents window from hiding if keepWindowOpen is checked on tray's context menu
-      !keepWindowOpen && mb.hideWindow()
-    })
   })
 
   // right-click menu for tray
@@ -79,9 +72,10 @@ const init = function(mb) {
       {
         label: 'Keep window open',
         type: 'checkbox',
-        checked: keepWindowOpen,
+        checked: mb.window.alwaysOnTop,
         click: () => {
-          keepWindowOpen = !keepWindowOpen
+          // Toggles alwaysOnTop property of nano window
+          mb.window.setAlwaysOnTop(!mb.window.isAlwaysOnTop())
         }
       },
       { type: 'separator' },
@@ -105,6 +99,8 @@ const init = function(mb) {
     mb.tray.on('right-click', () => {
       mb.tray.popUpContextMenu(contextMenu)
     })
+
+    mb.window.on('hide', () => mb.hideWindow())
   })
 }
 
