@@ -372,6 +372,11 @@
           `,
         created: function() {
           this.client.plugin.on('newState', this.stateUpdateListener)
+          // Set client version if selectedRelease
+          const selectedRelease = this.client.plugin.getSelectedRelease()
+          if (selectedRelease) {
+            this.clientVersion = selectedRelease.version
+          }
         },
         beforeDestroy: function() {
           this.client.plugin.removeEventListener(
@@ -395,38 +400,50 @@
             }
           },
           handleSwitchedOn: async function() {
-            // check if downloaded version is available
-            let latestBinCached = await this.client.plugin.getLatestCached()
-            if (!latestBinCached) {
-              console.log('no client binary found --> download now')
-              const latestRemote = await this.client.plugin.getLatestRemote()
-              // TODO handle no remote release found
-              try {
-                this.state = 'downloading'
-                this.isDownloading = true
-                latestBinCached = await this.client.plugin.download(
-                  latestRemote,
-                  downloadProgress => {
-                    console.log('download progress', downloadProgress)
-                    this.downloadProgress = downloadProgress
-                    this.state = `downloading ${downloadProgress}%`
-                  }
-                )
-                this.isDownloading = false
-                this.state = ''
-              } catch (error) {
-                console.log('error during download', error)
-                return //TODO handleDownloadError(error)
-              }
+            let release
+            // Check if selectedRelease in UserConfig
+            const selectedRelease = this.client.plugin.getSelectedRelease()
+            if (selectedRelease) {
+              this.clientVersion = selectedRelease.version
+              release = selectedRelease
             }
 
-            this.clientVersion = latestBinCached.version
+            if (!release) {
+              // Check if downloaded version is available
+              let latestBinCached = await this.client.plugin.getLatestCached()
+              if (!latestBinCached) {
+                console.log('no client binary found --> download now')
+                const latestRemote = await this.client.plugin.getLatestRemote()
+                // TODO handle no remote release found
+                try {
+                  this.state = 'downloading'
+                  this.isDownloading = true
+                  latestBinCached = await this.client.plugin.download(
+                    latestRemote,
+                    downloadProgress => {
+                      console.log('download progress', downloadProgress)
+                      this.downloadProgress = downloadProgress
+                      this.state = `downloading ${downloadProgress}%`
+                    }
+                  )
+                  this.isDownloading = false
+                  this.state = ''
+                } catch (error) {
+                  console.log('error during download', error)
+                  return //TODO handleDownloadError(error)
+                }
+              }
+              console.log('Cached release found')
+              this.clientVersion = latestBinCached.version
+              release = latestBinCached
+            }
 
-            console.log('cached release found --> start now')
+            console.log('Starting release: ', release.version)
+
             const persistedFlags = (await Grid.Config.getItem('flags')) || {}
             const flags = persistedFlags[this.client.plugin.name]
 
-            this.client.plugin.start(latestBinCached, flags)
+            this.client.plugin.start(release, flags)
           },
           handleChange: function(ev) {
             if (this.isSwitched) {
