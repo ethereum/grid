@@ -131,6 +131,12 @@ module.exports = {
       ]
     },
     {
+      id: 'port',
+      label: 'Port',
+      flag: '--port %s',
+      default: '30303'
+    },
+    {
       id: 'verbosity',
       label: 'Verbosity',
       default: 3,
