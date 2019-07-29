@@ -388,10 +388,7 @@
           }
         },
         beforeDestroy: function() {
-          this.client.plugin.removeEventListener(
-            'newState',
-            this.stateUpdateListener
-          )
+          this.client.plugin.off('newState', this.stateUpdateListener)
         },
         methods: {
           stateUpdateListener: function(state) {
@@ -602,7 +599,7 @@
         },
         beforeDestroy: function() {
           plugins.forEach(plugin => {
-            plugin.removeEventListener('pluginError', this.pluginErrorListener)
+            plugin.off('pluginError', this.pluginErrorListener)
           })
         }
       })
