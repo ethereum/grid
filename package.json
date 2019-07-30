@@ -93,6 +93,9 @@
         "dmg"
       ]
     },
+    "nsis": {
+      "createDesktopShortcut": "always"
+    },
     "win": {
       "target": [
         "zip",
