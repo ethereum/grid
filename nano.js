@@ -15,7 +15,14 @@ const startMinimized = (process.argv || []).indexOf('--hidden') !== -1
 const preloadPath = path.join(__dirname, 'preload.js')
 
 const makePath = p =>
-  (process.os !== 'windows' ? 'file://' : '') + path.normalize(p)
+  (process.platform !== 'win32' ? 'file://' : '') + path.normalize(p)
+
+const iconPath = () =>
+  path.resolve(
+    process.platform === 'win32'
+      ? `${__dirname}/build/TrayIcon.ico`
+      : `${__dirname}/build/IconTemplate.png`
+  )
 
 const mb = menubar({
   browserWindow: {
@@ -31,7 +38,7 @@ const mb = menubar({
     },
     title: 'Grid Nano'
   },
-  icon: path.resolve(`${__dirname}/build/IconTemplate.png`),
+  icon: iconPath(),
   index: makePath(`${__dirname}/ui/nano.html`),
   showDockIcon: true
 })
@@ -102,6 +109,7 @@ const init = function(mb) {
       mb.tray.popUpContextMenu(contextMenu)
     })
 
+    // Syncs tray icon highlight state on mac
     mb.window.on('hide', () => mb.hideWindow())
   })
 }
