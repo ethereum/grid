@@ -56,7 +56,7 @@ module.exports = {
   filter: {
     name: {
       includes: [platform],
-      excludes: ['unstable', 'alltools', 'swarm']
+      excludes: ['unstable', 'alltools', 'swarm', 'mips', 'arm']
     }
   },
   prefix: `geth-${platform}`,
@@ -156,6 +156,15 @@ module.exports = {
       options: [
         { value: 'true', flag: '--graphql', label: 'Yes (v1.9.0 and later)' },
         { value: 'false', flag: '', label: 'No' }
+      ]
+    },
+    {
+      id: 'usb',
+      label: 'Enable USB (hardware wallets)',
+      default: 'false',
+      options: [
+        { value: 'false', flag: '--nousb', label: 'No' },
+        { value: 'true', flag: '', label: 'Yes' }
       ]
     }
   ]
