@@ -113,7 +113,7 @@ class ControlledProcess extends EventEmitter {
           } catch (error) {
             this.debug(`Failed to establish ipc connection: ${error.message}`)
           }
-        }, 1000) // FIXME require long timeouts in tests - better solution?
+        }, 3000) // FIXME require long timeouts in tests - better solution?
       }
 
       const onData = data => {
