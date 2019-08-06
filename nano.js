@@ -33,6 +33,7 @@ const mb = menubar({
     backgroundColor: '#00FFFFFF',
     frame: false,
     resizable: false,
+    fullscreenable: false,
     width: 320,
     height: 420,
     webPreferences: {
