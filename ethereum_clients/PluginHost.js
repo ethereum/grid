@@ -163,19 +163,16 @@ class PluginHost extends EventEmitter {
             cacheDir: getPluginCachePath(pluginShortInfo.name)
           })
           // load package from cache or server:
-          let latest = await pluginManager.getLatest()
+          let latest = await pluginManager.getLatest({
+            download: true // download if necessary -> no cached found
+          })
+
           if (!latest) {
-            return undefined
+            throw new Error(
+              `Error: Plugin ${pluginName} could not be retrieved.`
+            )
           }
-          // download if necessary -> no cached found
-          if (latest.remote) {
-            latest = await pluginManager.download(latest)
-            if (!latest) {
-              throw new Error(
-                `Error: Plugin ${pluginName} could not be fetched.`
-              )
-            }
-          }
+
           // plugin verification necessary for remote plugins:
           if (!latest.verificationResult) {
             throw new Error(
