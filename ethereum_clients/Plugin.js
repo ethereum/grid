@@ -226,7 +226,69 @@ class Plugin extends EventEmitter {
     })
   }
 
-  async start(flags, release) {
+  /**
+   * this method should probably be private (not be mapped on PluginProxy).
+   * it is used to download the latest release if a client is started but the user did not explicitly set or download
+   * binaries.
+   */
+  async determineReleaseForStart(stateListener) {
+    console.log('prepare release')
+    /*
+    if (!(stateListener instanceof EventEmitter)) {
+      stateListener = new EventEmitter()
+    }
+    */
+
+    // Check if selectedRelease exists in UserConfig
+    let release = this.getSelectedRelease()
+    if (release) {
+      stateListener('release-found', { release })
+      return release
+    }
+
+    // Get release from cache or download latest
+    console.log('download release', release)
+    release = await this.updater.getLatest({
+      download: true
+    })
+    if (release) {
+      stateListener('release-assigned', { release })
+    }
+
+    /*
+    // if release is not in cache we will download it
+    if (release.remote) {
+      stateListener('download-started', release)
+      try {
+        latestBinCached = await this.download(
+          latestRemote,
+          downloadProgress => {
+            stateListener.emit('download-progress', downloadProgress, release)
+          }
+        )
+        stateListener('download-stopped', release)
+      } catch (error) {
+        stateListener('download-error', error, release)
+        console.log('error during download', error)
+        return //TODO handleDownloadError(error)
+      }
+    }
+    */
+
+    return release
+  }
+
+  async start(flags, release, stateListener) {
+    if (!release) {
+      release = await this.determineReleaseForStart(stateListener)
+    }
+
+    if (!release) {
+      throw new Error('could not find release for start')
+    }
+
+    // console.log('Starting release: ', release.version)
+
     // TODO do flag validation here based on proxy metadata
     const { beforeStart } = this.config
     if (beforeStart && beforeStart.execute) {
@@ -412,8 +474,8 @@ class PluginProxy extends EventEmitter {
     return this.plugin.requestStart(app, flags, release)
   }
   // TODO reverse arg order
-  start(release, flags) {
-    return this.plugin.start(flags, release)
+  start(release, flags, listener) {
+    return this.plugin.start(flags, release, listener)
   }
   stop() {
     console.log(`client ${this.name} stopped`)
