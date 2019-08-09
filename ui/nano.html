@@ -406,50 +406,48 @@
             }
           },
           handleSwitchedOn: async function() {
-            let release
-            // Check if selectedRelease in UserConfig
-            const selectedRelease = this.client.plugin.getSelectedRelease()
-            if (selectedRelease) {
-              this.clientVersion = selectedRelease.version
-              release = selectedRelease
-            }
 
-            if (!release) {
-              // Check if downloaded version is available
-              let latestBinCached = await this.client.plugin.getLatestCached()
-              if (!latestBinCached) {
-                console.log('no client binary found --> download now')
-                const latestRemote = await this.client.plugin.getLatestRemote()
-                // TODO handle no remote release found
-                try {
-                  this.state = 'downloading'
+            let listener = (newState, args) => {
+              switch(newState){
+                case 'release-found': {
+                  this.clientVersion = selectedRelease.version
+                  release = selectedRelease
+                  break;
+                }
+                case 'download-started': {
                   this.isDownloading = true
-                  latestBinCached = await this.client.plugin.download(
-                    latestRemote,
-                    downloadProgress => {
-                      console.log('download progress', downloadProgress)
-                      this.downloadProgress = downloadProgress
-                      this.state = `downloading ${downloadProgress}%`
-                    }
-                  )
+                  this.state = 'downloading'
+                  break;
+                }
+                case 'download-progress': {
+                  let { downloadProgress } = args
+                  console.log('download progress', downloadProgress)
+                  this.downloadProgress = downloadProgress
+                  this.state = `downloading ${downloadProgress}%`
+                  break;
+                }
+                case 'download-stopped': {
                   this.isDownloading = false
                   this.state = ''
-                } catch (error) {
-                  console.log('error during download', error)
-                  return //TODO handleDownloadError(error)
+                  break;
                 }
               }
-              console.log('Cached release found')
-              this.clientVersion = latestBinCached.version
-              release = latestBinCached
             }
 
-            console.log('Starting release: ', release.version)
+            try {
+              const persistedFlags = (await Grid.Config.getItem('flags')) || {}
+              const flags = persistedFlags[this.client.plugin.name]
 
-            const persistedFlags = (await Grid.Config.getItem('flags')) || {}
-            const flags = persistedFlags[this.client.plugin.name]
+              // if we pass undefined as release the plugin will try to determine the best 
+              // release automatically and download it if necessary
+              let release = undefined
+              
+              await this.client.plugin.start(release, flags, listener)
 
-            this.client.plugin.start(release, flags)
+            } catch (error) {
+              console.log('error during start', error)
+            } finally {
+            }
           },
           handleChange: function(ev) {
             if (this.isSwitched) {
