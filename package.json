@@ -1,8 +1,8 @@
 {
   "name": "grid",
-  "version": "1.4.0",
+  "version": "1.5.1",
   "description": "Ethereum Grid",
-  "main": "index.js",
+  "main": "nano.js",
   "homepage": "https://github.com/ethereum/grid",
   "author": "Grid team <mist@ethereum.org>",
   "license": "ISC",
@@ -10,6 +10,7 @@
   "scripts": {
     "start:prod": "cross-env NODE_ENV=production electron .",
     "start:dev": "cross-env NODE_ENV=development electron .",
+    "start": "yarn start:dev",
     "start:dev:verbose": "cross-env NODE_ENV=development DEBUG=geth-js electron .",
     "test:mocha": "cross-env NODE_ENV=test mocha ./test",
     "test:e2e": "cross-env NODE_ENV=development ava ./test/e2e --verbose -s",
@@ -17,20 +18,24 @@
     "test:integration:parity": "cross-env NODE_ENV=test mocha ./test/integration/parity.test.js",
     "test:integration:geth": "cross-env NODE_ENV=test mocha ./test/integration/geth.test.js",
     "prepare-release": "node ./scripts/copyApp.js",
-    "build": "yarn run prepare-release && build",
-    "release": "env-cmd .env build"
+    "build:grid": "yarn run prepare-release && build",
+    "release": "env-cmd .env yarn run build:grid"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.42.0",
-    "debug": "^4.1.1"
+    "@philipplgh/electron-app-manager": "^0.45.0",
+    "auto-launch": "^5.0.5",
+    "debug": "^4.1.1",
+    "menubar": "^6.0.7",
+    "xterm": "^3.14.4"
   },
   "peerDependencies": {},
   "devDependencies": {
     "ava": "^1.4.1",
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
-    "electron": "5.0.0-beta.7",
+    "electron": "5.0.8",
     "electron-builder": "20.31.3",
+    "electron-rebuild": "^1.8.5",
     "env-cmd": "^8.0.2",
     "husky": "^1.3.1",
     "lint-staged": "^8.1.3",
@@ -57,13 +62,18 @@
     "asar": false,
     "files": [
       "index.js",
+      "nano.js",
       "electron-shell.js",
       "electron-zip-support.js",
       "preload.js",
       "preload-webview.js",
       "WindowManager.js",
+      "build/**/*.png",
+      "build/**/*.ico",
       "ui/download-splash.html",
       "ui/json-editor.html",
+      "ui/nano.html",
+      "ui/terminal.html",
       "public/error.html",
       "Menu.js",
       "Config.js",
@@ -74,7 +84,8 @@
       "grid_apps/**/*.json",
       "utils/**/*.js",
       "*.asar",
-      "*.zip"
+      "*.zip",
+      "shipped-grid-ui/**/*.zip"
     ],
     "mac": {
       "category": "public.app-category.productivity",
@@ -82,6 +93,9 @@
         "zip",
         "dmg"
       ]
+    },
+    "nsis": {
+      "createDesktopShortcut": "always"
     },
     "win": {
       "target": [

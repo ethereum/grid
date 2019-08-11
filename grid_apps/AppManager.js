@@ -1,11 +1,95 @@
 const { EventEmitter } = require('events')
+const path = require('path')
 const createRenderer = require('../electron-shell')
 const WindowManager = require('../WindowManager')
-
-const { AppManager: Downloader } = require('@philipplgh/electron-app-manager')
+const {
+  AppManager: PackageManager
+} = require('@philipplgh/electron-app-manager')
 
 const { getUserConfig } = require('../Config')
 const UserConfig = getUserConfig()
+
+const is = require('../utils/main/is')
+const generateFlags = require('../utils/flags')
+const {
+  checkConnection,
+  getShippedGridUiPath,
+  getCachePath
+} = require('../utils/main/util')
+
+const GRID_UI_CACHE = getCachePath('grid-ui')
+
+// console.log('grid ui cache created at', GRID_UI_CACHE)
+
+const gridUiManager = new PackageManager({
+  repository: 'https://github.com/ethereum/grid-ui',
+  auto: true, // this will automatically check for new packages...
+  intervalMins: 60, // ...every 60 minutes. the first check will be after 1 minute though
+  cacheDir: GRID_UI_CACHE, // updates are automatically downloaded to this path
+  searchPaths: is.prod() ? [getShippedGridUiPath()] : undefined, // tell app-manager also to look for shipped packages
+  logger: require('debug')('GridPackageManager'),
+  policy: {
+    onlySigned: false
+  }
+})
+
+gridUiManager.on('update-downloaded', release => {
+  console.log('a new grid-ui version was downloaded:', release.version)
+  // TODO we can use this event to inform the user to restart
+})
+
+const getGridUiUrl = async () => {
+  let useHotLoading = false
+  const HOT_LOAD_URL = 'package://github.com/ethereum/grid-ui'
+  if (is.dev()) {
+    const PORT = '3080'
+    const appUrl = `http://localhost:${PORT}/index.html`
+    const isServerRunning = await checkConnection('localhost', PORT)
+    /**
+     * check if grid-ui is started and the server is running.
+     * otherwise load latest grid-ui package from github ("hot-load")
+     */
+    if (isServerRunning) {
+      return appUrl
+    } else {
+      console.log(
+        'WARNING: grid ui webserver not running - fallback to hot-loading'
+      )
+      return HOT_LOAD_URL
+    }
+  } else {
+    // production:
+    if (useHotLoading) {
+      return HOT_LOAD_URL
+    } // else: use caching
+    console.log('check for cached packages')
+    let packagePath = ''
+    try {
+      // with the argument we can provide additional search paths besides cache
+      const cached = await gridUiManager.getLatestCached()
+      if (!cached) {
+        console.warn(
+          'WARNING: no cached packages found. fallback to hot-loading'
+        )
+        useHotLoading = true
+      } else {
+        console.log('package location', cached.location)
+        packagePath = cached.location
+      }
+    } catch (error) {
+      console.log('error during check', error)
+    }
+
+    // fallback necessary?
+    if (useHotLoading || !packagePath) {
+      return HOT_LOAD_URL
+    }
+
+    let appUrl = await gridUiManager.load(packagePath)
+    console.log('app url: ' + appUrl)
+    return appUrl
+  }
+}
 
 class AppManager extends EventEmitter {
   constructor() {
@@ -18,7 +102,7 @@ class AppManager extends EventEmitter {
       for (let index = 0; index < registries.length; index++) {
         const registry = registries[index]
         try {
-          const result = await Downloader.downloadJson(registry)
+          const result = await PackageManager.downloadJson(registry)
           apps = [...apps, ...result.apps]
         } catch (error) {
           console.log('could not load apps from registry:', registry, error)
@@ -61,11 +145,93 @@ class AppManager extends EventEmitter {
     apps = [...appsJson, ...appsConfig, ...appsRegistries]
     return apps
   }
-  launch(app) {
-    console.log('launch', app.name)
+  async launch(app) {
+    console.log(`Launch app: ${app.name}`)
+
+    if (app.id) {
+      const win = WindowManager.getById(app.id)
+      if (win) {
+        win.show()
+        return win.id
+      }
+    }
+
+    const { dependencies } = app
+    if (dependencies) {
+      for (const dependency of dependencies) {
+        console.log('found dependency', dependency)
+        const plugin = global.PluginHost.getPluginByName(dependency.name)
+        if (!plugin) {
+          console.log('Could not find necessary plugin')
+        } else if (plugin.isRunning) {
+          console.log(`Plugin ${plugin.name} already running`)
+        } else {
+          // TODO: error handling of malformed settings
+          const settings = plugin.settings || []
+          let config = {}
+
+          // 1. set default => check buildClientDefaults in grid-ui
+          // TODO: this code should not be duplicated
+          settings.forEach(setting => {
+            if ('default' in setting) {
+              config[setting.id] = setting.default
+            }
+          })
+
+          // 2. respect persisted user settings
+          const persistedConfig = (await UserConfig.getItem('settings')) || {}
+          const persistedPluginConfig = persistedConfig[plugin.name]
+          config = Object.assign({}, config, persistedPluginConfig)
+
+          // 3. overwrite configs with required app settings
+          dependency.settings.forEach(setting => {
+            config[setting.id] = setting.value
+          })
+
+          const flags = generateFlags(config, settings)
+          const release = undefined // TODO: allow apps to choose specific release?
+          console.log('request start', flags)
+
+          try {
+            // TODO: show progress to user
+            await plugin.requestStart(app, flags, release)
+          } catch (error) {
+            // e.g. user cancelled
+            console.log('error', error)
+            return // do NOT start in this case
+          }
+        }
+      }
+    }
+
+    if (app.name === 'grid-ui') {
+      const { args } = app
+      let appUrl = await getGridUiUrl()
+      const { scope } = args
+      const { client: clientName, component } = scope
+      if (component === 'terminal') {
+        appUrl = `file://${path.join(__dirname, '..', 'ui', 'terminal.html')}`
+      }
+      let mainWindow = createRenderer(
+        appUrl,
+        {
+          backgroundColor: component === 'terminal' ? '#1E1E1E' : '#202225',
+          title: 'Grid'
+        },
+        { scope }
+      )
+      mainWindow.setMenu(null)
+      /*
+      mainWindow.webContents.openDevTools({
+        mode: 'detach'
+      })
+      */
+      return mainWindow.id
+    }
+
     let url = app.url || 'http://localhost:3000'
     const mainWindow = createRenderer(
-      WindowManager.getMainUrl(),
+      await getGridUiUrl(), // FIXME might be very inefficient. might load many grid-ui packages into memory!!
       {},
       {
         url,
@@ -73,6 +239,9 @@ class AppManager extends EventEmitter {
         app
       }
     )
+  }
+  hide(windowId) {
+    return WindowManager.hide(windowId)
   }
 }
 

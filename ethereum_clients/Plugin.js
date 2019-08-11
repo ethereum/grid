@@ -1,9 +1,13 @@
 const fs = require('fs')
 const path = require('path')
+const os = require('os')
 const { EventEmitter } = require('events')
-const { getBinaryUpdater } = require('./util')
+const { getBinaryUpdater } = require('../utils/main/util')
 const ControlledProcess = require('./ControlledProcess')
+const { dialog } = require('electron')
+const { getUserConfig } = require('../Config')
 
+const UserConfig = getUserConfig()
 let rpcId = 1
 
 class Plugin extends EventEmitter {
@@ -50,6 +54,9 @@ class Plugin extends EventEmitter {
   get displayName() {
     return this.config.displayName
   }
+  get settings() {
+    return this.config.settings
+  }
   get defaultConfig() {
     return this.config.config.default
   }
@@ -64,7 +71,7 @@ class Plugin extends EventEmitter {
     return this.process ? this.process.state : 'STOPPED'
   }
   get isRunning() {
-    return this.process && this.process.isRunning
+    return (this.process && this.process.isRunning) || false
   }
   getLogs() {
     return this.process ? this.process.logs : []
@@ -81,11 +88,18 @@ class Plugin extends EventEmitter {
   registerEventListeners(sourceEmitter, destEmitter) {
     // FIXME memory leaks start here:
     // forward all events from the spawned process
-    let eventTypes = ['newState', 'error', 'log', 'notification', 'pluginData']
+    let eventTypes = [
+      'newState',
+      'error',
+      'log',
+      'notification',
+      'pluginData',
+      'pluginError'
+    ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
         if (eventName !== 'log') {
-          console.log(`forward external process event >> ${eventName}`)
+          console.log(`forward external process event >> ${eventName}`, arg)
         }
         destEmitter.emit(eventName, arg)
       })
@@ -94,6 +108,17 @@ class Plugin extends EventEmitter {
   async getReleases() {
     const releases = await this.updater.getReleases()
     return releases
+  }
+  async getCachedReleases() {
+    const releases = await this.updater.getCachedReleases()
+    return releases
+  }
+
+  async getLatestCached() {
+    return this.updater.getLatestCached()
+  }
+  async getLatestRemote() {
+    return this.updater.getLatestRemote()
   }
   download(release, onProgress) {
     return this.updater.download(release, { onProgress })
@@ -173,8 +198,48 @@ class Plugin extends EventEmitter {
     console.warn('no binary found for', release)
     return undefined
   }
+  getSelectedRelease() {
+    const { name } = this.config
+    const selectedRelease = UserConfig.getItem('selectedRelease')
+    return selectedRelease ? selectedRelease[name] : null
+  }
+  setSelectedRelease(release) {
+    const { name } = this.config
+    const selectedRelease = UserConfig.getItem('selectedRelease')
+    const newSelectedRelease = { ...selectedRelease, [name]: release }
+    UserConfig.setItem('selectedRelease', newSelectedRelease)
+  }
+  async requestStart(app, flags, release) {
+    return new Promise((resolve, reject) => {
+      // TODO move dialog code to different module
+      dialog.showMessageBox(
+        // currentWindow,
+        {
+          title: 'Start requested',
+          buttons: ['OK', 'Cancel'],
+          message: `The application "${
+            app.name
+          }" requests to start the client or service "${
+            this.displayName
+          }" with flags: [${
+            flags ? flags.join(' ') : ''
+          }].\n\nPress 'OK' to allow this time.
+        `
+        },
+        async response => {
+          const userPermission = response !== 1 // = index of 'cancel'
+          if (userPermission) {
+            await this.start(flags, release)
+          } else {
+            console.log('User cancelled start dialog.')
+          }
+          resolve()
+        }
+      )
+    })
+  }
 
-  async start(release, flags) {
+  async start(flags, release) {
     // TODO do flag validation here based on proxy metadata
     const { beforeStart } = this.config
     if (beforeStart && beforeStart.execute) {
@@ -233,12 +298,22 @@ class Plugin extends EventEmitter {
     this.process.write(payload)
   }
   async execute(command) {
-    const { binaryPath } = await this.getLocalBinary()
-    if (!binaryPath) {
+    const binary = await this.getLocalBinary()
+
+    if (!binary) {
       console.log(
-        'execution error: binary not found. bad package path or missing/ambiguous binaryName'
+        'Execution error: binary not found. Bad package path or missing/ambiguous binaryName.'
       )
-      return Promise.reject(new Error('execution error: binary not found'))
+      // TODO: handle downloads when no binary exists.
+      // Challenge: first version not always most appropriate to download.
+      dialog.showMessageBox({
+        message: 'Please download a release of the plugin first.'
+      })
+      return Promise.reject(
+        new Error(
+          'Execution error: binary not found. Please download a version first.'
+        )
+      )
     }
 
     return new Promise((resolve, reject) => {
@@ -250,7 +325,7 @@ class Plugin extends EventEmitter {
       }
       let proc = undefined
       try {
-        proc = spawn(binaryPath, flags)
+        proc = spawn(binary.binaryPath, flags)
       } catch (error) {
         // console.log('spawn error', error)
         reject(error)
@@ -309,6 +384,9 @@ class PluginProxy extends EventEmitter {
   get state() {
     return this.plugin.state
   }
+  get settings() {
+    return this.plugin.settings
+  }
   get config() {
     return this.plugin.defaultConfig
   }
@@ -331,6 +409,21 @@ class PluginProxy extends EventEmitter {
   getReleases() {
     return this.plugin.getReleases()
   }
+  getCachedReleases() {
+    return this.plugin.getCachedReleases()
+  }
+  getLatestCached() {
+    return this.plugin.getLatestCached()
+  }
+  getLatestRemote() {
+    return this.plugin.getLatestRemote()
+  }
+  getSelectedRelease() {
+    return this.plugin.getSelectedRelease()
+  }
+  setSelectedRelease(release) {
+    return this.plugin.setSelectedRelease(release)
+  }
   download(release, onProgress = () => {}) {
     return this.plugin.download(release, progress => {
       onProgress(progress)
@@ -339,8 +432,12 @@ class PluginProxy extends EventEmitter {
   getLocalBinary(release) {
     return this.plugin.getLocalBinary(release)
   }
+  requestStart(app, flags, release) {
+    return this.plugin.requestStart(app, flags, release)
+  }
+  // TODO reverse arg order
   start(release, flags) {
-    return this.plugin.start(release, flags)
+    return this.plugin.start(flags, release)
   }
   stop() {
     console.log(`client ${this.name} stopped`)
