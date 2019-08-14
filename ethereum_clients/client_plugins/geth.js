@@ -22,6 +22,8 @@ switch (process.platform) {
   }
 }
 
+const keystoreDir = `${dataDir}/Ethereum`
+
 const findIpcPathInLogs = logs => {
   let ipcPath
   for (const l of logs) {
@@ -79,7 +81,7 @@ module.exports = {
       id: 'syncMode',
       default: 'light',
       label: 'Sync Mode',
-      options: ['fast', 'full', 'light'],
+      options: ['Fast', 'Full', 'Light'],
       flag: '--syncmode %s'
     },
     {
@@ -90,8 +92,15 @@ module.exports = {
       type: 'directory'
     },
     {
+      id: 'keystoreDir',
+      default: keystoreDir,
+      label: 'Keystore Directory',
+      flag: '--keystore %s',
+      type: 'directory'
+    },
+    {
       id: 'console',
-      label: 'Enable console',
+      label: 'Enable Console',
       default: 'false',
       options: [
         { value: 'true', flag: 'console', label: 'Yes' },
@@ -101,7 +110,7 @@ module.exports = {
     {
       id: 'rpc',
       default: 'none',
-      label: 'RPC API',
+      label: 'HTTP RPC API',
       options: [
         { value: 'none', label: 'Disabled', flag: '' },
         {
@@ -112,7 +121,7 @@ module.exports = {
         },
         {
           value: 'on',
-          label: 'Enabled for all origins',
+          label: 'Enabled for All Origins (*)',
           flag: '--rpc --rpccorsdomain=*'
         }
       ]
@@ -125,37 +134,42 @@ module.exports = {
         { value: 'none', label: 'Disabled', flag: '' },
         {
           value: 'on',
-          label: 'Enabled for all origins',
+          label: 'Enabled for All Origins (*)',
           flag: '--ws --wsorigins=*'
         }
       ]
     },
     {
       id: 'port',
-      label: 'Port',
+      label: 'P2P Port',
       flag: '--port %s',
       default: '30303'
     },
+
     {
-      id: 'verbosity',
-      label: 'Verbosity',
-      default: 3,
+      id: 'graphql',
+      label: 'Enable GraphQL Server',
+      default: 'false',
       options: [
-        { value: 0, label: '0 = Silent', flag: '--loglevel=0' },
-        { value: 1, label: '1 = Error', flag: '--loglevel=1' },
-        { value: 2, label: '2 = Warn', flag: '--loglevel=2' },
-        { value: 3, label: '3 = Info', flag: '' }, // Geth's default
-        { value: 4, label: '4 = Debug', flag: '--loglevel=4' },
-        { value: 5, label: '5 = Detail', flag: '--loglevel=5' }
+        {
+          value: 'true',
+          flag: '--graphql --graphql.corsdomain=*',
+          label: 'Yes, All Origins (*) (Requires Geth >=v1.9.0)'
+        },
+        { value: 'false', flag: '', label: 'No' }
       ]
     },
     {
-      id: 'graphql',
-      label: 'Enable GraphQL',
-      default: 'false',
+      id: 'signer',
+      label: 'Signer',
+      default: 'none',
       options: [
-        { value: 'true', flag: '--graphql', label: 'Yes (v1.9.0 and later)' },
-        { value: 'false', flag: '', label: 'No' }
+        { value: 'none', flag: '', label: 'Internal' },
+        {
+          value: 'clef',
+          flag: '--signer http://localhost:8550',
+          label: 'Clef (default: localhost:8550)'
+        }
       ]
     },
     {
@@ -168,12 +182,16 @@ module.exports = {
       ]
     },
     {
-      id: 'signer',
-      label: 'Signer',
-      default: 'disabled',
+      id: 'verbosity',
+      label: 'Verbosity',
+      default: 3,
       options: [
-        { value: 'disabled', flag: '', label: 'Disabled' },
-        { value: 'clef', flag: '--signer http://localhost:8550', label: 'Clef' }
+        { value: 0, label: '0 = Silent', flag: '--loglevel=0' },
+        { value: 1, label: '1 = Error', flag: '--loglevel=1' },
+        { value: 2, label: '2 = Warn', flag: '--loglevel=2' },
+        { value: 3, label: '3 = Info', flag: '' }, // Geth's default
+        { value: 4, label: '4 = Debug', flag: '--loglevel=4' },
+        { value: 5, label: '5 = Detail', flag: '--loglevel=5' }
       ]
     }
   ]
