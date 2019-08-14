@@ -357,7 +357,12 @@
             >
           </div>
         </div>
-        <app-item v-for="app in apps" :key="app.name" :app="app"></app-item>
+        <app-item
+          v-for="app in apps"
+          :key="app.name"
+          :app="app"
+          @app-opened="onAppOpened"
+        ></app-item>
         <div class="separator"></div>
       </div>
       <client-item
@@ -414,7 +419,8 @@
         },
         methods: {
           stateUpdateListener: function(state) {
-            console.log('New nano state: ', this.client.name, state)
+            const { client } = this
+            console.log('New nano state: ', client.name, state)
             this.state = state
 
             if (['starting', 'started', 'connected'].includes(state)) {
@@ -424,13 +430,14 @@
             }
 
             if (state === 'started') {
-              this.client.error = false
+              client.error = false
             }
           },
           handleSwitchedOn: async function() {
+            const { client } = this
             let release
             // Check if selectedRelease in UserConfig
-            const selectedRelease = this.client.plugin.getSelectedRelease()
+            const selectedRelease = client.plugin.getSelectedRelease()
             if (selectedRelease) {
               this.clientVersion = selectedRelease.version
               release = selectedRelease
@@ -438,18 +445,21 @@
 
             if (!release) {
               // Check if downloaded version is available
-              let latestBinCached = await this.client.plugin.getLatestCached()
+              let latestBinCached = await client.plugin.getLatestCached()
               if (!latestBinCached) {
-                console.log('no client binary found --> download now')
-                const latestRemote = await this.client.plugin.getLatestRemote()
+                console.log('No client binary found --> Download now')
+                const latestRemote = await client.plugin.getLatestRemote()
                 // TODO handle no remote release found
                 try {
                   this.state = 'downloading'
                   this.isDownloading = true
-                  latestBinCached = await this.client.plugin.download(
+                  latestBinCached = await client.plugin.download(
                     latestRemote,
                     downloadProgress => {
-                      console.log('download progress', downloadProgress)
+                      console.log(
+                        `${client.name} download progress: `,
+                        downloadProgress
+                      )
                       this.downloadProgress = downloadProgress
                       this.state = `downloading ${downloadProgress}%`
                     }
@@ -457,7 +467,7 @@
                   this.isDownloading = false
                   this.state = ''
                 } catch (error) {
-                  console.log('error during download', error)
+                  console.log('Error during download: ', error)
                   return //TODO handleDownloadError(error)
                 }
               }
@@ -546,6 +556,7 @@
               ...this.app,
               id: this.uiWindowId
             })
+            this.$emit('app-opened')
           }
         }
       })
@@ -623,8 +634,10 @@
             this.showConfig = value
           },
           toggleApps: function(value) {
-            console.log('Set showApps to: ', value)
             this.showApps = value
+          },
+          onAppOpened: function() {
+            this.showApps = false
           },
           openAppDashboard: async function() {
             this.appsWindowId = await window.Grid.AppManager.launch({
@@ -635,6 +648,7 @@
                 }
               }
             })
+            this.onAppOpened()
           }
         },
         mounted: async function() {
