@@ -106,14 +106,14 @@
         border-radius: 2px;
       }
 
-      .client-item,
+      .plugin-item,
       .app-item {
         padding: 5px;
         display: flex;
         color: white;
       }
 
-      .client-name {
+      .plugin-name {
         margin-right: 5px;
       }
 
@@ -121,7 +121,7 @@
         margin-left: 5px;
       }
 
-      .client-name:hover,
+      .plugin-name:hover,
       .app-name:hover {
         cursor: pointer;
         text-decoration: underline;
@@ -131,7 +131,7 @@
         font-weight: bold;
       }
 
-      .client-profile {
+      .plugin-profile {
         color: #44a1d9;
         margin-right: 5px;
       }
@@ -141,29 +141,29 @@
         align-items: center;
       }
 
-      .client-info {
+      .plugin-info {
         line-height: 1rem;
         position: relative;
         overflow: hidden;
         flex-grow: 1;
       }
-      .client-info span {
+      .plugin-info span {
         display: inline-block;
         position: absolute;
         left: 0;
         transition: 200ms all ease-out;
         line-height: 1.85rem;
       }
-      .client-item:hover .client-state {
+      .plugin-item:hover .plugin-state {
         top: -1.85rem;
         opacity: 0;
       }
-      .client-item:hover .client-version {
+      .plugin-item:hover .plugin-version {
         top: 0rem;
         opacity: 1;
       }
 
-      .client-state {
+      .plugin-state {
         color: #555;
         margin-right: 5px;
         font-size: 0.8rem;
@@ -171,7 +171,7 @@
         opacity: 1;
       }
 
-      .client-version {
+      .plugin-version {
         font-size: 0.7rem;
         color: #555;
         white-space: nowrap;
@@ -179,7 +179,7 @@
         opacity: 0;
       }
 
-      /* .client-item:hover .client-version {
+      /* .plugin-item:hover .plugin-version {
         visibility: visible;
       } */
 
@@ -365,23 +365,23 @@
         ></app-item>
         <div class="separator"></div>
       </div>
-      <client-item
+      <plugin-item
         v-if="!showConfig"
-        v-for="client in clients"
-        :key="client.name"
-        :client="client"
-      ></client-item>
+        v-for="plugin in plugins"
+        :key="plugin.name"
+        :plugin="plugin"
+      ></plugin-item>
       <grid-config v-if="showConfig"></grid-config>
       <div id="grid-version"></div>
     </div>
 
     <script>
-      Vue.component('client-item', {
-        props: ['client'],
+      Vue.component('plugin-item', {
+        props: ['plugin'],
         data: function() {
           return {
             isSwitched: false,
-            clientVersion: '',
+            pluginVersion: '',
             state: '',
             isDownloading: false,
             downloadProgress: 0,
@@ -391,36 +391,35 @@
           }
         },
         template: `
-          <div>
-            <div class="client-item">
-              <b-switch v-model="isSwitched" @input="handleChange($event)" size="is-small"></b-switch>
-              <span class="client-name centered" v-on:click="openUI()">{{ client.displayName }}</span>
-              <span class="client-profile centered">{{ client.profile }}</span>
-              <span class="client-info centered">
-                <span class="client-state">{{ state }}</span>
-                <span class="client-version">{{ clientVersion }}</span>
-              </span>
-              <icon-indicator @change="openTerminal()" v-if="client.error" pack="fas" icon="exclamation-circle" class="error" title="Plugin Error, click for more details"></icon-indicator>
-              <icon-indicator @change="openTerminal()" pack="far" icon="window-maximize"></icon-indicator>
-            </div>
-            <progress v-if="isDownloading" max="100" class="progress is-small is-primary" :value="downloadProgress"></progress>
-          </div>
-          `,
+                <div>
+                  <div class="plugin-item">
+                    <b-switch v-model="isSwitched" @input="handleChange($event)" size="is-small"></b-switch>
+                    <span class="plugin-name centered" v-on:click="openUI()">{{ plugin.displayName }}</span>
+                    <span class="plugin-profile centered">{{ plugin.profile }}</span>
+                    <span class="plugin-info centered">
+                      <span class="plugin-state">{{ state }}</span>
+                      <span class="plugin-version">{{ pluginVersion }}</span>
+                    </span>
+                    <icon-indicator @change="openTerminal()" v-if="plugin.error" pack="fas" icon="exclamation-circle" class="error" title="Plugin Error, click for more details"></icon-indicator>
+                    <icon-indicator @change="openTerminal()" pack="far" icon="window-maximize"></icon-indicator>
+                  </div>
+                  <progress v-if="isDownloading" max="100" class="progress is-small is-primary" :value="downloadProgress"></progress>
+                </div>
+                `,
         created: function() {
-          this.client.plugin.on('newState', this.stateUpdateListener)
-          // Set client version if selectedRelease
-          const selectedRelease = this.client.plugin.getSelectedRelease()
+          this.plugin.pluginRef.on('newState', this.stateUpdateListener)
+          // Set plugin version if selectedRelease
+          const selectedRelease = this.plugin.pluginRef.getSelectedRelease()
           if (selectedRelease) {
-            this.clientVersion = selectedRelease.version
+            this.pluginVersion = selectedRelease.version
           }
         },
         beforeDestroy: function() {
-          this.client.plugin.off('newState', this.stateUpdateListener)
+          this.plugin.pluginRef.off('newState', this.stateUpdateListener)
         },
         methods: {
           stateUpdateListener: function(state) {
-            const { client } = this
-            console.log('New nano state: ', client.name, state)
+            console.log('New nano state: ', this.plugin.name, state)
             this.state = state
 
             if (['starting', 'started', 'connected'].includes(state)) {
@@ -430,30 +429,30 @@
             }
 
             if (state === 'started') {
-              client.error = false
+              this.plugin.error = false
             }
           },
           handleSwitchedOn: async function() {
             const { client } = this
             let release
             // Check if selectedRelease in UserConfig
-            const selectedRelease = client.plugin.getSelectedRelease()
+            const selectedRelease = this.plugin.pluginRef.getSelectedRelease()
             if (selectedRelease) {
-              this.clientVersion = selectedRelease.version
+              this.pluginVersion = selectedRelease.version
               release = selectedRelease
             }
 
             if (!release) {
               // Check if downloaded version is available
-              let latestBinCached = await client.plugin.getLatestCached()
+              let latestBinCached = await this.plugin.pluginRef.getLatestCached()
               if (!latestBinCached) {
-                console.log('No client binary found --> Download now')
-                const latestRemote = await client.plugin.getLatestRemote()
+                console.log('No plugin binary found --> download now')
+                const latestRemote = await this.plugin.pluginRef.getLatestRemote()
                 // TODO handle no remote release found
                 try {
                   this.state = 'downloading'
                   this.isDownloading = true
-                  latestBinCached = await client.plugin.download(
+                  latestBinCached = await this.plugin.pluginRef.download(
                     latestRemote,
                     downloadProgress => {
                       console.log(
@@ -472,16 +471,16 @@
                 }
               }
               console.log('Cached release found')
-              this.clientVersion = latestBinCached.version
+              this.pluginVersion = latestBinCached.version
               release = latestBinCached
             }
 
             console.log('Starting release: ', release.version)
 
             const persistedFlags = (await Grid.Config.getItem('flags')) || {}
-            const flags = persistedFlags[this.client.plugin.name]
+            const flags = persistedFlags[this.plugin.pluginRef.name]
 
-            this.client.plugin.start(release, flags)
+            this.plugin.pluginRef.start(release, flags)
           },
           handleChange: function(ev) {
             if (this.isSwitched) {
@@ -489,14 +488,14 @@
             } else {
               // TODO cancel download if currently running
               if (['started', 'starting', 'connected'].includes(this.state)) {
-                this.client.plugin.stop()
+                this.plugin.pluginRef.stop()
               }
             }
           },
           openUI: async function() {
             const settings = Grid.Config.getItem('settings')
             const newSettings = Object.assign({}, settings, {
-              selected: this.client.name,
+              selected: this.plugin.name,
               selectedTab: 0
             })
             Grid.Config.setItem('settings', newSettings)
@@ -507,7 +506,7 @@
               args: {
                 scope: {
                   component: 'ui',
-                  client: this.client.name
+                  plugin: this.plugin.name
                 }
               }
             })
@@ -515,7 +514,7 @@
           openTerminal: async function() {
             const settings = Grid.Config.getItem('settings')
             const newSettings = Object.assign({}, settings, {
-              selected: this.client.name,
+              selected: this.plugin.name,
               selectedTab: 2
             })
             Grid.Config.setItem('settings', newSettings)
@@ -526,12 +525,61 @@
               args: {
                 scope: {
                   component: 'ui',
-                  client: this.client.name
+                  plugin: this.plugin.name
                 }
               }
             })
 
-            this.client.error = false
+            this.plugin.error = false
+          }
+        }
+      })
+
+      Vue.component('app-item', {
+        props: ['app'],
+        data: function() {
+          return {
+            uiWindowId: undefined
+          }
+        },
+        template: `
+                <div>
+                  <div class="app-item">
+                    <span class="app-name centered" v-on:click="openApp()">{{ app.name }}</span>
+                  </div>
+                </div>
+                `,
+        methods: {
+          openApp: async function() {
+            this.uiWindowId = await window.Grid.AppManager.launch({
+              ...this.app,
+              id: this.uiWindowId
+            })
+          }
+        }
+      })
+
+      Vue.component('app-item', {
+        props: ['app'],
+        data: function() {
+          return {
+            uiWindowId: undefined
+          }
+        },
+        template: `
+                <div>
+                  <div class="app-item">
+                    <span class="app-name centered" v-on:click="openApp()">{{ app.name }}</span>
+                  </div>
+                </div>
+                `,
+        methods: {
+          openApp: async function() {
+            this.uiWindowId = await window.Grid.AppManager.launch({
+              ...this.app,
+              id: this.uiWindowId
+            })
+            this.$emit('app-opened')
           }
         }
       })
@@ -568,13 +616,13 @@
           }
         },
         template: `
-          <div class="grid-config">
-            <div><a @click.prevent="openExternal('https://github.com/ethereum/grid')">Grid Repository</a></div>
-            <div><a @click.prevent="openExternal('https://forms.gle/bjkphVS8ca1JzwL46')">Feedback</a></div>
-            <div class="separator"></div>
-            <div><b-switch v-model="launchOnBoot" @input="handleChangeLaunch($event)" size="is-small">Start Grid at log in</b-switch></div>
-          </div>
-          `,
+                <div class="grid-config">
+                  <div><a @click.prevent="openExternal('https://github.com/ethereum/grid')">Grid Repository</a></div>
+                  <div><a @click.prevent="openExternal('https://forms.gle/bjkphVS8ca1JzwL46')">Feedback</a></div>
+                  <div class="separator"></div>
+                  <div><b-switch v-model="launchOnBoot" @input="handleChangeLaunch($event)" size="is-small">Start Grid at log in</b-switch></div>
+                </div>
+                `,
         methods: {
           openExternal: function(href) {
             window.Grid.openExternalLink(href)
@@ -592,7 +640,7 @@
         el: '#app',
         data: function() {
           return {
-            clients: [],
+            plugins: [],
             apps: [],
             isSwitched: false,
             showConfig: false,
@@ -602,7 +650,7 @@
         methods: {
           loadPlugins: function() {
             const plugins = window.Grid.PluginHost.getAllPlugins()
-            this.clients = plugins.map(plugin => {
+            this.plugins = plugins.map(plugin => {
               plugin.on('pluginError', error => {
                 this.pluginErrorListener(plugin, error)
               })
@@ -611,7 +659,7 @@
                 displayName: plugin.displayName,
                 profile: '',
                 version: '',
-                plugin,
+                pluginRef: plugin,
                 error: false
               }
             })
@@ -627,10 +675,9 @@
             this.loadApps()
           },
           pluginErrorListener: function(plugin, error) {
-            this.clients.find(p => p.name === plugin.name).error = true
+            this.plugins.find(p => p.name === plugin.name).error = true
           },
           toggleSettings: function(value) {
-            console.log('Set showConfig to: ', value)
             this.showConfig = value
           },
           toggleApps: function(value) {
