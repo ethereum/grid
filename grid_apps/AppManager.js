@@ -1,5 +1,6 @@
 const { EventEmitter } = require('events')
 const path = require('path')
+const fs = require('fs')
 const createRenderer = require('../electron-shell')
 const WindowManager = require('../WindowManager')
 const {
@@ -220,7 +221,7 @@ class AppManager extends EventEmitter {
         },
         { scope }
       )
-      mainWindow.setMenu(null)
+      // mainWindow.setMenu(null)
       /*
       mainWindow.webContents.openDevTools({
         mode: 'detach'
@@ -230,6 +231,24 @@ class AppManager extends EventEmitter {
     }
 
     let url = app.url || 'http://localhost:3000'
+
+    const appCache = getCachePath(app.name)
+    // console.log('checking cache', appCache)
+    const pkgManager = new PackageManager({
+      repository: app.url.replace('package:', 'https:'),
+      auto: false, // this will automatically check for new packages...
+      cacheDir: appCache, // updates are downloaded to this path
+      policy: {
+        onlySigned: false
+      }
+    })
+    const cached = await pkgManager.getLatestCached()
+    if (cached) {
+      // console.log('cached app found', cached)
+      let appUrl = await gridUiManager.load(cached.location)
+      url = appUrl
+    }
+
     const mainWindow = createRenderer(
       await getGridUiUrl(), // FIXME might be very inefficient. might load many grid-ui packages into memory!!
       {},
