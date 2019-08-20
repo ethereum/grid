@@ -79,7 +79,11 @@ module.exports = {
       id: 'syncMode',
       default: 'light',
       label: 'Sync Mode',
-      options: ['fast', 'full', 'light'],
+      options: [
+        { value: 'fast', label: 'Fast' },
+        { value: 'full', label: 'Full' },
+        { value: 'light', label: 'Light' }
+      ],
       flag: '--syncmode %s'
     },
     {
