@@ -70,7 +70,13 @@ module.exports = {
     apps: [
       {
         name: 'RPC Tester App',
-        url: 'package://github.com/ryanio/grid-rpc-app'
+        url: 'package://github.com/ryanio/grid-rpc-app',
+        dependencies: [
+          {
+            name: 'parity',
+            settings: []
+          }
+        ]
       }
     ],
     links: [
