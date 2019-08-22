@@ -29,6 +29,7 @@ module.exports = {
   repository: 'https://github.com/evertonfraga/releases-parity',
   prefix: `${process.platform}`, // filter github assets
   binaryName: process.platform === 'win32' ? 'parity.exe' : 'parity',
+  resolveIpc: logs => IPC_PATH,
   settings: [
     {
       id: 'network',
@@ -64,5 +65,39 @@ module.exports = {
       flag: '--ipc-path %s'
     }
   ],
-  resolveIpc: logs => IPC_PATH
+  about: {
+    description: 'Parity is a robust EVM and WASM client implemented in Rust.',
+    apps: [
+      {
+        name: 'RPC Tester App',
+        url: 'package://github.com/ryanio/grid-rpc-app'
+      }
+    ],
+    links: [
+      {
+        name: 'GitHub Repository',
+        url: 'https://github.com/paritytech/parity-ethereum'
+      }
+    ],
+    docs: [
+      {
+        name: 'Parity Docs',
+        url: 'https://wiki.parity.io'
+      },
+      {
+        name: 'JSON RPC API Reference',
+        url: 'https://wiki.parity.io/JSONRPC'
+      }
+    ],
+    community: [
+      {
+        name: 'Riot.im Chat',
+        url: 'https://riot.im/app/#/room/#watercooler:matrix.parity.io'
+      },
+      {
+        name: 'Twitter (@ParityTech)',
+        url: 'https://twitter.com/ParityTech'
+      }
+    ]
+  }
 }

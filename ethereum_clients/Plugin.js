@@ -60,6 +60,9 @@ class Plugin extends EventEmitter {
   get defaultConfig() {
     return this.config.config.default
   }
+  get about() {
+    return this.config.about
+  }
   get source() {
     return this._source
   }
@@ -369,6 +372,9 @@ class PluginProxy extends EventEmitter {
   }
   get metadata() {
     return this.plugin.metadata
+  }
+  get about() {
+    return this.plugin.about
   }
   get isRunning() {
     return this.plugin.isRunning

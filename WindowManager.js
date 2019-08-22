@@ -21,8 +21,8 @@ class WindowManager {
     const preloadPath = path.join(__dirname, 'preload.js')
 
     let baseOptions = {
-      width: 1059,
-      height: 658
+      width: 1100,
+      height: 700
     }
 
     // Open new window in center with offset
