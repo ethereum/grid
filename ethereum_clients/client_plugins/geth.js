@@ -171,5 +171,48 @@ module.exports = {
         { value: 'true', flag: '', label: 'Yes' }
       ]
     }
-  ]
+  ],
+  about: {
+    description:
+      'Geth is a multipurpose command line tool that runs a full Ethereum node implemented in Go.',
+    apps: [
+      {
+        name: 'RPC Tester App',
+        url: 'package://github.com/ryanio/grid-rpc-app',
+        dependencies: [
+          {
+            name: 'geth',
+            settings: []
+          }
+        ]
+      },
+      {
+        name: 'GraphQL App',
+        url: 'http://localhost:8547'
+      }
+    ],
+    links: [
+      {
+        name: 'GitHub Repository',
+        url: 'https://github.com/ethereum/go-ethereum'
+      }
+    ],
+    docs: [
+      {
+        name: 'Geth Docs',
+        url: 'https://geth.ethereum.org/docs/'
+      },
+      {
+        name: 'JSON RPC API Reference',
+        url:
+          'https://github.com/ethereum/wiki/wiki/JSON-RPC#json-rpc-api-reference'
+      }
+    ],
+    community: [
+      {
+        name: 'Discord Chat',
+        url: 'https://discordapp.com/invite/nthXNEv'
+      }
+    ]
+  }
 }
