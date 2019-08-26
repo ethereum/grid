@@ -60,6 +60,9 @@ class Plugin extends EventEmitter {
   get defaultConfig() {
     return this.config.config.default
   }
+  get about() {
+    return this.config.about
+  }
   get source() {
     return this._source
   }
@@ -202,11 +205,9 @@ class Plugin extends EventEmitter {
       dialog.showMessageBox(
         // currentWindow,
         {
-          title: 'Start requested',
+          title: 'Start Requested',
           buttons: ['OK', 'Cancel'],
-          message: `The application "${
-            app.name
-          }" requests to start the client or service "${
+          message: `The application "${app.name}" requests to start "${
             this.displayName
           }" with flags: [${
             flags ? flags.join(' ') : ''
@@ -237,7 +238,7 @@ class Plugin extends EventEmitter {
     }
     const { binaryPath, packagePath } = await this.getLocalBinary(release)
     console.log(
-      `client ${this.name} / ${packagePath} about to start - binary: ${binaryPath}`
+      `Plugin ${this.name} (${packagePath}) about to start. Binary: ${binaryPath}`
     )
     try {
       this.process = new ControlledProcess(binaryPath, this.resolveIpc)
@@ -372,6 +373,9 @@ class PluginProxy extends EventEmitter {
   get metadata() {
     return this.plugin.metadata
   }
+  get about() {
+    return this.plugin.about
+  }
   get isRunning() {
     return this.plugin.isRunning
   }
@@ -416,7 +420,7 @@ class PluginProxy extends EventEmitter {
     return this.plugin.start(flags, release)
   }
   stop() {
-    console.log(`client ${this.name} stopped`)
+    console.log(`Plugin ${this.name} stopped`)
     return this.plugin.stop()
   }
   rpc(method, params = []) {

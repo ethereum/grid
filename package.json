@@ -1,6 +1,6 @@
 {
   "name": "grid",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Ethereum Grid",
   "main": "nano.js",
   "homepage": "https://github.com/ethereum/grid",
@@ -25,7 +25,7 @@
     "@philipplgh/electron-app-manager": "^0.45.0",
     "auto-launch": "^5.0.5",
     "debug": "^4.1.1",
-    "menubar": "^6.0.6",
+    "menubar": "^6.0.7",
     "xterm": "^3.14.4"
   },
   "peerDependencies": {},
@@ -33,7 +33,7 @@
     "ava": "^1.4.1",
     "chai": "^4.2.0",
     "cross-env": "^5.2.0",
-    "electron": "5.0.0-beta.7",
+    "electron": "5.0.8",
     "electron-builder": "20.31.3",
     "electron-rebuild": "^1.8.5",
     "env-cmd": "^8.0.2",
