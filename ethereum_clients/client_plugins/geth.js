@@ -24,10 +24,10 @@ switch (process.platform) {
 
 const findIpcPathInLogs = logs => {
   let ipcPath
-  for (const l of logs) {
-    const found = l.includes('IPC endpoint opened')
+  for (const logPart of logs) {
+    const found = logPart.includes('IPC endpoint opened')
     if (found) {
-      ipcPath = l.split('=')[1].trim()
+      ipcPath = logPart.split('=')[1].trim()
       // fix double escaping
       if (ipcPath.includes('\\\\')) {
         ipcPath = ipcPath.replace(/\\\\/g, '\\')
