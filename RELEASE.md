@@ -15,6 +15,7 @@ Note: on macOS, you'll get a warning if you don't sign the package with an Apple
 ### Preparing a release via CI (recommended)
 
 1. **Update the version number** of the release in `package.json`.
+1. **Prepare Grid-UI for release** by merging any changes from `dev` into `master`. **Important**: do not squash and merge, as you'll end up with two different branches. Use "Create a merge commit".
 1. **Merge the new code into `master`.** CircleCI will build the new installers (`yarn build`) and create a draft release for the new version. **Note:** if the CI builds for a version number that already exists, it will replace the assets for that version.
 1. **Write release notes.** The draft can be edited from the GitHub releases page.
 1. **Publish the release.** You must manually publish the draft. Within GitHub's UI, edit the draft and select `Publish release`.
@@ -24,6 +25,7 @@ Note: on macOS, you'll get a warning if you don't sign the package with an Apple
 
 1. **Add the GitHub access token** to the `.env` file as `GH_TOKEN`.
 1. **Update the version number** of the release in `package.json`.
+1. **Prepare Grid-UI for release** by merging any changes from `dev` into `master`. **Important**: do not squash and merge, as you'll end up with two different branches. Use "Create a merge commit".
 1. **Configure code signing** keys for mac and windows. [Follow guide here](https://www.electron.build/code-signing).
 1. **Manually initiate the release** with `yarn release`.
 1. **Write release notes.** The draft can be edited from the GitHub releases page.
