@@ -433,7 +433,6 @@
             }
           },
           handleSwitchedOn: async function() {
-            const { client } = this
             let release
             // Check if selectedRelease in UserConfig
             const selectedRelease = this.plugin.pluginRef.getSelectedRelease()
@@ -456,7 +455,7 @@
                     latestRemote,
                     downloadProgress => {
                       console.log(
-                        `${client.name} download progress: `,
+                        `${this.plugin.name} download progress: `,
                         downloadProgress
                       )
                       this.downloadProgress = downloadProgress
