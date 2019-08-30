@@ -26,10 +26,10 @@ const keystoreDir = `${dataDir}/Ethereum`
 
 const findIpcPathInLogs = logs => {
   let ipcPath
-  for (const l of logs) {
-    const found = l.includes('IPC endpoint opened')
+  for (const logPart of logs) {
+    const found = logPart.includes('IPC endpoint opened')
     if (found) {
-      ipcPath = l.split('=')[1].trim()
+      ipcPath = logPart.split('=')[1].trim()
       // fix double escaping
       if (ipcPath.includes('\\\\')) {
         ipcPath = ipcPath.replace(/\\\\/g, '\\')
@@ -81,7 +81,11 @@ module.exports = {
       id: 'syncMode',
       default: 'light',
       label: 'Sync Mode',
-      options: ['Fast', 'Full', 'Light'],
+      options: [
+        { value: 'fast', label: 'Fast' },
+        { value: 'full', label: 'Full' },
+        { value: 'light', label: 'Light' }
+      ],
       flag: '--syncmode %s'
     },
     {
@@ -194,5 +198,48 @@ module.exports = {
         { value: 5, label: '5 = Detail', flag: '--loglevel=5' }
       ]
     }
-  ]
+  ],
+  about: {
+    description:
+      'Geth is a multipurpose command line tool that runs a full Ethereum node implemented in Go.',
+    apps: [
+      {
+        name: 'RPC Tester App',
+        url: 'package://github.com/ryanio/grid-rpc-app',
+        dependencies: [
+          {
+            name: 'geth',
+            settings: []
+          }
+        ]
+      },
+      {
+        name: 'GraphQL App',
+        url: 'http://localhost:8547'
+      }
+    ],
+    links: [
+      {
+        name: 'GitHub Repository',
+        url: 'https://github.com/ethereum/go-ethereum'
+      }
+    ],
+    docs: [
+      {
+        name: 'Geth Docs',
+        url: 'https://geth.ethereum.org/docs/'
+      },
+      {
+        name: 'JSON RPC API Reference',
+        url:
+          'https://github.com/ethereum/wiki/wiki/JSON-RPC#json-rpc-api-reference'
+      }
+    ],
+    community: [
+      {
+        name: 'Discord Chat',
+        url: 'https://discordapp.com/invite/nthXNEv'
+      }
+    ]
+  }
 }

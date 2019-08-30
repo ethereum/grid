@@ -55,15 +55,14 @@ aliases:
     run: yarn test:e2e -s
 
   - &run_script
-    run: 
-      name: "Building app (deploy if on master)"
-      command: | 
+    run:
+      name: 'Building app (deploy if on master)'
+      command: |
         if [[ "${CIRCLE_BRANCH}" == 'master' ]]; then
           yarn release --$GRID_ENV;
         else
-          yarn build --$GRID_ENV;
+          yarn dist --$GRID_ENV;
         fi;
-
 
   - &run_steps
     steps:
