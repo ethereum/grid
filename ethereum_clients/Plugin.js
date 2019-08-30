@@ -97,7 +97,8 @@ class Plugin extends EventEmitter {
       'log',
       'notification',
       'pluginData',
-      'pluginError'
+      'pluginError',
+      'setAppBadge'
     ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
@@ -267,6 +268,10 @@ class Plugin extends EventEmitter {
     return this.process
   }
   async stop() {
+    const { beforeStop } = this.config
+    if (beforeStop) {
+      beforeStop()
+    }
     return this.process && this.process.stop()
   }
   // public json rpc

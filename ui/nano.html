@@ -8,7 +8,7 @@
       html,
       body {
         padding: 0px;
-        margin: 0px; 
+        margin: 0px;
         background-color: transparent;
         overflow: hidden;
         user-select: none;
@@ -103,15 +103,15 @@
 
       /* Scrollbar track and thumb starts transparent */
       .plugin-container::-webkit-scrollbar {
-        background: rgba(1, 1, 1, .1);
+        background: rgba(1, 1, 1, 0.1);
       }
       .plugin-container::-webkit-scrollbar-thumb {
-        background: rgba(255,255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.1);
       }
 
       /* Shows scrollbar and thumb when hovering the window */
       html:hover .plugin-container::-webkit-scrollbar {
-        background: rgba(1, 1, 1, .2);
+        background: rgba(1, 1, 1, 0.2);
       }
       html:hover .plugin-container::-webkit-scrollbar-thumb {
         /* 30% white */
@@ -168,7 +168,8 @@
       }
 
       .plugin-name:hover,
-      .app-name:hover {
+      .app-name:hover,
+      .plugin-badge:hover {
         cursor: pointer;
         text-decoration: underline;
       }
@@ -448,6 +449,7 @@
                       <span class="plugin-state">{{ state }}</span>
                       <span class="plugin-version">{{ pluginVersion }}</span>
                     </span>
+                    <b-tag class="plugin-badge" type="is-info" v-if="plugin.badge > 0" rounded @click.native="openUI()">{{ plugin.badge }}</b-tag>
                     <icon-indicator @change="openTerminal()" v-if="plugin.error" pack="fas" icon="exclamation-circle" class="error" title="Plugin Error, click for more details"></icon-indicator>
                     <icon-indicator @change="openTerminal()" pack="far" icon="window-maximize"></icon-indicator>
                   </div>
@@ -701,13 +703,17 @@
               plugin.on('pluginError', error => {
                 this.pluginErrorListener(plugin, error)
               })
+              plugin.on('setAppBadge', ({ appId, count }) => {
+                this.setAppBadgeListener(plugin, appId, count)
+              })
               return {
                 name: plugin.name,
                 displayName: plugin.displayName,
                 profile: '',
                 version: '',
                 pluginRef: plugin,
-                error: false
+                error: false,
+                badge: 0
               }
             })
             console.log('Plugins Loaded: ', plugins.length)
@@ -723,6 +729,10 @@
           },
           pluginErrorListener: function(plugin, error) {
             this.plugins.find(p => p.name === plugin.name).error = true
+          },
+          setAppBadgeListener: function(plugin, appId, count) {
+            console.log(plugin.name, appId, count)
+            this.plugins.find(p => p.name === plugin.name).badge = count
           },
           toggleSettings: function(value) {
             this.showConfig = value
@@ -758,6 +768,7 @@
         beforeDestroy: function() {
           plugins.forEach(plugin => {
             plugin.off('pluginError', this.pluginErrorListener)
+            plugin.off('setAppBadge', this.setAppBadgeListener)
           })
         }
       })

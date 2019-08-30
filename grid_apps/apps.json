@@ -44,9 +44,10 @@
     ]
   },
   {
+    "id": "grid-clef-app",
     "name": "Grid Clef Client",
-    "description": "Respond to Clef requests",
-    "screenshot": "https://i.imgur.com/yS37W9x.png",
+    "description": "Respond to Clef requests.",
+    "screenshot": "https://i.imgur.com/F7WdMM1.png",
     "url": "package://github.com/ryanio/grid-clef-app",
     "dependencies": [
       { "name": "geth", "settings": [{ "signer": "clef" }] },
