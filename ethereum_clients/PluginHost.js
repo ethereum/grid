@@ -94,6 +94,10 @@ class PluginHost extends EventEmitter {
     let plugins = []
     try {
       const registries = UserConfig.getItem('registries', [])
+      if (registries === undefined) {
+        // key does not exist in config
+        return plugins
+      }
       for (let index = 0; index < registries.length; index++) {
         const registry = registries[index]
         try {

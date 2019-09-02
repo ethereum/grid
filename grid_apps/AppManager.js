@@ -99,6 +99,10 @@ class AppManager extends EventEmitter {
     let apps = []
     try {
       const registries = UserConfig.getItem('registries', [])
+      if (registries === undefined) {
+        // key does not exist in config
+        return apps
+      }
       for (let index = 0; index < registries.length; index++) {
         const registry = registries[index]
         try {
