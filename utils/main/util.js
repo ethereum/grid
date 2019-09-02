@@ -114,11 +114,21 @@ const checkConnection = async (host, port, timeout = 2000) => {
   })
 }
 
+const removePackageExtension = packagePath => {
+  const packageName = path.basename(packagePath)
+  let packageNameWithoutExtension = packageName
+  for (const ext of ['.zip', '.tar.gz', '.tgz', '.tar', '.gz']) {
+    packageNameWithoutExtension = packageNameWithoutExtension.replace(ext, '')
+  }
+  return packageNameWithoutExtension
+}
+
 module.exports = {
   checkConnection,
   getShippedGridUiPath,
   getCachePath,
   getUserDataPath,
   getPluginCachePath,
-  getBinaryUpdater
+  getBinaryUpdater,
+  removePackageExtension
 }
