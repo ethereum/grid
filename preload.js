@@ -63,7 +63,28 @@ const Grid = {
   AppManager: remote.getGlobal('AppManager'),
   Config: remote.getGlobal('UserConfig'),
   window: {
-    getArgs: () => currentWindow.args
+    getArgs: () => currentWindow.args,
+    close: () => {
+      currentWindow.close()
+    },
+    maximize: () => {
+      currentWindow.maximize()
+    },
+    minimize: () => {
+      currentWindow.minimize()
+    },
+    restore: () => {
+      currentWindow.restore()
+    },
+    unmaximize: () => {
+      currentWindow.unmaximize()
+    },
+    hasFrame: () => {
+      currentWindow.hasFrame
+    }
+  },
+  platform: {
+    name: process.platform
   },
   notify,
   showOpenDialog,
