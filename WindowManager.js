@@ -84,7 +84,11 @@ class WindowManager {
     // must be last call to assign values to config - should overwrite existing values
     const windowConfig = Object.assign(config, enforcedOptions)
 
+    const hasFrame = process.platform !== 'win32'
+    windowConfig.frame = hasFrame
+
     let win = new BrowserWindow(windowConfig)
+    win.hasFrame = hasFrame
 
     let webContents = win.webContents
 
