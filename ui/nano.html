@@ -168,10 +168,33 @@
       }
 
       .plugin-name:hover,
-      .app-name:hover,
-      .plugin-badge:hover {
+      .app-name:hover {
         cursor: pointer;
         text-decoration: underline;
+      }
+
+      .app-badge:hover {
+        cursor: pointer;
+      }
+
+      /* Match app badge to grid-ui (.app-badge <b-tag>) */
+      .tag:not(body).is-info {
+        background: #78aac7 !important;
+        color: black;
+      }
+
+      /* Match switch to grid-ui */
+      .switch input[type='checkbox'] + .check {
+        background: #6c6e72;
+      }
+      .switch input[type='checkbox']:checked + .check {
+        background: #4c735e;
+      }
+      .switch.is-rounded input[type='checkbox'] + .check:before {
+        background: #bdbdbd;
+      }
+      .switch.is-rounded input:checked + .check:before {
+        background: #4fb783;
       }
 
       .open-dash span {
@@ -449,7 +472,7 @@
                       <span class="plugin-state">{{ state }}</span>
                       <span class="plugin-version">{{ pluginVersion }}</span>
                     </span>
-                    <b-tag class="plugin-badge" type="is-info" v-if="plugin.badge > 0" rounded @click.native="openUI()">{{ plugin.badge }}</b-tag>
+                    <b-tag class="app-badge" type="is-info" v-if="plugin.badge > 0" rounded @click.native="openUI()">{{ plugin.badge }}</b-tag>
                     <icon-indicator @change="openTerminal()" v-if="plugin.error" pack="fas" icon="exclamation-circle" class="error" title="Plugin Error, click for more details"></icon-indicator>
                     <icon-indicator @change="openTerminal()" pack="far" icon="window-maximize"></icon-indicator>
                   </div>
@@ -548,10 +571,9 @@
               selectedTab: 0
             })
             Grid.Config.setItem('settings', newSettings)
-
             this.uiWindowId = await window.Grid.AppManager.launch({
               name: 'grid-ui',
-              id: this.uiWindowId,
+              windowId: this.uiWindowId,
               args: {
                 scope: {
                   component: 'ui',
@@ -570,7 +592,7 @@
 
             this.terminalWindowId = await window.Grid.AppManager.launch({
               name: 'grid-ui',
-              id: this.terminalWindowId,
+              windowId: this.terminalWindowId,
               args: {
                 scope: {
                   component: 'ui',
@@ -602,7 +624,7 @@
           openApp: async function() {
             this.uiWindowId = await window.Grid.AppManager.launch({
               ...this.app,
-              id: this.uiWindowId
+              windowId: this.uiWindowId
             })
           }
         }
@@ -626,7 +648,7 @@
           openApp: async function() {
             this.uiWindowId = await window.Grid.AppManager.launch({
               ...this.app,
-              id: this.uiWindowId
+              windowId: this.uiWindowId
             })
             this.$emit('app-opened')
           }
@@ -651,7 +673,7 @@
           openApp: async function() {
             this.uiWindowId = await window.Grid.AppManager.launch({
               ...this.app,
-              id: this.uiWindowId
+              windowId: this.uiWindowId
             })
             this.$emit('app-opened')
           }
