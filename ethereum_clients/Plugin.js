@@ -6,7 +6,6 @@ const { getBinaryUpdater } = require('../utils/main/util')
 const ControlledProcess = require('./ControlledProcess')
 const { dialog } = require('electron')
 const { getUserConfig } = require('../Config')
-const { removePackageExtension } = require('../utils/main/util')
 
 const UserConfig = getUserConfig()
 let rpcId = 1
@@ -114,7 +113,15 @@ class Plugin extends EventEmitter {
   async getLatestRemote() {
     return this.updater.getLatestRemote()
   }
-  download(release, onProgress) {
+  download(release, onProgress, onExtractionProgress) {
+    if (this.config.unpack) {
+      // plugin want package contents to be extracted
+      return this.updater.download(release, {
+        onProgress,
+        extractPackage: true,
+        onExtractionProgress
+      })
+    }
     return this.updater.download(release, { onProgress })
   }
   async getLocalBinary(release) {
@@ -192,54 +199,7 @@ class Plugin extends EventEmitter {
     console.warn('no binary found for', release)
     return undefined
   }
-  // note that this is not performance optimized and we do multiple runs on the package data stream
-  async extractPackage(release) {
-    // get a list of all entries in the package
-    const entries = await this.updater.getEntries(release)
-    // get the directory where the package is located
-    const packageLocation = path.dirname(release.location)
-    // iterate over all entries and write them to disk next to the package
-    // WARNING packages can have different structures: if the .tar.gz has a nested dir it is fine
-    // if not the files will directly be in the directory which can cause all kinds of problems
-    // in this case we should try to create an extra subdir
-    let packageNameWithoutExtension = removePackageExtension(release.location)
-    let extractedPackagePath = path.join(
-      packageLocation,
-      packageNameWithoutExtension
-    )
-    if (!fs.existsSync(extractedPackagePath)) {
-      fs.mkdirSync(extractedPackagePath, {
-        recursive: true
-      })
-    }
-
-    for (const entry of entries) {
-      // the full path where we want to write the package entry's contents on disk
-      const destPath = path.join(extractedPackagePath, entry.relativePath)
-      // console.log('create dir sync', destPath)
-      if (entry.file.isDir) {
-        if (!fs.existsSync(destPath)) {
-          fs.mkdirSync(destPath, {
-            recursive: true
-          })
-        }
-      } else {
-        try {
-          // try to overwrite
-          if (fs.existsSync(destPath)) {
-            fs.unlinkSync(destPath)
-          }
-          // IMPORTANT: if the binary already exists the mode cannot be set
-          // FIXME make sure the written file has same attributes / mode / permissions etc
-          fs.writeFileSync(destPath, await entry.file.readContent())
-        } catch (error) {
-          console.log('error during extraction', error)
-        }
-      }
-    }
-    console.log('done with extraction')
-    return extractedPackagePath
-  }
+  async extractPackage(release) {}
   getSelectedRelease() {
     const { name } = this.config
     const selectedRelease = UserConfig.getItem('selectedRelease')
@@ -278,7 +238,6 @@ class Plugin extends EventEmitter {
       )
     })
   }
-
   async start(flags, release) {
     // TODO do flag validation here based on proxy metadata
     const { beforeStart } = this.config
@@ -463,10 +422,8 @@ class PluginProxy extends EventEmitter {
   setSelectedRelease(release) {
     return this.plugin.setSelectedRelease(release)
   }
-  download(release, onProgress = () => {}) {
-    return this.plugin.download(release, progress => {
-      onProgress(progress)
-    })
+  download(release, onProgress = () => {}, onExtractionProgress) {
+    return this.plugin.download(release, onProgress, onExtractionProgress)
   }
   getLocalBinary(release) {
     return this.plugin.getLocalBinary(release)
