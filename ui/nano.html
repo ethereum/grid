@@ -436,7 +436,7 @@
         ></app-item>
         <div class="separator"></div>
       </div>
-      <div class="plugin-container">
+      <div v-if="!showConfig" class="plugin-container">
         <plugin-item
           v-if="!showConfig"
           v-for="plugin in plugins"
