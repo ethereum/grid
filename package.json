@@ -22,7 +22,7 @@
     "release": "env-cmd .env yarn run dist"
   },
   "dependencies": {
-    "@philipplgh/electron-app-manager": "^0.45.0",
+    "@philipplgh/electron-app-manager": "^0.50.0",
     "auto-launch": "^5.0.5",
     "debug": "^4.1.1",
     "menubar": "^6.0.7",
@@ -70,10 +70,7 @@
       "WindowManager.js",
       "build/**/*.png",
       "build/**/*.ico",
-      "ui/download-splash.html",
-      "ui/json-editor.html",
-      "ui/nano.html",
-      "ui/terminal.html",
+      "ui/**/*",
       "public/error.html",
       "Menu.js",
       "Config.js",

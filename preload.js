@@ -1,4 +1,5 @@
 const { ipcRenderer, remote, webFrame } = require('electron')
+const { shell } = remote
 const {
   getLaunchOnBoot,
   hideWindow,
@@ -11,6 +12,19 @@ const {
 // Enabling spectron integration https://github.com/electron/spectron#node-integration
 if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
   window.electronRequire = require
+}
+
+const openCache = clientName => {
+  try {
+    const PluginHost = remote.getGlobal('PluginHost')
+    const client = PluginHost.getPluginByName(clientName)
+    if (!client) {
+      return
+    }
+    shell.openItem(client.cacheDir)
+  } catch (error) {
+    console.log('error', error)
+  }
 }
 
 // const rpc = require('./Rpc')
@@ -63,14 +77,36 @@ const Grid = {
   AppManager: remote.getGlobal('AppManager'),
   Config: remote.getGlobal('UserConfig'),
   window: {
-    getArgs: () => currentWindow.args
+    getArgs: () => currentWindow.args,
+    close: () => {
+      currentWindow.close()
+    },
+    maximize: () => {
+      currentWindow.maximize()
+    },
+    minimize: () => {
+      currentWindow.minimize()
+    },
+    restore: () => {
+      currentWindow.restore()
+    },
+    unmaximize: () => {
+      currentWindow.unmaximize()
+    },
+    hasFrame: () => {
+      currentWindow.hasFrame
+    }
+  },
+  platform: {
+    name: process.platform
   },
   notify,
   showOpenDialog,
   openExternalLink,
   getLaunchOnBoot,
   hideWindow,
-  setLaunchOnBoot
+  setLaunchOnBoot,
+  openCache
 }
 
 /*

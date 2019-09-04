@@ -58,10 +58,13 @@ class Plugin extends EventEmitter {
     return this.config.settings
   }
   get defaultConfig() {
-    return this.config.config.default
+    return this.config.config ? this.config.config.default : {}
   }
   get about() {
     return this.config.about
+  }
+  get dependencies() {
+    return this.config.dependencies
   }
   get source() {
     return this._source
@@ -124,7 +127,15 @@ class Plugin extends EventEmitter {
   async getLatestRemote() {
     return this.updater.getLatestRemote()
   }
-  download(release, onProgress) {
+  download(release, onProgress, onExtractionProgress) {
+    if (this.config.unpack) {
+      // plugin want package contents to be extracted
+      return this.updater.download(release, {
+        onProgress,
+        extractPackage: true,
+        onExtractionProgress
+      })
+    }
     return this.updater.download(release, { onProgress })
   }
   async getLocalBinary(release) {
@@ -202,6 +213,7 @@ class Plugin extends EventEmitter {
     console.warn('no binary found for', release)
     return undefined
   }
+  async extractPackage(release) {}
   getSelectedRelease() {
     const { name } = this.config
     const selectedRelease = UserConfig.getItem('selectedRelease')
@@ -240,7 +252,6 @@ class Plugin extends EventEmitter {
       )
     })
   }
-
   async start(flags, release) {
     // TODO do flag validation here based on proxy metadata
     const { beforeStart } = this.config
@@ -402,8 +413,15 @@ class PluginProxy extends EventEmitter {
   get metadata() {
     return this.plugin.metadata
   }
+  // FIXME make private
+  get cacheDir() {
+    return this.plugin.cacheDir
+  }
   get about() {
     return this.plugin.about
+  }
+  get dependencies() {
+    return this.plugin.dependencies
   }
   get isRunning() {
     return this.plugin.isRunning
@@ -433,10 +451,8 @@ class PluginProxy extends EventEmitter {
   setSelectedRelease(release) {
     return this.plugin.setSelectedRelease(release)
   }
-  download(release, onProgress = () => {}) {
-    return this.plugin.download(release, progress => {
-      onProgress(progress)
-    })
+  download(release, onProgress = () => {}, onExtractionProgress) {
+    return this.plugin.download(release, onProgress, onExtractionProgress)
   }
   getLocalBinary(release) {
     return this.plugin.getLocalBinary(release)
