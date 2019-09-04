@@ -541,9 +541,17 @@
           },
           openUI: async function() {
             const settings = Grid.Config.getItem('settings')
+
+            let selectedTab = 0
+            if (this.plugin.error) {
+              // If error, got to Terminal tab
+              selectedTab = 3
+              this.plugin.error = false
+            }
+
             const newSettings = Object.assign({}, settings, {
               selected: this.plugin.name,
-              selectedTab: 0
+              selectedTab
             })
             Grid.Config.setItem('settings', newSettings)
 
@@ -676,6 +684,9 @@
               plugin.on('pluginError', error => {
                 this.pluginErrorListener(plugin, error)
               })
+              plugin.on('clearPluginErrors', () => {
+                this.clearPluginErrors(plugin)
+              })
               return {
                 name: plugin.name,
                 displayName: plugin.displayName,
@@ -698,6 +709,9 @@
           },
           pluginErrorListener: function(plugin, error) {
             this.plugins.find(p => p.name === plugin.name).error = true
+          },
+          clearPluginErrors: function(plugin) {
+            this.plugins.find(p => p.name === plugin.name).error = false
           },
           toggleSettings: function(value) {
             this.showConfig = value
@@ -733,6 +747,7 @@
         beforeDestroy: function() {
           plugins.forEach(plugin => {
             plugin.off('pluginError', this.pluginErrorListener)
+            plugin.off('clearPluginErrors', this.clearPluginErrors)
           })
         }
       })
