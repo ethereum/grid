@@ -15,7 +15,7 @@
   },
   {
     "name": "RPC Tester",
-    "description": "App to test RPC endpoints.",
+    "description": "Test RPC endpoints.",
     "screenshot": "https://i.imgur.com/zI5QLEv.png",
     "url": "package://github.com/ryanio/grid-rpc-app"
   },
@@ -45,9 +45,9 @@
   },
   {
     "id": "grid-clef-app",
-    "name": "Grid Clef Client",
+    "name": "Clef Client",
     "description": "Respond to Clef requests.",
-    "screenshot": "https://i.imgur.com/F7WdMM1.png",
+    "screenshot": "https://i.imgur.com/J2tK9Dg.png",
     "url": "package://github.com/ryanio/grid-clef-app",
     "dependencies": [
       { "name": "geth", "settings": [{ "signer": "clef" }] },
