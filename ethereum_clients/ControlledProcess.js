@@ -120,7 +120,12 @@ class ControlledProcess extends EventEmitter {
                 resolve(this)
               }
             } else {
-              throw new Error('Could not resolve IPC path.')
+              // throw new Error('Could not resolve IPC path.')
+              // FIXED: ipfs app won't start if ipfs is started as daemon which will work even without ipc
+              this.debug(
+                `Failed to establish ipc connection: 'Could not resolve IPC path.'`
+              )
+              resolve(this)
             }
           } catch (error) {
             this.debug(`Failed to establish ipc connection: ${error.message}`)
@@ -250,7 +255,8 @@ class ControlledProcess extends EventEmitter {
       return
     }
 
-    this.debug('IPC data: ', data.toString())
+    // TODO loglevel=verbose
+    // this.debug('IPC data: ', data.toString())
 
     // Return if not a jsonrpc response
     if (!message || !message.jsonrpc) return
