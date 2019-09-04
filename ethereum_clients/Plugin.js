@@ -82,10 +82,24 @@ class Plugin extends EventEmitter {
   get resolveIpc() {
     return this.config.resolveIpc
   }
+  get handleData() {
+    return this.config.handleData
+  }
+  get api() {
+    return this.config.api
+  }
   registerEventListeners(sourceEmitter, destEmitter) {
     // FIXME memory leaks start here:
     // forward all events from the spawned process
-    let eventTypes = ['newState', 'error', 'log', 'notification', 'pluginError']
+    let eventTypes = [
+      'newState',
+      'error',
+      'log',
+      'notification',
+      'pluginData',
+      'pluginError',
+      'setAppBadge'
+    ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
         if (eventName !== 'log') {
@@ -241,7 +255,11 @@ class Plugin extends EventEmitter {
       `Plugin ${this.name} (${packagePath}) about to start. Binary: ${binaryPath}`
     )
     try {
-      this.process = new ControlledProcess(binaryPath, this.resolveIpc)
+      this.process = new ControlledProcess(
+        binaryPath,
+        this.resolveIpc,
+        this.handleData
+      )
       this.registerEventListeners(this.process, this)
       await this.process.start(flags)
     } catch (error) {
@@ -250,19 +268,27 @@ class Plugin extends EventEmitter {
     return this.process
   }
   async stop() {
+    const { beforeStop } = this.config
+    if (beforeStop) {
+      beforeStop()
+    }
     return this.process && this.process.stop()
   }
   // public json rpc
-  async rpc(method, params = []) {
+  async rpc(method, params = [], id, result) {
     if (!this.process) {
       console.log('error: rpc not available - process not running', this.state)
       return // FIXME error handling
     }
     const payload = {
       jsonrpc: '2.0',
-      id: rpcId++,
-      method,
-      params
+      id: id || rpcId++
+    }
+    if (result) {
+      payload.result = result
+    } else {
+      payload.method = method
+      payload.params = params
     }
     try {
       const result = await this.process.send(payload)
@@ -352,6 +378,9 @@ class PluginProxy extends EventEmitter {
   get type() {
     return this.plugin.type
   }
+  get api() {
+    return this.plugin.api
+  }
   get order() {
     return this.plugin.order
   }
@@ -423,8 +452,8 @@ class PluginProxy extends EventEmitter {
     console.log(`Plugin ${this.name} stopped`)
     return this.plugin.stop()
   }
-  rpc(method, params = []) {
-    return this.plugin.rpc(method, params)
+  rpc(method, params = [], id, result) {
+    return this.plugin.rpc(method, params, id, result)
   }
   write(payload) {
     return this.plugin.write(payload)

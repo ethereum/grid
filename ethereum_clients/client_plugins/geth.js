@@ -22,6 +22,8 @@ switch (process.platform) {
   }
 }
 
+const keystoreDir = `${dataDir}/Ethereum`
+
 const findIpcPathInLogs = logs => {
   let ipcPath
   for (const logPart of logs) {
@@ -94,8 +96,15 @@ module.exports = {
       type: 'directory'
     },
     {
+      id: 'keystoreDir',
+      default: keystoreDir,
+      label: 'Keystore Directory',
+      flag: '--keystore %s',
+      type: 'directory'
+    },
+    {
       id: 'console',
-      label: 'Enable console',
+      label: 'Enable Console',
       default: 'false',
       options: [
         { value: 'true', flag: 'console', label: 'Yes' },
@@ -105,7 +114,7 @@ module.exports = {
     {
       id: 'rpc',
       default: 'none',
-      label: 'RPC API',
+      label: 'HTTP RPC API',
       options: [
         { value: 'none', label: 'Disabled', flag: '' },
         {
@@ -116,7 +125,7 @@ module.exports = {
         },
         {
           value: 'on',
-          label: 'Enabled for all origins',
+          label: 'Enabled for All Origins (*)',
           flag: '--rpc --rpccorsdomain=*'
         }
       ]
@@ -129,16 +138,52 @@ module.exports = {
         { value: 'none', label: 'Disabled', flag: '' },
         {
           value: 'on',
-          label: 'Enabled for all origins',
+          label: 'Enabled for All Origins (*)',
           flag: '--ws --wsorigins=*'
         }
       ]
     },
     {
       id: 'port',
-      label: 'Port',
+      label: 'P2P Port',
       flag: '--port %s',
       default: '30303'
+    },
+
+    {
+      id: 'graphql',
+      label: 'Enable GraphQL Server',
+      default: 'false',
+      options: [
+        {
+          value: 'true',
+          flag: '--graphql --graphql.corsdomain=*',
+          label: 'Yes, All Origins (*) (Requires Geth >=v1.9.0)'
+        },
+        { value: 'false', flag: '', label: 'No' }
+      ]
+    },
+    {
+      id: 'signer',
+      label: 'Signer',
+      default: 'none',
+      options: [
+        { value: 'none', flag: '', label: 'Internal' },
+        {
+          value: 'clef',
+          flag: '--signer http://localhost:8550',
+          label: 'Clef (default: localhost:8550)'
+        }
+      ]
+    },
+    {
+      id: 'usb',
+      label: 'Enable USB (hardware wallets)',
+      default: 'false',
+      options: [
+        { value: 'false', flag: '--nousb', label: 'No' },
+        { value: 'true', flag: '', label: 'Yes' }
+      ]
     },
     {
       id: 'verbosity',
@@ -151,24 +196,6 @@ module.exports = {
         { value: 3, label: '3 = Info', flag: '' }, // Geth's default
         { value: 4, label: '4 = Debug', flag: '--loglevel=4' },
         { value: 5, label: '5 = Detail', flag: '--loglevel=5' }
-      ]
-    },
-    {
-      id: 'graphql',
-      label: 'Enable GraphQL',
-      default: 'false',
-      options: [
-        { value: 'true', flag: '--graphql', label: 'Yes (v1.9.0 and later)' },
-        { value: 'false', flag: '', label: 'No' }
-      ]
-    },
-    {
-      id: 'usb',
-      label: 'Enable USB (hardware wallets)',
-      default: 'false',
-      options: [
-        { value: 'false', flag: '--nousb', label: 'No' },
-        { value: 'true', flag: '', label: 'Yes' }
       ]
     }
   ],

@@ -148,8 +148,8 @@ class AppManager extends EventEmitter {
   async launch(app) {
     console.log(`Launch app: ${app.name}`)
 
-    if (app.id) {
-      const win = WindowManager.getById(app.id)
+    if (app.windowId) {
+      const win = WindowManager.getById(app.windowId)
       if (win) {
         win.show()
         return win.id

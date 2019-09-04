@@ -8,7 +8,7 @@
       html,
       body {
         padding: 0px;
-        margin: 0px; 
+        margin: 0px;
         background-color: transparent;
         overflow: hidden;
         user-select: none;
@@ -103,15 +103,15 @@
 
       /* Scrollbar track and thumb starts transparent */
       .plugin-container::-webkit-scrollbar {
-        background: rgba(1, 1, 1, .1);
+        background: rgba(1, 1, 1, 0.1);
       }
       .plugin-container::-webkit-scrollbar-thumb {
-        background: rgba(255,255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.1);
       }
 
       /* Shows scrollbar and thumb when hovering the window */
       html:hover .plugin-container::-webkit-scrollbar {
-        background: rgba(1, 1, 1, .2);
+        background: rgba(1, 1, 1, 0.2);
       }
       html:hover .plugin-container::-webkit-scrollbar-thumb {
         /* 30% white */
@@ -171,6 +171,30 @@
       .app-name:hover {
         cursor: pointer;
         text-decoration: underline;
+      }
+
+      .app-badge:hover {
+        cursor: pointer;
+      }
+
+      /* Match app badge to grid-ui (.app-badge <b-tag>) */
+      .tag:not(body).is-info {
+        background: #78aac7 !important;
+        color: black;
+      }
+
+      /* Match switch to grid-ui */
+      .switch input[type='checkbox'] + .check {
+        background: #6c6e72;
+      }
+      .switch input[type='checkbox']:checked + .check {
+        background: #4c735e;
+      }
+      .switch.is-rounded input[type='checkbox'] + .check:before {
+        background: #bdbdbd;
+      }
+      .switch.is-rounded input:checked + .check:before {
+        background: #4fb783;
       }
 
       .open-dash span {
@@ -448,6 +472,7 @@
                       <span class="plugin-state">{{ state }}</span>
                       <span class="plugin-version">{{ pluginVersion }}</span>
                     </span>
+                    <b-tag class="app-badge" type="is-info" v-if="plugin.badge > 0" rounded @click.native="openUI()">{{ plugin.badge }}</b-tag>
                     <icon-indicator @change="openTerminal()" v-if="plugin.error" pack="fas" icon="exclamation-circle" class="error" title="Plugin Error, click for more details"></icon-indicator>
                     <icon-indicator @change="openTerminal()" pack="far" icon="window-maximize"></icon-indicator>
                   </div>
@@ -554,10 +579,9 @@
               selectedTab
             })
             Grid.Config.setItem('settings', newSettings)
-
             this.uiWindowId = await window.Grid.AppManager.launch({
               name: 'grid-ui',
-              id: this.uiWindowId,
+              windowId: this.uiWindowId,
               args: {
                 scope: {
                   component: 'ui',
@@ -576,7 +600,7 @@
 
             this.terminalWindowId = await window.Grid.AppManager.launch({
               name: 'grid-ui',
-              id: this.terminalWindowId,
+              windowId: this.terminalWindowId,
               args: {
                 scope: {
                   component: 'ui',
@@ -608,7 +632,7 @@
           openApp: async function() {
             this.uiWindowId = await window.Grid.AppManager.launch({
               ...this.app,
-              id: this.uiWindowId
+              windowId: this.uiWindowId
             })
           }
         }
@@ -632,7 +656,32 @@
           openApp: async function() {
             this.uiWindowId = await window.Grid.AppManager.launch({
               ...this.app,
-              id: this.uiWindowId
+              windowId: this.uiWindowId
+            })
+            this.$emit('app-opened')
+          }
+        }
+      })
+
+      Vue.component('app-item', {
+        props: ['app'],
+        data: function() {
+          return {
+            uiWindowId: undefined
+          }
+        },
+        template: `
+          <div>
+            <div class="app-item">
+              <span class="app-name centered" v-on:click="openApp()">{{ app.name }}</span>
+            </div>
+          </div>
+          `,
+        methods: {
+          openApp: async function() {
+            this.uiWindowId = await window.Grid.AppManager.launch({
+              ...this.app,
+              windowId: this.uiWindowId
             })
             this.$emit('app-opened')
           }
@@ -684,6 +733,9 @@
               plugin.on('pluginError', error => {
                 this.pluginErrorListener(plugin, error)
               })
+              plugin.on('setAppBadge', ({ appId, count }) => {
+                this.setAppBadgeListener(plugin, appId, count)
+              })
               plugin.on('clearPluginErrors', () => {
                 this.clearPluginErrors(plugin)
               })
@@ -693,7 +745,8 @@
                 profile: '',
                 version: '',
                 pluginRef: plugin,
-                error: false
+                error: false,
+                badge: 0
               }
             })
             console.log('Plugins Loaded: ', plugins.length)
@@ -709,6 +762,10 @@
           },
           pluginErrorListener: function(plugin, error) {
             this.plugins.find(p => p.name === plugin.name).error = true
+          },
+          setAppBadgeListener: function(plugin, appId, count) {
+            console.log(plugin.name, appId, count)
+            this.plugins.find(p => p.name === plugin.name).badge = count
           },
           clearPluginErrors: function(plugin) {
             this.plugins.find(p => p.name === plugin.name).error = false
@@ -747,6 +804,7 @@
         beforeDestroy: function() {
           plugins.forEach(plugin => {
             plugin.off('pluginError', this.pluginErrorListener)
+            plugin.off('setAppBadge', this.setAppBadgeListener)
             plugin.off('clearPluginErrors', this.clearPluginErrors)
           })
         }

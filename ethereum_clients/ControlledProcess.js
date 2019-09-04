@@ -1,3 +1,4 @@
+const { Notification } = require('electron')
 const path = require('path')
 const debug = require('debug')
 const { EventEmitter } = require('events')
@@ -16,10 +17,11 @@ const STATES = {
 
 // TODO add file to electron packaged files
 class ControlledProcess extends EventEmitter {
-  constructor(binaryPath, resolveIpc) {
+  constructor(binaryPath, resolveIpc, handleData) {
     super()
     this.binaryPath = binaryPath
     this.resolveIpc = resolveIpc
+    this.handleData = handleData
     this.debug = console.log // debug(name)
     this.ipc = undefined
     this.stdin = undefined
@@ -38,8 +40,18 @@ class ControlledProcess extends EventEmitter {
       this.state
     )
   }
+  createStateListeners() {
+    // Listen to state events that may emit from plugin code
+    this.on('newState', newState => {
+      this.state = STATES[newState.toUpperCase()]
+    })
+  }
+  removeStateListeners() {
+    this.removeAllListeners('newState')
+  }
   start(flags) {
     return new Promise((resolve, reject) => {
+      this.createStateListeners()
       this.state = STATES.STARTING
       this.emit('newState', 'starting')
       this.debug('Start: ', this.binaryPath)
@@ -124,6 +136,9 @@ class ControlledProcess extends EventEmitter {
           this.logs.push(...parts)
           parts.map(logPart => {
             this.emit('log', logPart)
+            if (this.handleData) {
+              this.handleData(logPart, this.emit.bind(this), Notification)
+            }
             if (/^error\W/.test(logPart.toLowerCase())) {
               this.emit('pluginError', logPart)
             }
@@ -141,6 +156,8 @@ class ControlledProcess extends EventEmitter {
   }
   stop() {
     return new Promise((resolve, reject) => {
+      this.removeStateListeners()
+
       // FIXME kill IPC ? or is it indirectly closed: onIpcEnd
       if (!this.proc || !this.isRunning) {
         resolve(this)
