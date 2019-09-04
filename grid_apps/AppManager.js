@@ -223,7 +223,7 @@ class AppManager extends EventEmitter {
         },
         { scope }
       )
-      mainWindow.removeMenu()
+      // mainWindow.removeMenu()
       /*
       mainWindow.webContents.openDevTools({
         mode: 'detach'
