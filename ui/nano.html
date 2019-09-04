@@ -566,9 +566,17 @@
           },
           openUI: async function() {
             const settings = Grid.Config.getItem('settings')
+
+            let selectedTab = 0
+            if (this.plugin.error) {
+              // If error, got to Terminal tab
+              selectedTab = 3
+              this.plugin.error = false
+            }
+
             const newSettings = Object.assign({}, settings, {
               selected: this.plugin.name,
-              selectedTab: 0
+              selectedTab
             })
             Grid.Config.setItem('settings', newSettings)
             this.uiWindowId = await window.Grid.AppManager.launch({
@@ -728,6 +736,9 @@
               plugin.on('setAppBadge', ({ appId, count }) => {
                 this.setAppBadgeListener(plugin, appId, count)
               })
+              plugin.on('clearPluginErrors', () => {
+                this.clearPluginErrors(plugin)
+              })
               return {
                 name: plugin.name,
                 displayName: plugin.displayName,
@@ -755,6 +766,9 @@
           setAppBadgeListener: function(plugin, appId, count) {
             console.log(plugin.name, appId, count)
             this.plugins.find(p => p.name === plugin.name).badge = count
+          },
+          clearPluginErrors: function(plugin) {
+            this.plugins.find(p => p.name === plugin.name).error = false
           },
           toggleSettings: function(value) {
             this.showConfig = value
@@ -791,6 +805,7 @@
           plugins.forEach(plugin => {
             plugin.off('pluginError', this.pluginErrorListener)
             plugin.off('setAppBadge', this.setAppBadgeListener)
+            plugin.off('clearPluginErrors', this.clearPluginErrors)
           })
         }
       })
