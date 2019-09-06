@@ -243,6 +243,9 @@ class Plugin extends EventEmitter {
         async response => {
           const userPermission = response !== 1 // = index of 'cancel'
           if (userPermission) {
+            dialog.showMessageBox({
+              message: `Starting ${this.displayName}, please wait...`
+            })
             await this.start(flags, release)
           } else {
             console.log('User cancelled start dialog.')
