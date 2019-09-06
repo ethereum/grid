@@ -52,7 +52,7 @@
     "dependencies": [
       {
         "name": "clef",
-        "settings": []
+        "settings": [{ "id": "api", "value": "http" }]
       },
       { "name": "geth", "settings": [{ "id": "signer", "value": "clef" }] }
     ]
