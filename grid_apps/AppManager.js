@@ -162,6 +162,7 @@ class AppManager extends EventEmitter {
 
     const { dependencies } = app
     if (dependencies) {
+      var sequence = Promise.resolve()
       dependencies.forEach(async dependency => {
         console.log('Found dependency: ', dependency)
         const plugin = global.PluginHost.getPluginByName(dependency.name)
@@ -195,14 +196,16 @@ class AppManager extends EventEmitter {
           const flags = generateFlags(config, settings)
           const release = undefined // TODO: allow apps to choose specific release?
           console.log('Request start: ', app, flags, release)
-          try {
-            // TODO: show progress to user
-            await plugin.requestStart(app, flags, release)
-          } catch (error) {
-            // e.g. user cancelled
-            console.log('Error: ', error)
-            return // do NOT start in this case
-          }
+          sequence = sequence.then(async () => {
+            try {
+              // TODO: show progress to user
+              await plugin.requestStart(app, flags, release)
+            } catch (error) {
+              // e.g. user cancelled
+              console.log('Error: ', error)
+              return // do NOT start in this case
+            }
+          })
         }
       })
     }

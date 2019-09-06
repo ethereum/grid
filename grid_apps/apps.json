@@ -50,10 +50,11 @@
     "screenshot": "https://i.imgur.com/J2tK9Dg.png",
     "url": "package://github.com/ryanio/grid-clef-app",
     "dependencies": [
-      { "name": "geth", "settings": [{ "signer": "clef" }] },
       {
-        "name": "clef"
-      }
+        "name": "clef",
+        "settings": []
+      },
+      { "name": "geth", "settings": [{ "id": "signer", "value": "clef" }] }
     ]
   }
 ]
