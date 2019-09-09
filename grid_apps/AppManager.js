@@ -162,55 +162,50 @@ class AppManager extends EventEmitter {
 
     const { dependencies } = app
     if (dependencies) {
-      // Execute dependneices one at a time with a sequence
-      // as inspired by https://stackoverflow.com/a/36672042
-      let sequence = Promise.resolve()
-      dependencies.forEach(async dependency => {
-        sequence = sequence.then(async () => {
-          console.log('Found dependency: ', dependency)
-          const plugin = global.PluginHost.getPluginByName(dependency.name)
-          if (!plugin) {
-            console.log('Could not find necessary plugin.')
-          } else if (plugin.isRunning) {
-            console.log(`Plugin ${plugin.name} already running.`)
-          } else {
-            // TODO: error handling of malformed settings
-            const settings = plugin.settings || []
-            let config = {}
+      for (var i = 0; i < dependencies.length; i++) {
+        const dependency = dependencies[i]
+        console.log('Found dependency: ', dependency)
+        const plugin = global.PluginHost.getPluginByName(dependency.name)
+        if (!plugin) {
+          console.log('Could not find necessary plugin.')
+        } else if (plugin.isRunning) {
+          console.log(`Plugin ${plugin.name} already running.`)
+        } else {
+          // TODO: error handling of malformed settings
+          const settings = plugin.settings || []
+          let config = {}
 
-            // 1. set default => check buildPluginDefaults in grid-ui
-            // TODO: this code should not be duplicated
-            settings.forEach(setting => {
-              if ('default' in setting) {
-                config[setting.id] = setting.default
-              }
-            })
-
-            // 2. respect persisted user settings
-            const persistedConfig = (await UserConfig.getItem('settings')) || {}
-            const persistedPluginConfig = persistedConfig[plugin.name]
-            config = Object.assign({}, config)
-
-            // 3. overwrite configs with required app settings
-            dependency.settings.forEach(setting => {
-              config[setting.id] = setting.value
-            })
-
-            const flags = generateFlags(config, settings)
-            const release = undefined // TODO: allow apps to choose specific release?
-            console.log('Request start: ', app, flags, release)
-            try {
-              // TODO: show progress to user
-              await plugin.requestStart(app, flags, release)
-            } catch (error) {
-              // e.g. user cancelled
-              console.log('Error: ', error)
-              return // do NOT start in this case
+          // 1. set default => check buildPluginDefaults in grid-ui
+          // TODO: this code should not be duplicated
+          settings.forEach(setting => {
+            if ('default' in setting) {
+              config[setting.id] = setting.default
             }
+          })
+
+          // 2. respect persisted user settings
+          const persistedConfig = (await UserConfig.getItem('settings')) || {}
+          const persistedPluginConfig = persistedConfig[plugin.name]
+          config = Object.assign({}, config)
+
+          // 3. overwrite configs with required app settings
+          dependency.settings.forEach(setting => {
+            config[setting.id] = setting.value
+          })
+
+          const flags = generateFlags(config, settings)
+          const release = undefined // TODO: allow apps to choose specific release?
+          console.log('Request start: ', app, flags, release)
+          try {
+            // TODO: show progress to user
+            await plugin.requestStart(app, flags, release)
+          } catch (error) {
+            // e.g. user cancelled
+            console.log('Error: ', error)
+            return // do NOT start in this case
           }
-        })
-      })
-      await sequence
+        }
+      }
     }
 
     if (app.name === 'grid-ui') {
