@@ -149,6 +149,49 @@ class AppManager extends EventEmitter {
     apps = [...appsJson, ...appsConfig, ...appsRegistries]
     return apps
   }
+  async _startDependency(app, dependency) {
+    console.log('Found dependency: ', dependency)
+    const plugin = global.PluginHost.getPluginByName(dependency.name)
+    if (!plugin) {
+      console.log('Could not find necessary plugin.')
+    } else if (plugin.isRunning) {
+      console.log(`Plugin ${plugin.name} already running.`)
+    } else {
+      // TODO: error handling of malformed settings
+      const settings = plugin.settings || []
+      let config = {}
+
+      // 1. set default => check buildPluginDefaults in grid-ui
+      // TODO: this code should not be duplicated
+      settings.forEach(setting => {
+        if ('default' in setting) {
+          config[setting.id] = setting.default
+        }
+      })
+
+      // 2. TODO respect persisted user settings
+      const persistedConfig = (await UserConfig.getItem('settings')) || {}
+      const persistedPluginConfig = persistedConfig[plugin.name]
+      config = Object.assign({}, config)
+
+      // 3. overwrite configs with required app settings
+      dependency.settings.forEach(setting => {
+        config[setting.id] = setting.value
+      })
+
+      const flags = generateFlags(config, settings)
+      const release = undefined // TODO: allow apps to choose specific release?
+      console.log('Request start: ', app, flags, release)
+      try {
+        // TODO: show progress to user
+        await plugin.requestStart(app, flags, release)
+      } catch (error) {
+        // e.g. user cancelled
+        console.log('Error: ', error)
+        return // do NOT start in this case
+      }
+    }
+  }
   async launch(app) {
     console.log(`Launch app: ${app.name}`)
 
@@ -162,49 +205,19 @@ class AppManager extends EventEmitter {
 
     const { dependencies } = app
     if (dependencies) {
-      dependencies.forEach(async dependency => {
-        console.log('Found dependency: ', dependency)
-        const plugin = global.PluginHost.getPluginByName(dependency.name)
-        if (!plugin) {
-          console.log('Could not find necessary plugin.')
-        } else if (plugin.isRunning) {
-          console.log(`Plugin ${plugin.name} already running.`)
-        } else {
-          // TODO: error handling of malformed settings
-          const settings = plugin.settings || []
-          let config = {}
-
-          // 1. set default => check buildPluginDefaults in grid-ui
-          // TODO: this code should not be duplicated
-          settings.forEach(setting => {
-            if ('default' in setting) {
-              config[setting.id] = setting.default
-            }
-          })
-
-          // 2. respect persisted user settings
-          const persistedConfig = (await UserConfig.getItem('settings')) || {}
-          const persistedPluginConfig = persistedConfig[plugin.name]
-          config = Object.assign({}, config)
-
-          // 3. overwrite configs with required app settings
-          dependency.settings.forEach(setting => {
-            config[setting.id] = setting.value
-          })
-
-          const flags = generateFlags(config, settings)
-          const release = undefined // TODO: allow apps to choose specific release?
-          console.log('Request start: ', app, flags, release)
-          try {
-            // TODO: show progress to user
-            await plugin.requestStart(app, flags, release)
-          } catch (error) {
-            // e.g. user cancelled
-            console.log('Error: ', error)
-            return // do NOT start in this case
-          }
+      for (const dependency of dependencies) {
+        try {
+          await this._startDependency(app, dependency)
+          console.log('dependency started')
+        } catch (error) {
+          console.log(
+            'ERROR: aborting app start - dependency could not be started',
+            error
+          )
+          // abort app start if one dependency fails to start & let user know
+          return
         }
-      })
+      }
     }
 
     if (app.name === 'grid-ui') {
