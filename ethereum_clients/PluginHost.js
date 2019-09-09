@@ -3,7 +3,10 @@ const path = require('path')
 const { EventEmitter } = require('events')
 const { AppManager } = require('@philipplgh/electron-app-manager')
 const { Plugin, PluginProxy } = require('./Plugin')
-const { getPluginCachePath } = require('../utils/main/util')
+const {
+  getPluginCachePath,
+  resolveRuntimeDependency
+} = require('../utils/main/util')
 const { getUserConfig } = require('../Config')
 const generateFlags = require('../utils/flags')
 
@@ -37,12 +40,36 @@ class PluginHost extends EventEmitter {
       .catch(err => {
         console.log('remote plugins could not be loaded', err)
       })
-      .then(() => {
-        this.setDefaultFlags()
-      })
+      .then(() => this.resolveSystemPaths())
+      .then(() => this.setDefaultFlags())
       .finally(() => {
         this.emit('plugins-loaded')
       })
+  }
+  async resolveSystemPaths() {
+    for (const plugin of this.plugins) {
+      if (!plugin.config.settings) {
+        continue
+      }
+      for (const setting of plugin.config.settings) {
+        if (typeof setting.default === 'string') {
+          // we don't want all plugins to write the same dependency resolution code
+          // therefore plugins can specify env variables or special paths that get resolved by grid
+          // %%NAME%% means the string needs to be replaced immediately (before any other operations)
+          // %NAME% means the string is resolved before fs or execution but not displayed e.g. as full path in ui
+          if (setting.default.includes('%%JAVA_HOME%%')) {
+            const JAVA_PATH = await resolveRuntimeDependency({
+              name: 'Java'
+            })
+            setting.default = setting.default.replace(
+              '%%JAVA_HOME%%',
+              JAVA_PATH
+            )
+          }
+        }
+      }
+    }
+    return
   }
   setDefaultFlags() {
     const persistedFlags = UserConfig.getItem('flags')

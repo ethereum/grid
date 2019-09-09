@@ -124,11 +124,42 @@ const checkConnection = async (host, port, timeout = 2000) => {
   })
 }
 
+const resolveRuntimeDependency = runtimeDependency => {
+  const { name, version, type } = runtimeDependency
+  if (name === 'Java') {
+    if ('JAVA_HOME' in process.env) {
+      console.log('found java', process.env['JAVA_HOME'])
+      const JAVA_HOME = process.env['JAVA_HOME']
+      // windows: const JAVA_EXE = `${JAVA_HOME}/bin/java.exe`
+    } else {
+      // MAC:
+      if (process.platform === 'darwin') {
+        if (fs.existsSync('/Library/Java/JavaVirtualMachines/')) {
+          const vms = fs.readdirSync('/Library/Java/JavaVirtualMachines/')
+          // /Contents/Home/bin/java
+          console.log('found vms', vms)
+        }
+        // alternative tests
+        // /usr/bin/java
+        // /usr/libexec/java_home -V
+        // execute 'which java'
+        const javaPath = '/usr/bin/java'
+        return javaPath
+      }
+      console.log('JAVA_HOME not set')
+      // console.log(process.env.PATH.includes('java'))
+    }
+    return undefined
+  }
+  return undefined
+}
+
 module.exports = {
   checkConnection,
   getShippedGridUiPath,
   getCachePath,
   getUserDataPath,
   getPluginCachePath,
-  getBinaryUpdater
+  getBinaryUpdater,
+  resolveRuntimeDependency
 }
