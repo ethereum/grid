@@ -4,17 +4,17 @@
 const { getShippedGridUiPath } = require('../utils/main/util')
 const { AppManager } = require('@philipplgh/electron-app-manager')
 
-const updater = new AppManager({
-  repository: 'https://github.com/ethereum/grid-ui',
-  auto: false
-})
-
 const GRID_UI_CACHE = getShippedGridUiPath()
 
+const updater = new AppManager({
+  repository: 'https://github.com/ethereum/grid-ui',
+  auto: false,
+  cacheDir: GRID_UI_CACHE
+})
+
 ;(async function() {
-  const latest = await updater.getLatestRemote()
-  await updater.download(latest, {
-    targetDir: GRID_UI_CACHE,
-    writeDetachedMetadata: false
+  await updater.clearCache()
+  await updater.getLatest({
+    download: true
   })
 })()
