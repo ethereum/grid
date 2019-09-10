@@ -23,6 +23,7 @@ class Plugin extends EventEmitter {
     this._source = source
     this.updater = getBinaryUpdater(repository, name, filter, prefix)
     this.config = config
+    this.errors = []
     this.process = undefined
     if (config.onInputRequested) {
       this.on('log', log => {
@@ -82,6 +83,15 @@ class Plugin extends EventEmitter {
   getLogs() {
     return this.process ? this.process.logs : []
   }
+  getErrors() {
+    return this.errors
+  }
+  dismissError(key) {
+    this.errors = this.errors.filter(error => error.key !== key)
+    if (this.errors.length === 0) {
+      this.emit('clearPluginErrors')
+    }
+  }
   get resolveIpc() {
     return this.config.resolveIpc
   }
@@ -101,14 +111,18 @@ class Plugin extends EventEmitter {
       'notification',
       'pluginData',
       'pluginError',
+      'clearPluginErrors',
       'setAppBadge'
     ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
+        destEmitter.emit(eventName, arg)
         if (eventName !== 'log') {
           console.log(`forward external process event >> ${eventName}`, arg)
         }
-        destEmitter.emit(eventName, arg)
+        if (eventName == 'pluginError') {
+          this.errors.push(arg)
+        }
       })
     })
   }
@@ -286,6 +300,8 @@ class Plugin extends EventEmitter {
     if (beforeStop) {
       beforeStop()
     }
+    this.errors = []
+    this.emit('clearPluginErrors')
     return this.process && this.process.stop()
   }
   // public json rpc
@@ -434,6 +450,12 @@ class PluginProxy extends EventEmitter {
   }
   getLogs() {
     return this.plugin.getLogs()
+  }
+  getErrors() {
+    return this.plugin.getErrors()
+  }
+  dismissError(key) {
+    return this.plugin.dismissError(key)
   }
   // FIXME doesn't handle corrupted packages well
   getReleases() {
