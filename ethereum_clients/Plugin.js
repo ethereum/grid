@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 const { EventEmitter } = require('events')
-const { getBinaryUpdater } = require('../utils/main/util')
+const { getBinaryUpdater, resolvePackagePath } = require('../utils/main/util')
 const ControlledProcess = require('./ControlledProcess')
 const { dialog } = require('electron')
 const { getUserConfig } = require('../Config')
@@ -101,7 +101,8 @@ class Plugin extends EventEmitter {
       'notification',
       'pluginData',
       'pluginError',
-      'setAppBadge'
+      'setAppBadge',
+      'setup-event'
     ]
     eventTypes.forEach(eventName => {
       sourceEmitter.on(eventName, arg => {
@@ -213,7 +214,6 @@ class Plugin extends EventEmitter {
     console.warn('no binary found for', release)
     return undefined
   }
-  async extractPackage(release) {}
   getSelectedRelease() {
     const { name } = this.config
     const selectedRelease = UserConfig.getItem('selectedRelease')
@@ -252,7 +252,77 @@ class Plugin extends EventEmitter {
       )
     })
   }
+  async determineReleaseForStart() {
+    // Check if selectedRelease exists in UserConfig
+    let release = this.getSelectedRelease()
+    if (release) {
+      if (fs.existsSync(release.location)) {
+        return release
+      }
+      // else configured release was deleted -> TODO reset config?
+    }
+    release = await this.updater.getLatestCached()
+    if (release) {
+      return release
+    }
+    // nothing found in cache:
+    this.emit('setup-event', {
+      type: 'fetch-release'
+    })
+    // Get release from cache or download latest
+    release = await this.updater.getLatest({
+      download: true,
+      downloadOptions: {
+        onProgress: downloadProgress => {
+          this.emit('setup-event', {
+            type: 'download-progress',
+            downloadProgress
+          })
+        },
+        extractPackage: true,
+        onExtractionProgress: extractionProgress => {
+          this.emit('setup-event', {
+            type: 'extraction-progress',
+            extractionProgress
+          })
+        }
+      }
+    })
+    this.emit('setup-event', {
+      type: 'release-ready',
+      release
+    })
+    return release
+  }
+  // releases that are extracted will most likely want to specify an entry point somewhere
+  // within the extracted package folder. often these directories are nested and follow a schema
+  // *package_name_without_package_extension*/*package_name_without_package_extension*/*package contents*/
+  // for a package 'my_client-1.2.2.tar.gz' or 'my_client-1.2.2.zip' the structure of the extracted package folder could be e.g.
+  // 'my_client-1.2.2/'my_client-1.2.2/client.js'
+  // ideally we would support glob patterns here but for simplicity we will only support level 1 directory resolution
+  // %PACKAGE_PATH% -> 'my_client-1.2.2/'
+  // %PACKAGE_PATH/*% -> 'my_client-1.2.2/my_client-1.2.2/'
+  // %PACKAGE_PATH/*%/bla.txt -> 'my_client-1.2.2/my_client-1.2.2/bla.txt'
+  async resolvePathVariablesInFlags(flags, release) {
+    let flags_modified = []
+    for (let flag of flags) {
+      flag = resolvePackagePath(flag, release)
+      // turns all \\ in paths into /
+      flag = flag.replace(/\\/g, '/')
+
+      flags_modified.push(flag)
+    }
+    return flags_modified
+  }
   async start(flags, release) {
+    console.log('start release', flags, release)
+    if (!release) {
+      release = await this.determineReleaseForStart()
+      // console.log('determined release', release)
+    }
+    if (!release) {
+      throw new Error('unable to start client - no release found')
+    }
     // TODO do flag validation here based on proxy metadata
     const { beforeStart } = this.config
     if (beforeStart && beforeStart.execute) {
@@ -261,10 +331,31 @@ class Plugin extends EventEmitter {
         await this.execute(cmd)
       }
     }
-    const { binaryPath, packagePath } = await this.getLocalBinary(release)
-    console.log(
-      `Plugin ${this.name} (${packagePath}) about to start. Binary: ${binaryPath}`
-    )
+
+    // binaryPath: the path to the binary Grid is about to start
+    // for clients with only a single executable binary (most): Grid will extract the bin from package, binaryPath will point to it.
+    // [ NOTE might be ambiguous name: geth or geth.exe which is why getLocalBinary also returns packagePath info ]
+    // for clients running in a vm: binaryPath will point to the vm and the flags will specify the entry point to the extracted package
+    let binaryPath = undefined
+    if (
+      this.dependencies &&
+      this.dependencies.runtime &&
+      this.dependencies.runtime.length > 0
+    ) {
+      // console.log('start vm client with flags', flags)
+      flags = await this.resolvePathVariablesInFlags(flags, release)
+      // IMPORTANT CONVENTION: vm-path must be first flag
+      binaryPath = flags.shift()
+    } else {
+      const {
+        binaryPath: binaryPathExtracted,
+        packagePath
+      } = await this.getLocalBinary(release)
+      console.log(
+        `Plugin ${this.name} (${packagePath}) about to start. Binary: ${binaryPath}`
+      )
+      binaryPath = binaryPathExtracted
+    }
 
     try {
       this.process = new ControlledProcess(
@@ -463,8 +554,7 @@ class PluginProxy extends EventEmitter {
   requestStart(app, flags, release) {
     return this.plugin.requestStart(app, flags, release)
   }
-  // TODO reverse arg order
-  start(release, flags) {
+  start(flags, release) {
     return this.plugin.start(flags, release)
   }
   stop() {
