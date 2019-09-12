@@ -9,6 +9,8 @@ const {
   showOpenDialog
 } = require('./utils/renderer/electron')
 
+const { resolveRuntimeDependency } = require('./utils/main/util')
+
 // Enabling spectron integration https://github.com/electron/spectron#node-integration
 if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
   window.electronRequire = require
@@ -98,7 +100,11 @@ const Grid = {
     }
   },
   platform: {
-    name: process.platform
+    name: process.platform,
+    hasRuntime: dependency => {
+      const result = resolveRuntimeDependency(dependency) !== undefined
+      return result
+    }
   },
   notify,
   showOpenDialog,

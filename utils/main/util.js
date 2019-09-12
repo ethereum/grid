@@ -124,34 +124,68 @@ const checkConnection = async (host, port, timeout = 2000) => {
   })
 }
 
-const resolveRuntimeDependency = runtimeDependency => {
+const resolveRuntimeDependency = (runtimeDependency = {}) => {
   const { name, version, type } = runtimeDependency
   if (name === 'Java') {
     if ('JAVA_HOME' in process.env) {
-      console.log('found java', process.env['JAVA_HOME'])
       const JAVA_HOME = process.env['JAVA_HOME']
-      // windows: const JAVA_EXE = `${JAVA_HOME}/bin/java.exe`
+      const JAVA_BIN = path.join(
+        JAVA_HOME,
+        'bin',
+        process.platform === 'win32' ? 'java.exe' : 'java'
+      )
+      return fs.existsSync(JAVA_BIN) ? JAVA_BIN : undefined
     } else {
       // MAC:
       if (process.platform === 'darwin') {
         if (fs.existsSync('/Library/Java/JavaVirtualMachines/')) {
           const vms = fs.readdirSync('/Library/Java/JavaVirtualMachines/')
           // /Contents/Home/bin/java
-          console.log('found vms', vms)
+          // console.log('found vms', vms)
         }
         // alternative tests
         // /usr/bin/java
         // /usr/libexec/java_home -V
         // execute 'which java'
         const javaPath = '/usr/bin/java'
-        return javaPath
+        return fs.existsSync(javaPath) ? javaPath : undefined
       }
-      console.log('JAVA_HOME not set')
       // console.log(process.env.PATH.includes('java'))
     }
     return undefined
   }
   return undefined
+}
+
+const resolvePackagePath = (flag, release) => {
+  // NOTE order important
+  // more specific matcher
+  const PACKAGE_PATH = release.extractedPackagePath
+  if (flag.includes('%PACKAGE_PATH/*%')) {
+    if (!PACKAGE_PATH) throw new Error('cannot resolve %PACKAGE_PATH%')
+    // console.log('rewrite path in flag', flag)
+    const files = fs.readdirSync(PACKAGE_PATH)
+    const subdirs = files.filter(
+      f => fs.lstatSync(path.join(PACKAGE_PATH, f)).isDirectory
+    )
+    if (subdirs.length === 0) {
+      throw new Error('cannot resolve path for flag', flag)
+    }
+    if (subdirs.length > 1) {
+      console.warn('WARNING: ambiguous paths found for', flag, subdirs)
+    }
+    const PACKAGE_SUBDIR = subdirs[0]
+    flag = flag.replace(
+      '%PACKAGE_PATH/*%',
+      path.join(PACKAGE_PATH, PACKAGE_SUBDIR)
+    )
+  }
+  // less specific matcher
+  if (flag.includes('%PACKAGE_PATH%')) {
+    if (!PACKAGE_PATH) throw new Error('cannot resolve %PACKAGE_PATH%')
+    flag = flag.replace('%PACKAGE_PATH%', PACKAGE_PATH)
+  }
+  return flag
 }
 
 module.exports = {
@@ -161,5 +195,6 @@ module.exports = {
   getUserDataPath,
   getPluginCachePath,
   getBinaryUpdater,
-  resolveRuntimeDependency
+  resolveRuntimeDependency,
+  resolvePackagePath
 }
