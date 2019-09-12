@@ -511,53 +511,36 @@
             }
           },
           handleSwitchedOn: async function() {
-            let release
-            // Check if selectedRelease in UserConfig
-            const selectedRelease = this.plugin.pluginRef.getSelectedRelease()
-            if (selectedRelease) {
-              this.pluginVersion = selectedRelease.version
-              release = selectedRelease
-            }
-
-            if (!release) {
-              // Check if downloaded version is available
-              let latestBinCached = await this.plugin.pluginRef.getLatestCached()
-              if (!latestBinCached) {
-                console.log('No plugin binary found --> download now')
-                const latestRemote = await this.plugin.pluginRef.getLatestRemote()
-                // TODO handle no remote release found
-                try {
-                  this.state = 'downloading'
-                  this.isDownloading = true
-                  latestBinCached = await this.plugin.pluginRef.download(
-                    latestRemote,
-                    downloadProgress => {
-                      console.log(
-                        `${this.plugin.name} download progress: `,
-                        downloadProgress
-                      )
-                      this.downloadProgress = downloadProgress
-                      this.state = `downloading ${downloadProgress}%`
-                    }
-                  )
-                  this.isDownloading = false
-                  this.state = ''
-                } catch (error) {
-                  console.log('Error during download: ', error)
-                  return //TODO handleDownloadError(error)
-                }
-              }
-              console.log('Cached release found')
-              this.pluginVersion = latestBinCached.version
-              release = latestBinCached
-            }
-
-            console.log('Starting release: ', release.version)
-
             const persistedFlags = (await Grid.Config.getItem('flags')) || {}
             const flags = persistedFlags[this.plugin.pluginRef.name]
-
-            this.plugin.pluginRef.start(release, flags)
+            const setupHandler = (event) => {
+              const { type } = event
+              // let user know that a long running operation will be started
+              if (type === 'fetch-release') {
+                this.state = `fetching "latest"`
+              }
+              if (type === 'download-progress') {
+                let { downloadProgress } = event
+                this.downloadProgress = downloadProgress
+                this.state = `downloading ${downloadProgress}%`
+              }
+              if (type === 'extraction-progress') {
+                let { extractionProgress } = event
+                this.downloadProgress = extractionProgress
+                this.state = `extracting ${extractionProgress}%`
+              }
+            }
+            this.plugin.pluginRef.on('setup-event', setupHandler)
+            try {
+              await this.plugin.pluginRef.start(flags)
+            } catch (error) {
+              console.log('start error', error)
+              this.isSwitched = false
+              this.plugin.error = error
+            } finally {
+              this.downloadProgress = 0
+              this.plugin.pluginRef.off('setup-event', setupHandler)
+            }
           },
           handleChange: function(ev) {
             if (this.isSwitched) {
