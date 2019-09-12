@@ -57,14 +57,11 @@ class PluginHost extends EventEmitter {
           // therefore plugins can specify env variables or special paths that get resolved by grid
           // %%NAME%% means the string needs to be replaced immediately (before any other operations)
           // %NAME% means the string is resolved before fs or execution but not displayed e.g. as full path in ui
-          if (setting.default.includes('%%JAVA_HOME%%')) {
+          if (setting.default.includes('%%JAVA%%')) {
             const JAVA_PATH = await resolveRuntimeDependency({
               name: 'Java'
             })
-            setting.default = setting.default.replace(
-              '%%JAVA_HOME%%',
-              JAVA_PATH
-            )
+            setting.default = setting.default.replace('%%JAVA%%', JAVA_PATH)
           }
         }
       }
