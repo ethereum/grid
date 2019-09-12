@@ -329,7 +329,7 @@ class Plugin extends EventEmitter {
     return flags_modified
   }
   async start(flags, release) {
-    console.log('start release', flags, release)
+    // console.log('start release', flags, release)
     if (!release) {
       release = await this.determineReleaseForStart()
       // console.log('determined release', release)
