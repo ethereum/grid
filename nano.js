@@ -6,7 +6,8 @@ const { registerGlobalAppManager } = require('./grid_apps/AppManager')
 const { registerGlobalUserConfig } = require('./Config')
 const { registerPackageProtocol } = require('@philipplgh/electron-app-manager')
 const { getMenuTemplate } = require('./Menu')
-registerPackageProtocol()
+const { getCachePath } = require('./utils/main/util')
+registerPackageProtocol(getCachePath('apps'))
 registerGlobalUserConfig()
 
 // auto-launch may start process with --hidden
