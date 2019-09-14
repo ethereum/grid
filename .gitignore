@@ -24,7 +24,11 @@ release
 # Vim swap files
 *.swp
 
-/ethereum_clients/bin_*/
-
 .shell.config.js
 .python-version
+
+ethereum_clients/*_bin
+*.tgz*
+*.zip*
+
+shipped-grid-ui
