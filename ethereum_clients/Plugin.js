@@ -284,10 +284,16 @@ class Plugin extends EventEmitter {
       type: 'fetch-release'
     })
     // Get release from cache or download latest
+    let hasEmittedDownloading = false
+    let hasEmittedExtracting = false
     release = await this.updater.getLatest({
       download: true,
       downloadOptions: {
         onProgress: downloadProgress => {
+          if (!hasEmittedDownloading) {
+            this.emit('newState', 'downloading')
+            hasEmittedDownloading = true
+          }
           this.emit('setup-event', {
             type: 'download-progress',
             downloadProgress
@@ -295,6 +301,10 @@ class Plugin extends EventEmitter {
         },
         extractPackage: true,
         onExtractionProgress: extractionProgress => {
+          if (!hasEmittedExactring) {
+            this.emit('newState', 'extracting')
+            hasEmittedExtracting = true
+          }
           this.emit('setup-event', {
             type: 'extraction-progress',
             extractionProgress
