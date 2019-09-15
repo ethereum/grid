@@ -6,6 +6,8 @@ const { spawn } = require('child_process')
 const net = require('net')
 
 const STATES = {
+  DOWNLOADING: 'DOWNLOADNG',
+  EXTRACTING: 'EXTRACTING',
   STARTING: 'STARTING' /* Node about to be started */,
   STARTED: 'STARTED' /* Node started */,
   CONNECTED: 'CONNECTED' /* IPC connected - all ready */,

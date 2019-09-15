@@ -500,7 +500,15 @@
             console.log('New nano state: ', this.plugin.name, state)
             this.state = state
 
-            if (['starting', 'started', 'connected'].includes(state)) {
+            if (
+              [
+                'downloading',
+                'extracting',
+                'starting',
+                'started',
+                'connected'
+              ].includes(state)
+            ) {
               this.isSwitched = true
             } else {
               this.isSwitched = false
@@ -513,7 +521,7 @@
           handleSwitchedOn: async function() {
             const persistedFlags = (await Grid.Config.getItem('flags')) || {}
             const flags = persistedFlags[this.plugin.pluginRef.name]
-            const setupHandler = (event) => {
+            const setupHandler = event => {
               const { type } = event
               // let user know that a long running operation will be started
               if (type === 'fetch-release') {
