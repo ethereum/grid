@@ -39,7 +39,7 @@ gridUiManager.on('update-downloaded', release => {
 })
 
 const getGridUiUrl = async () => {
-  let useHotLoading = false
+  let useHotLoading = true // temporary fix from philipp
   const HOT_LOAD_URL = 'package://github.com/ethereum/grid-ui'
   if (is.dev()) {
     const PORT = '3080'
@@ -86,6 +86,8 @@ const getGridUiUrl = async () => {
     }
 
     let appUrl = await gridUiManager.load(packagePath)
+    console.log(packagePath)
+    console.log(gridUiManager.load)
     console.log('app url: ' + appUrl)
     return appUrl
   }
