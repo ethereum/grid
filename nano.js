@@ -10,10 +10,14 @@ const { getCachePath } = require('./utils/main/util')
 registerPackageProtocol(getCachePath('apps'))
 registerGlobalUserConfig()
 
-// auto-launch may start process with --hidden
+// Auto-launch may start process with --hidden
 const startMinimized = (process.argv || []).indexOf('--hidden') !== -1
 
-let alwaysOnTop = true
+// Do not autohide nano on blur for Windows
+// As we cannot guarantee the icon will be on the visible area 
+// of user's notification area in Windows, we set it to a "sticky mode" by default
+// Windows users can still close Nano with <Esc> or <Control+W>.
+let alwaysOnTop = !process.platform === 'darwin'
 
 const preloadPath = path.join(__dirname, 'preload.js')
 
