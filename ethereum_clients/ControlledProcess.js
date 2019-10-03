@@ -90,7 +90,7 @@ class ControlledProcess extends EventEmitter {
           this.emit('newState', 'stopped')
         }
 
-        if (code !== 0) {
+        if (code && code !== 0) {
           // Closing with any code other than 0 means there was an error
           const errorMessage = `${this.name} child process exited with code: ${code}`
           this.emitPluginError(errorMessage)
