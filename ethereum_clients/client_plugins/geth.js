@@ -1,29 +1,4 @@
-let platform = 'windows'
-let dataDir = `${process.env.APPDATA}/Ethereum`
-
-// Platform specific initialization
-switch (process.platform) {
-  case 'win32': {
-    platform = 'windows'
-    dataDir = `${process.env.APPDATA}\\Ethereum`
-    break
-  }
-  case 'linux': {
-    platform = 'linux'
-    dataDir = '~/.ethereum'
-    break
-  }
-  case 'darwin': {
-    platform = 'darwin'
-    dataDir = '~/Library/Ethereum'
-    break
-  }
-  default: {
-  }
-}
-
-const keystoreDir =
-  process.platform === 'win32' ? `${dataDir}\\keystore` : `${dataDir}/keystore`
+const platform = process.platform === 'win32' ? 'windows' : process.platform
 
 const findIpcPathInLogs = logs => {
   let ipcPath
@@ -91,17 +66,19 @@ module.exports = {
     },
     {
       id: 'dataDir',
-      default: dataDir,
+      default: '',
       label: 'Data Directory',
       flag: '--datadir %s',
-      type: 'directory'
+      type: 'directory',
+      ignoreIfEmpty: true
     },
     {
       id: 'keystoreDir',
-      default: keystoreDir,
+      default: '',
       label: 'Keystore Directory',
       flag: '--keystore %s',
-      type: 'directory'
+      type: 'directory',
+      ignoreIfEmpty: true
     },
     {
       id: 'console',
