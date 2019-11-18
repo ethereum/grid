@@ -153,7 +153,7 @@
         border-radius: 2px;
       }
 
-      .plugin-item,
+      .client-manager-item,
       .app-item {
         padding: 5px;
         display: flex;
@@ -212,29 +212,29 @@
         align-items: center;
       }
 
-      .plugin-info {
+      .client-info {
         line-height: 1rem;
         position: relative;
         overflow: hidden;
         flex-grow: 1;
       }
-      .plugin-info span {
+      .client-info span {
         display: inline-block;
         position: absolute;
         left: 0;
         transition: 200ms all ease-out;
         line-height: 1.85rem;
       }
-      .plugin-item:hover .plugin-state {
+      .client-manager-item:hover .client-state {
         top: -1.85rem;
         opacity: 0;
       }
-      .plugin-item:hover .plugin-version {
+      .client-manager-item:hover .client-version {
         top: 0rem;
         opacity: 1;
       }
 
-      .plugin-state {
+      .client-state {
         color: #555;
         margin-right: 5px;
         font-size: 0.8rem;
@@ -242,17 +242,13 @@
         opacity: 1;
       }
 
-      .plugin-version {
+      .client-version {
         font-size: 0.7rem;
         color: #555;
         white-space: nowrap;
         top: 1.85rem;
         opacity: 0;
       }
-
-      /* .plugin-item:hover .plugin-version {
-        visibility: visible;
-      } */
 
       .icon-indicator {
         padding: 1px;
@@ -424,6 +420,8 @@
         ></icon-indicator>
       </div>
       <div class="separator"></div>
+      <div>RPC Server: http://localhost:8081</div>
+      <div class="separator"></div>
       <div v-if="!showConfig" class="plugin-container">
         <div v-if="showApps">
           <div>
@@ -441,25 +439,37 @@
           ></app-item>
           <div class="separator"></div>
         </div>
-        <plugin-item
+        <client-manager-item
           v-if="!showConfig"
-          v-for="plugin in plugins"
-          :key="plugin.name"
-          :plugin="plugin"
-        ></plugin-item>
+          v-for="clientManager in clientManagers"
+          :key="clientManager.name"
+          :client-manager="clientManager"
+        ></client-manager-item>
       </div>
       <grid-config v-if="showConfig"></grid-config>
       <div id="grid-version"></div>
     </div>
 
     <script>
-      Vue.component('plugin-item', {
-        props: ['plugin'],
+      Vue.component('client-item', {
+        props: ['client'],
+        template: `
+          <div style="margin-left: 50px">
+              <span class="centered">
+                <span>{{ client.state }}</span>
+                <span>{{ client.version }}</span>
+              </span>
+          </div>
+        `
+      })
+
+      Vue.component('client-manager-item', {
+        props: ['clientManager'],
         data: function() {
           return {
+            clients: [], // client managers can manage multiple clients
+            defaultClient: undefined, // most of the times a ClientManager represents only the default client -> display it's info inline for simplicity
             isSwitched: false,
-            pluginVersion: '',
-            state: '',
             isDownloading: false,
             downloadProgress: 0,
             checkbox: [],
@@ -469,28 +479,50 @@
         },
         template: `
                 <div>
-                  <div class="plugin-item">
+                  <div class="client-manager-item">
                     <b-switch v-model="isSwitched" @input="handleChange($event)" size="is-small"></b-switch>
-                    <span class="plugin-name centered" v-on:click="openUI()">{{ plugin.displayName }}</span>
-                    <span class="plugin-profile centered">{{ plugin.profile }}</span>
-                    <span class="plugin-info centered">
-                      <span class="plugin-state">{{ state }}</span>
-                      <span class="plugin-version">{{ pluginVersion }}</span>
+                    <span class="plugin-name centered" v-on:click="openUI()">{{ clientManager.displayName }}</span>
+                    <span class="plugin-profile centered">{{ clientManager.profile }}</span>
+                    <span class="client-info centered" v-if="defaultClient">
+                      <span class="client-state">{{ defaultClient.state }}</span>
+                      <span class="client-version">{{ defaultClient.version }}</span>
                     </span>
-                    <b-tag class="app-badge" type="is-info" v-if="plugin.badge > 0" rounded @click.native="openUI()">{{ plugin.badge }}</b-tag>
-                    <icon-indicator @change="openTerminal()" v-if="plugin.errors.length > 0" pack="fas" icon="exclamation-circle" class="error" title="Plugin Error, click for more details"></icon-indicator>
+                    <b-tag class="app-badge" type="is-info" v-if="clientManager.badge > 0" rounded @click.native="openUI()">{{ clientManager.badge }}</b-tag>
+                    <icon-indicator @change="openTerminal()" v-if="clientManager.errors && clientManager.errors.length > 0" pack="fas" icon="exclamation-circle" class="error" title="Plugin Error, click for more details"></icon-indicator>
                     <icon-indicator @change="openTerminal()" pack="far" icon="window-maximize"></icon-indicator>
+                  </div>
+                  <div class="client-list">
+                    <client-item
+                      v-if="clients.length > 1"
+                      v-for="client in clients"
+                      :client="client"
+                    />
                   </div>
                   <progress v-if="isDownloading" max="100" class="progress is-small is-primary" :value="downloadProgress"></progress>
                 </div>
                 `,
-        created: function() {
-          this.plugin.pluginRef.on('newState', this.stateUpdateListener)
+        created: async function() {
+          // FIXME refactor: this.clientManager.pluginRef.on('newState', this.stateUpdateListener)
           // Set plugin version if selectedRelease
-          const selectedRelease = this.plugin.pluginRef.getSelectedRelease()
+          const selectedRelease = this.clientManager.getSelectedRelease() // FIXME ref TODO change to getSelectedClient?
           if (selectedRelease) {
             this.pluginVersion = selectedRelease.version
           }
+
+          const clients = await this.clientManager.getAllClients()
+          this.clients = clients
+          this.defaultClient = clients.length > 0 ? clients[0] : undefined
+          /* FIXME ref
+          plugin.on('pluginError', error => {
+            this.pluginErrorListener(plugin, error)
+          })
+          plugin.on('setAppBadge', ({ appId, count }) => {
+            this.setAppBadgeListener(plugin, appId, count)
+          })
+          plugin.on('clearPluginErrors', () => {
+            this.clearPluginErrors(plugin)
+          })
+          */
         },
         beforeDestroy: function() {
           this.plugin.pluginRef.off('newState', this.stateUpdateListener)
@@ -520,7 +552,7 @@
           },
           handleSwitchedOn: async function() {
             const persistedFlags = (await Grid.Config.getItem('flags')) || {}
-            const flags = persistedFlags[this.plugin.pluginRef.name]
+            const flags = persistedFlags[this.clientManager.name]
             const setupHandler = event => {
               const { type } = event
               // let user know that a long running operation will be started
@@ -538,9 +570,14 @@
                 this.state = `extracting ${extractionProgress}%`
               }
             }
-            this.plugin.pluginRef.on('setup-event', setupHandler)
+            // FIXME ref this.plugin.pluginRef.on('setup-event', setupHandler)
+            if (this.clients.length === 0) {
+              this.clientManager.getClient('', () => {
+                
+              })
+            }
             try {
-              await this.plugin.pluginRef.start(flags)
+              await this.clientManager.requestStart(flags)
             } catch (error) {
               console.log('start error', error)
               this.isSwitched = false
@@ -713,7 +750,7 @@
         el: '#app',
         data: function() {
           return {
-            plugins: [],
+            clientManagers: [],
             apps: [],
             isSwitched: false,
             showConfig: false,
@@ -721,29 +758,10 @@
           }
         },
         methods: {
-          loadPlugins: function() {
-            const plugins = window.Grid.PluginHost.getAllPlugins()
-            this.plugins = plugins.map(plugin => {
-              plugin.on('pluginError', error => {
-                this.pluginErrorListener(plugin, error)
-              })
-              plugin.on('setAppBadge', ({ appId, count }) => {
-                this.setAppBadgeListener(plugin, appId, count)
-              })
-              plugin.on('clearPluginErrors', () => {
-                this.clearPluginErrors(plugin)
-              })
-              return {
-                name: plugin.name,
-                displayName: plugin.displayName,
-                profile: '',
-                version: '',
-                pluginRef: plugin,
-                errors: [],
-                badge: 0
-              }
-            })
-            console.log('Plugins Loaded: ', plugins.length)
+          loadClientManagers: async function() {
+            // these 
+            const clientManagers = await window.Grid.getAllClientManagers()
+            this.clientManagers = clientManagers
           },
           loadApps: async function() {
             const apps = await window.Grid.AppManager.getAllApps()
@@ -751,9 +769,10 @@
             console.log('Apps Loaded: ', apps.length)
           },
           init: function() {
-            this.loadPlugins()
+            this.loadClientManagers()
             this.loadApps()
           },
+          /* FIXME ref
           pluginErrorListener: function(plugin, error) {
             this.plugins.find(p => p.name === plugin.name).errors = [
               ...this.plugins.find(p => p.name === plugin.name).errors,
@@ -767,6 +786,7 @@
           clearPluginErrors: function(plugin) {
             this.plugins.find(p => p.name === plugin.name).errors = []
           },
+          */
           toggleSettings: function(value) {
             this.showConfig = value
           },
@@ -791,9 +811,11 @@
         mounted: async function() {
           try {
             this.init()
+            /* FIXME ref
             window.Grid.PluginHost.on('plugins-loaded', () => {
               this.init()
             })
+            */
           } catch (error) {
             console.log('Error loading plugins: ', error)
           }
