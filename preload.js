@@ -74,10 +74,20 @@ console.log('grid preload script loaded')
 
 const currentWindow = remote.getCurrentWindow()
 
+const gridCore = remote.getGlobal('GridCore')
+
+// TODO replace preload with REST api step by step
+const createClient = require('./api/GridApiClient/GridClient')
+const GridApi = createClient()
 const Grid = {
+  // @deprecated - use RPC server instead
   PluginHost: remote.getGlobal('PluginHost'),
+  // @deprecated - use RPC server instead
   AppManager: remote.getGlobal('AppManager'),
   Config: remote.getGlobal('UserConfig'),
+  getAllClientManagers: () => {
+    return GridApi.getAllClientManagers()
+  },
   window: {
     getArgs: () => currentWindow.args,
     close: () => {
