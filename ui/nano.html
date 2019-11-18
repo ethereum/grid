@@ -504,7 +504,7 @@
         created: async function() {
           // FIXME refactor: this.clientManager.pluginRef.on('newState', this.stateUpdateListener)
           // Set plugin version if selectedRelease
-          const selectedRelease = this.clientManager.getSelectedRelease() // FIXME ref TODO change to getSelectedClient?
+          const selectedRelease = this.clientManager.getSelected() // FIXME ref TODO change to getSelectedClient?
           if (selectedRelease) {
             this.pluginVersion = selectedRelease.version
           }
@@ -573,7 +573,7 @@
             // FIXME ref this.plugin.pluginRef.on('setup-event', setupHandler)
             if (this.clients.length === 0) {
               this.clientManager.getClient('', () => {
-                
+
               })
             }
             try {
