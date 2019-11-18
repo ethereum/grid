@@ -1,7 +1,8 @@
 const path = require('path')
 const { menubar } = require('menubar')
 const { app, Menu, shell, Tray } = require('electron')
-const { registerGlobalPluginHost } = require('./ethereum_clients/PluginHost')
+// const { registerGlobalPluginHost } = require('./ethereum_clients/PluginHost')
+const { PluginHost } = require('./ethereum_clients/PluginHost')
 const { registerGlobalAppManager } = require('./grid_apps/AppManager')
 const { registerGlobalUserConfig } = require('./Config')
 const {
@@ -47,9 +48,15 @@ let mb
 const template = getMenuTemplate()
 Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 
-const pluginHost = registerGlobalPluginHost()
+const Grid = require('grid-core').default
+const grid = new Grid()
+// FIXME no more globals
+global.GridCore = grid
+
+// const pluginHost = global.PluginHost = new PluginHost()
 
 app.on('quit', () => {
+  /*
   const plugins = pluginHost.getAllPlugins()
   plugins.forEach(p => {
     if (!p.plugin.process || p.plugin.process.state === 'STOPPED') {
@@ -59,10 +66,11 @@ app.on('quit', () => {
       p.plugin.process.proc.kill('SIGINT')
     }
   })
+  */
 })
 
 const init = function() {
-  app.on('ready', () => {
+  app.on('ready', async () => {
     const tray = new Tray(iconPath())
 
     let menuOptions = [
@@ -108,9 +116,15 @@ const init = function() {
 
     const contextMenu = Menu.buildFromTemplate(menuOptions)
 
+    // make sure the grid API is available i.e. server is running or else we cannot
+    // initialize UI
+    // alternativley allow UI to connect to different APIs
+    // ideally this would be some kind of deamon or service and gird-electron only makes sure that it is running
+    // await grid.startApiServer()
+
     mb = menubar({
       browserWindow: {
-        alwaysOnTop,
+        alwaysOnTop: true, // for ev purposes
         transparent: true,
         backgroundColor: '#00FFFFFF',
         frame: false,
@@ -154,7 +168,8 @@ const init = function() {
 
     // Syncs tray icon highlight state on mac
     mb.on('after-create-window', function() {
-      mb.window.on('hide', () => mb.hideWindow())
+      // mb.window.on('hide', () => mb.hideWindow())
+      mb.window.openDevTools()
     })
   })
 
