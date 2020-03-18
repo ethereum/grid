@@ -40,7 +40,7 @@ bundle install
 ## 4. Run local server
 
 ```shell
-bundle exec jekyll serve
+bundle exec jekyll serve --incremental
 ```
 
 Default URL is http://127.0.0.1:4000/
