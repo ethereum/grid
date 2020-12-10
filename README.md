@@ -1,4 +1,4 @@
-## :no_entry: Deprecated :no_entry:
+  ## DEPRECATED
 This project is not supported anymore.
 
 <p align="center">
