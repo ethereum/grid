@@ -1,3 +1,6 @@
+## :no_entry: Deprecated :no_entry:
+This project is not supported anymore.
+
 <p align="center">
 <img src="https://user-images.githubusercontent.com/47108/53807420-80433380-3f1d-11e9-80cd-967aabb26506.png" width="524" />
 </p>
